@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leaflet Map with GeoJSON - George, South Africa</title>
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+
+    <!-- Custom styles -->
+    <style>
+        #map {
+            height: 100vh; /* Full page height */
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Map container -->
+    <div id="map"></div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+
+    <!-- Fetch GeoJSON file -->
+    <script>
+        // Initialize the map and set its view to George, South Africa
+        var map = L.map('map').setView([-33.9648, 22.4597], 13);
+
+        // Add the OpenStreetMap tiles
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // Add a marker to George
+        var marker = L.marker([-33.9648, 22.4597]).addTo(map)
+            .bindPopup('<b>Hello from George!</b><br>This is George, South Africa.').openPopup();
+
+        // Load GeoJSON from an external file
+        fetch('TMA.geojson')
+            .then(response => response.json())
+            .then(data => {
+                // Add GeoJSON data to the map and style it
+                L.geoJSON(data, {
+                    style: function (feature) {
+                        return {
+                            color: 'red',
+                            fillOpacity: 0.3
+                        };
+                    }
+                }).addTo(map);
+            })
+            .catch(error => console.error('Error loading GeoJSON:', error));
+    </script>
+
+</body>
+</html>
