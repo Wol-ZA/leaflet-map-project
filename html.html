@@ -86,19 +86,23 @@
             }),
         };
 
+      // Layer control
+        let geoJsonLayers = {};  // To store each GeoJSON layer for toggling
+        let overlays = {};       // For adding to the layer control
+
         // Function to fetch and add GeoJSON data with styles and icons to the map
-        function loadGeojson(file, color, iconKey) {
+        function loadGeojson(file, color, iconKey, layerName) {
             fetch(file)
                 .then(response => response.json())
                 .then(data => {
-                    L.geoJSON(data, {
+                    let geoJsonLayer = L.geoJSON(data, {
                         // Style for polygons and lines
                         style: function (feature) {
                             return {
                                 color: color,
                                 weight: 2,
                                 opacity: 1,
-                                fillOpacity: 0.3
+                                fillOpacity: 0.6
                             };
                         },
                         // For point features (markers), use the custom icons
@@ -110,11 +114,15 @@
                                     radius: 6,
                                     fillColor: color,
                                     color: color,
-                                    fillOpacity: 0.3
+                                    fillOpacity: 0.8
                                 });
                             }
                         }
-                    }).addTo(map);
+                    });
+
+                    // Add the GeoJSON layer to the map and store it
+                    geoJsonLayers[layerName] = geoJsonLayer;
+                    overlays[layerName] = geoJsonLayer; // Add to overlays for control
                 })
                 .catch(error => {
                     console.error('Error loading the GeoJSON file:', file, error);
@@ -122,7 +130,12 @@
         }
 
         // Load all the GeoJSON files with their respective colors and icons
-        geojsonFiles.forEach(layer => loadGeojson(layer.file, layer.color, layer.icon));
+        geojsonFiles.forEach(layer => loadGeojson(layer.file, layer.color, layer.icon, layer.name));
+
+        // Add the layer control to the map
+        setTimeout(() => {
+            L.control.layers(null, overlays).addTo(map);  // Add control with overlay layers
+        }, 500);  // Add a delay to ensure all layers are loaded
     </script>
 </body>
 </html>
