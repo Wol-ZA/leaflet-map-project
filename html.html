@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Load Multiple GeoJSON Files</title>
+    <title>Load Multiple GeoJSON Files with Different Colors and Icons</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 </head>
@@ -19,35 +19,100 @@
             maxZoom: 19,
         }).addTo(map);
 
-        // Array of geojson file paths
+        // Array of geojson file paths and corresponding colors
         const geojsonFiles = [
-            'ATZ_CTR.geojson',
-            'CTA.geojson',
-            'FAD_FAP_FAR.geojson',
-            'ACCFIS.geojson',
-            'SACAA.geojson',
-            'Un-Licensed.geojson',
-            'Aerodrome_AIC.geojson',
-            'Aerodrome_AIP.geojson',
-            'ATNS.geojson',
-            'Military.geojson',
-            'helistops.geojson'
+            { file: 'ATZ_CTR.geojson', color: '#FF0000' },  // Red
+            { file: 'CTA.geojson', color: '#00FF00' },      // Green
+            { file: 'FAD_FAP_FAR.geojson', color: '#0000FF' },  // Blue
+            { file: 'ACCFIS.geojson', color: '#FFFF00' },   // Yellow
+            { file: 'SACAA.geojson', color: '#FF00FF', icon: 'sacaa' }, // Magenta
+            { file: 'Un-Licensed.geojson', color: '#00FFFF', icon: 'unlicensed' }, // Cyan
+            { file: 'Aerodrome_AIC.geojson', color: '#FFA500', icon: 'aic' }, // Orange
+            { file: 'Aerodrome_AIP.geojson', color: '#800080', icon: 'aip' }, // Purple
+            { file: 'ATNS.geojson', color: '#808080', icon: 'atns' }, // Gray
+            { file: 'Military.geojson', color: '#000000', icon: 'military' }, // Black
+            { file: 'helistops.geojson', color: '#8B4513', icon: 'helistops' } // SaddleBrown
         ];
 
-        // Function to fetch and add GeoJSON data to the map
-        function loadGeojson(file) {
+        // Define preset icons
+        const icons = {
+            sacaa: L.icon({
+                iconUrl: 'http://156.38.138.194/CLOUD_FLIGHT_PLAN_WEB/images/sacaa.png',
+                iconSize: [13, 13],
+                iconAnchor: [7, 5],
+            }),
+            unlicensed: L.icon({
+                iconUrl: 'http://156.38.138.194/CLOUD_FLIGHT_PLAN_WEB/images/unlicensed.png',
+                iconSize: [13, 13],
+                iconAnchor: [7, 5],
+            }),
+            aic: L.icon({
+                iconUrl: 'http://156.38.138.194/CLOUD_FLIGHT_PLAN_WEB/images/aic.png',
+                iconSize: [13, 13],
+                iconAnchor: [7, 5],
+            }),
+            aip: L.icon({
+                iconUrl: 'http://156.38.138.194/CLOUD_FLIGHT_PLAN_WEB/images/aip.png',
+                iconSize: [13, 13],
+                iconAnchor: [7, 5],
+            }),
+            atns: L.icon({
+                iconUrl: 'http://156.38.138.194/CLOUD_FLIGHT_PLAN_WEB/images/atns.png',
+                iconSize: [13, 13],
+                iconAnchor: [7, 5],
+            }),
+            military: L.icon({
+                iconUrl: 'http://156.38.138.194/CLOUD_FLIGHT_PLAN_WEB/images/military.png',
+                iconSize: [13, 13],
+                iconAnchor: [7, 5],
+            }),
+            helistops: L.icon({
+                iconUrl: 'http://156.38.138.194/CLOUD_FLIGHT_PLAN_WEB/images/helistops.png',
+                iconSize: [13, 13],
+                iconAnchor: [7, 5],
+            }),
+            waypoints_red: L.icon({
+                iconUrl: 'http://156.38.138.194/CLOUD_FLIGHT_PLAN_WEB/images/waypoint_red.png',
+                iconSize: [13, 13],
+                iconAnchor: [7, 5],
+            }),
+            waypoints_green: L.icon({
+                iconUrl: 'http://156.38.138.194/CLOUD_FLIGHT_PLAN_WEB/images/waypoint_green.png',
+                iconSize: [13, 13],
+                iconAnchor: [7, 5],
+            }),
+            navaids: L.icon({
+                iconUrl: 'http://156.38.138.194/CLOUD_FLIGHT_PLAN_WEB/images/navaids.png',
+                iconSize: [13, 13],
+                iconAnchor: [7, 5],
+            })
+        };
+
+        // Function to fetch and add GeoJSON data with style and icons to the map
+        function loadGeojson(file, color, iconKey) {
             fetch(file)
                 .then(response => response.json())
                 .then(data => {
-                    L.geoJSON(data).addTo(map);
+                    L.geoJSON(data, {
+                        style: function () {
+                            return { color: color };
+                        },
+                        pointToLayer: function (feature, latlng) {
+                            if (iconKey && icons[iconKey]) {
+                                return L.marker(latlng, { icon: icons[iconKey] });
+                            } else {
+                                return L.circleMarker(latlng, { radius: 6, fillColor: color, color: color, fillOpacity: 0.8 });
+                            }
+                        }
+                    }).addTo(map);
                 })
                 .catch(error => {
                     console.error('Error loading the GeoJSON file:', file, error);
                 });
         }
 
-        // Load all the GeoJSON files
-        geojsonFiles.forEach(file => loadGeojson(file));
+        // Load all the GeoJSON files with their respective colors and icons
+        geojsonFiles.forEach(layer => loadGeojson(layer.file, layer.color, layer.icon));
     </script>
 </body>
 </html>
