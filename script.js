@@ -157,11 +157,11 @@ function addDraggableMarkerAndCircle(latlng) {
     marker.on('drag', function (e) {
         const newLatLng = e.target.getLatLng();
         updateCircle(newLatLng);
-        checkGeoJsonMarkersInRange(newLatLng); // Check for markers in the circle
+        checkGeoJsonMarkersInRange(newLatLng, marker); // Check for markers in the circle
     });
 
     // Check for markers within the circle when added
-    checkGeoJsonMarkersInRange(latlng);
+    checkGeoJsonMarkersInRange(latlng, marker);
 
     // Ensure only one marker and one circle
     if (markers.length > 1) {
@@ -171,26 +171,40 @@ function addDraggableMarkerAndCircle(latlng) {
 }
 
 // Function to check if any GeoJSON markers are within the circle
-function checkGeoJsonMarkersInRange(centerLatLng) {
+function checkGeoJsonMarkersInRange(centerLatLng, marker) {
     const geoJsonMarkersWithinRange = [];
-    
+
     // Iterate through each GeoJSON layer to check for markers within the radius
     Object.values(geoJsonLayers).forEach(layer => {
         layer.eachLayer(function (layer) {
             if (layer instanceof L.Marker) {
                 const distance = centerLatLng.distanceTo(layer.getLatLng()); // Distance between points
                 if (distance <= radiusInMeters) {
-                    geoJsonMarkersWithinRange.push(layer);
+                    const feature = layer.feature;
+                    const description = feature?.properties?.Description || "Unknown"; // Get description
+                    const iconUrl = feature?.properties?.iconUrl || null; // Assuming iconUrl is stored in properties
+
+                    geoJsonMarkersWithinRange.push({
+                        name: description,
+                        latlng: layer.getLatLng(),
+                        iconUrl: iconUrl
+                    });
                 }
             }
         });
     });
 
-    // Output the markers found within the circle
+    // Create the content for the popup
     if (geoJsonMarkersWithinRange.length > 0) {
-        console.log(`Markers within 20nm of ${centerLatLng}:`, geoJsonMarkersWithinRange);
+        let popupContent = "<b>Markers within 20nm:</b><br/>";
+        geoJsonMarkersWithinRange.forEach(markerData => {
+            const { name, iconUrl } = markerData;
+            const iconHtml = iconUrl ? `<img src="${iconUrl}" alt="icon" width="20"/>` : '';
+            popupContent += `${iconHtml} ${name}<br/>`;
+        });
+        marker.bindPopup(popupContent).openPopup();
     } else {
-        console.log(`No markers within 20nm of ${centerLatLng}`);
+        marker.bindPopup("No markers within 20nm").openPopup();
     }
 }
 
