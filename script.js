@@ -164,20 +164,10 @@ function addDraggableMarkerAndCircle(latlng) {
     circles.push(circle); // Store the circle for future updates
 
     // Check for markers within the circle when added
-    const geoJsonMarkersWithinRange = checkGeoJsonMarkersInRange(latlng, marker);
+    let geoJsonMarkersWithinRange = checkGeoJsonMarkersInRange(latlng, marker);
 
     // Set a popup for the marker showing info from the geoJsonMarkersWithinRange
-    if (geoJsonMarkersWithinRange.length > 0) {
-        const popupContent = geoJsonMarkersWithinRange.map(marker => {
-            return `<div>
-                        <img src="${marker.iconUrl}" alt="Icon" style="width: 20px; height: 20px;">
-                        <span>${marker.description}</span>
-                    </div>`;
-        }).join('');
-        marker.bindPopup(popupContent).openPopup(); // Bind the content to the marker's popup
-    } else {
-        marker.bindPopup("No GeoJSON markers within range.").openPopup(); // Default message if none found
-    }
+    updateMarkerPopup(marker, geoJsonMarkersWithinRange);
 
     // Update the polyline with the new marker
     updatePolyline();
@@ -187,10 +177,13 @@ function addDraggableMarkerAndCircle(latlng) {
         const newLatLng = e.target.getLatLng();
         circle.setLatLng(newLatLng); // Move the circle with the marker
         updatePolyline(); // Update the polyline when marker is dragged
+        
+        // Recalculate GeoJSON markers within range
         geoJsonMarkersWithinRange = checkGeoJsonMarkersInRange(newLatLng, marker);
-        updateMarkerPopup(marker, geoJsonMarkersWithinRange);
+        updateMarkerPopup(marker, geoJsonMarkersWithinRange); // Update popup with new info
     });
 }
+
 // Function to update the marker's popup with information about GeoJSON markers in range
 function updateMarkerPopup(marker, geoJsonMarkersWithinRange) {
     if (geoJsonMarkersWithinRange.length > 0) {
@@ -205,6 +198,7 @@ function updateMarkerPopup(marker, geoJsonMarkersWithinRange) {
         marker.bindPopup("No GeoJSON markers within range.").openPopup(); // Default message if none found
     }
 }
+
 
 // Function to check if any GeoJSON markers are within the circle
 function checkGeoJsonMarkersInRange(centerLatLng, marker) {
