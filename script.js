@@ -181,6 +181,11 @@ function checkGeoJsonMarkersInRange(centerLatLng, marker) {
                 const distance = centerLatLng.distanceTo(layer.getLatLng()); // Distance between points
                 if (distance <= radiusInMeters) {
                     const feature = layer.feature;
+                    
+                    // Debugging: Log the properties of each feature
+                    console.log('Feature properties:', feature.properties);
+                    
+                    // Try to access the Description property
                     const description = feature?.properties?.Description || "Unknown"; // Get description
                     const iconUrl = feature?.properties?.iconUrl || null; // Assuming iconUrl is stored in properties
 
