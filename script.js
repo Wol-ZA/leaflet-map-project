@@ -183,11 +183,17 @@ function checkGeoJsonMarkersInRange(centerLatLng, marker) {
                     const feature = layer.feature;
                     
                     // Debugging: Log the properties of each feature
-                    console.log('Feature properties:', feature);
+                    console.log('Feature properties:', feature.properties);
                     
                     // Try to access the Description property
-                    const description = feature?.properties?.description || "Unknown"; // Get description
-                    const iconUrl = feature?.properties?.iconUrl || null; // Assuming iconUrl is stored in properties
+                    const description = feature?.properties?.Description || "Unknown"; // Get description
+
+                    // Determine the icon from the geojsonFiles based on the layer name
+                    const layerName = feature.properties?.layerName || "Unknown"; // Assuming you set layerName in your GeoJSON properties
+                    const iconKey = geojsonFiles.find(geojson => geojson.name === layerName)?.icon;
+
+                    // Get the icon URL based on the iconKey
+                    const iconUrl = iconKey ? icons[iconKey].options.iconUrl : null; // Get icon URL from the icons object
 
                     geoJsonMarkersWithinRange.push({
                         name: description,
@@ -201,7 +207,6 @@ function checkGeoJsonMarkersInRange(centerLatLng, marker) {
 
     // Create the content for the popup
     if (geoJsonMarkersWithinRange.length > 0) {
-        console.log(`Markers within 20nm of ${centerLatLng}:`, geoJsonMarkersWithinRange);
         let popupContent = "<b>Markers within 20nm:</b><br/>";
         geoJsonMarkersWithinRange.forEach(markerData => {
             const { name, iconUrl } = markerData;
