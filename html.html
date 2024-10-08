@@ -141,7 +141,44 @@
         setTimeout(() => {
             console.log('Adding layers to control', overlays);
             L.control.layers(null, overlays).addTo(map);  // Add control with overlay layers
-        }, 500);  // Add a delay to ensure all layers are loaded
+        }, 500);
+
+         // Markers for the line-drawing feature
+        let markers = [];
+        let line = null;
+
+        // Function to update the line connecting the two markers
+        function updateLine() {
+            if (line) {
+                map.removeLayer(line);
+            }
+            if (markers.length === 2) {
+                const latlngs = [markers[0].getLatLng(), markers[1].getLatLng()];
+                line = L.polyline(latlngs, { color: 'blue' }).addTo(map);
+            }
+        }
+
+        // Function to add a draggable marker and draw/update the line
+        function addDraggableMarker(latlng) {
+            const marker = L.marker(latlng, { draggable: true }).addTo(map);
+            markers.push(marker);
+
+            // Update the line when the marker is dragged
+            marker.on('drag', updateLine);
+
+            // Check if we already have two markers
+            if (markers.length === 2) {
+                updateLine();
+            } else if (markers.length > 2) {
+                // Remove excess markers (we only want two at any time)
+                map.removeLayer(markers.shift());  // Remove the first marker
+            }
+        }
+
+        // Listen for map click event to add draggable markers and draw a line
+        map.on('click', function (e) {
+            addDraggableMarker(e.latlng);
+        });
     </script>
 </body>
 </html>
