@@ -186,7 +186,7 @@ function checkGeoJsonMarkersInRange(centerLatLng, marker) {
                     console.log('Feature properties:', feature.properties);
                     
                     // Try to access the Description property
-                    const description = feature?.properties?.Description || "Unknown"; // Get description
+                    const description = feature?.properties?.description || "Unknown"; // Get description
 
                     // Determine the icon from the geojsonFiles based on the layer name
                     const layerName = feature.properties?.layerName || "Unknown"; // Assuming you set layerName in your GeoJSON properties
