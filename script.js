@@ -187,11 +187,25 @@ function addDraggableMarkerAndCircle(latlng) {
         const newLatLng = e.target.getLatLng();
         circle.setLatLng(newLatLng); // Move the circle with the marker
         updatePolyline(); // Update the polyline when marker is dragged
+        geoJsonMarkersWithinRange = checkGeoJsonMarkersInRange(newLatLng, marker);
+        updateMarkerPopup(marker, geoJsonMarkersWithinRange);
     });
 }
+// Function to update the marker's popup with information about GeoJSON markers in range
+function updateMarkerPopup(marker, geoJsonMarkersWithinRange) {
+    if (geoJsonMarkersWithinRange.length > 0) {
+        const popupContent = geoJsonMarkersWithinRange.map(marker => {
+            return `<div>
+                        <img src="${marker.iconUrl}" alt="Icon" style="width: 20px; height: 20px;">
+                        <span>${marker.description}</span>
+                    </div>`;
+        }).join('');
+        marker.bindPopup(popupContent).openPopup(); // Bind the content to the marker's popup
+    } else {
+        marker.bindPopup("No GeoJSON markers within range.").openPopup(); // Default message if none found
+    }
+}
 
-
-// Function to check if any GeoJSON markers are within the circle
 // Function to check if any GeoJSON markers are within the circle
 function checkGeoJsonMarkersInRange(centerLatLng, marker) {
     const geoJsonMarkersWithinRange = [];
