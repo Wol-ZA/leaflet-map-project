@@ -134,8 +134,9 @@ function createCircle(latlng) {
     }).addTo(map);
 }
 
-// Markers and circle
+// Markers and polyline
 let markers = [];
+let polylines = [];
 let circle = null;
 
 // Function to update the circle's position
@@ -151,73 +152,45 @@ function addDraggableMarkerAndCircle(latlng) {
     const marker = L.marker(latlng, { draggable: true }).addTo(map);
     markers.push(marker);
 
+    // Update the polyline with the new marker
+    updatePolyline();
+
     updateCircle(latlng);
 
     // Update the circle position when the marker is dragged
     marker.on('drag', function (e) {
         const newLatLng = e.target.getLatLng();
         updateCircle(newLatLng);
-        checkGeoJsonMarkersInRange(newLatLng, marker); // Check for markers in the circle
+        updatePolyline(); // Update the polyline when marker is dragged
     });
-
-    // Check for markers within the circle when added
-    checkGeoJsonMarkersInRange(latlng, marker);
 
     // Ensure only one marker and one circle
     if (markers.length > 1) {
         const oldMarker = markers.shift(); // Remove the first marker
         map.removeLayer(oldMarker); // Remove from map
+        updatePolyline(); // Update polyline after removing a marker
+    }
+
+    // Check for markers within the circle when added
+    checkGeoJsonMarkersInRange(latlng, marker);
+}
+
+// Function to update the polyline based on markers' positions
+function updatePolyline() {
+    if (polylines.length > 0) {
+        polylines.forEach(polyline => map.removeLayer(polyline)); // Remove existing polylines
+        polylines = []; // Clear polyline array
+    }
+
+    if (markers.length > 1) {
+        const latlngs = markers.map(marker => marker.getLatLng());
+        const polyline = L.polyline(latlngs, { color: 'blue' }).addTo(map); // Draw a polyline between markers
+        polylines.push(polyline);
     }
 }
 
 // Function to check if any GeoJSON markers are within the circle
-function checkGeoJsonMarkersInRange(centerLatLng, marker) {
-    const geoJsonMarkersWithinRange = [];
-
-    // Iterate through each GeoJSON layer to check for markers within the radius
-    Object.values(geoJsonLayers).forEach(layer => {
-        layer.eachLayer(function (layer) {
-            if (layer instanceof L.Marker) {
-                const distance = centerLatLng.distanceTo(layer.getLatLng()); // Distance between points
-                if (distance <= radiusInMeters) {
-                    const feature = layer.feature;
-                    
-                    // Debugging: Log the properties of each feature
-                    console.log('Feature properties:', feature.properties);
-                    
-                    // Try to access the Description property
-                    const description = feature?.properties?.description || "Unknown"; // Get description
-
-                    // Determine the icon from the geojsonFiles based on the layer name
-                    const layerName = feature.properties?.layerName || "Unknown"; // Assuming you set layerName in your GeoJSON properties
-                    const iconKey = geojsonFiles.find(geojson => geojson.name === layerName)?.icon;
-
-                    // Get the icon URL based on the iconKey
-                    const iconUrl = iconKey ? icons[iconKey].options.iconUrl : null; // Get icon URL from the icons object
-
-                    geoJsonMarkersWithinRange.push({
-                        name: description,
-                        latlng: layer.getLatLng(),
-                        iconUrl: iconUrl
-                    });
-                }
-            }
-        });
-    });
-
-    // Create the content for the popup
-    if (geoJsonMarkersWithinRange.length > 0) {
-        let popupContent = "<b>Markers within 20nm:</b><br/>";
-        geoJsonMarkersWithinRange.forEach(markerData => {
-            const { name, iconUrl } = markerData;
-            const iconHtml = iconUrl ? `<img src="${iconUrl}" alt="icon" width="20"/>` : '';
-            popupContent += `${iconHtml} ${name}<br/>`;
-        });
-        marker.bindPopup(popupContent).openPopup();
-    } else {
-        marker.bindPopup("No markers within 20nm").openPopup();
-    }
-}
+// ...
 
 // Listen for map click event to add draggable marker and circle
 map.on('click', function (e) {
