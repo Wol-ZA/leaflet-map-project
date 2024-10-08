@@ -32,19 +32,18 @@
         }).addTo(map);
 
         // Array of geojson file paths, colors, and icons
-        const geojsonFiles = [
-            { file: 'ATZ_CTR.geojson', color: '#FF0000' },  // Red
-            { file: 'CTA.geojson', color: '#00FF00' },      // Green
-            { file: 'FAD_FAP_FAR.geojson', color: '#0000FF' },  // Blue
-            { file: 'ACCFIS.geojson', color: '#FF00FF' },   // Yellow
-            { file: 'TMA.geojson', color: '#FFFF00' },   // Yellow
-            { file: 'SACAA.geojson', color: '#FF00FF', icon: 'sacaa' }, // Magenta
-            { file: 'Un-Licensed.geojson', color: '#00FFFF', icon: 'unlicensed' }, // Cyan
-            { file: 'Aerodrome_AIC.geojson', color: '#FFA500', icon: 'aic' }, // Orange
-            { file: 'Aerodrome_AIP.geojson', color: '#800080', icon: 'aip' }, // Purple
-            { file: 'ATNS.geojson', color: '#808080', icon: 'atns' }, // Gray
-            { file: 'Military.geojson', color: '#000000', icon: 'military' }, // Black
-            { file: 'helistops.geojson', color: '#8B4513', icon: 'helistops' } // SaddleBrown
+     const geojsonFiles = [
+            { file: 'ATZ_CTR.geojson', color: '#FF0000', name: 'ATZ_CTR' },  // Red
+            { file: 'CTA.geojson', color: '#00FF00', name: 'CTA' },          // Green
+            { file: 'FAD_FAP_FAR.geojson', color: '#0000FF', name: 'FAD_FAP_FAR' }, // Blue
+            { file: 'ACCFIS.geojson', color: '#FFFF00', name: 'ACCFIS' },    // Yellow
+            { file: 'SACAA.geojson', color: '#FF00FF', name: 'SACAA', icon: 'sacaa' }, // Magenta
+            { file: 'Un-Licensed.geojson', color: '#00FFFF', name: 'Un-Licensed', icon: 'unlicensed' }, // Cyan
+            { file: 'Aerodrome_AIC.geojson', color: '#FFA500', name: 'AIC', icon: 'aic' }, // Orange
+            { file: 'Aerodrome_AIP.geojson', color: '#800080', name: 'AIP', icon: 'aip' }, // Purple
+            { file: 'ATNS.geojson', color: '#808080', name: 'ATNS', icon: 'atns' }, // Gray
+            { file: 'Military.geojson', color: '#000000', name: 'Military', icon: 'military' }, // Black
+            { file: 'helistops.geojson', color: '#8B4513', name: 'Helistops', icon: 'helistops' } // SaddleBrown
         ];
 
         // Define preset icons
@@ -85,8 +84,7 @@
                 iconAnchor: [7, 5],
             }),
         };
-
-             // Layer control
+  // Layer control
         let geoJsonLayers = {};  // To store each GeoJSON layer for toggling
         let overlays = {};       // For adding to the layer control
 
@@ -123,6 +121,9 @@
                     // Add the GeoJSON layer to the map and store it
                     geoJsonLayers[layerName] = geoJsonLayer;
                     overlays[layerName] = geoJsonLayer; // Add to overlays for control
+
+                    // Add the layer to the map
+                    geoJsonLayer.addTo(map);
 
                     // Debugging output to verify layer names
                     console.log(`Layer "${layerName}" added to map and overlays.`);
