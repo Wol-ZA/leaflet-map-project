@@ -154,6 +154,7 @@ function updatePolyline() {
 }
 
 // Function to add a draggable marker and the circle
+// Function to add a draggable marker and the circle
 function addDraggableMarkerAndCircle(latlng) {
     const marker = L.marker(latlng, { draggable: true }).addTo(map);
     markers.push(marker);
@@ -162,8 +163,21 @@ function addDraggableMarkerAndCircle(latlng) {
     const circle = createCircle(latlng);
     circles.push(circle); // Store the circle for future updates
 
-    // Set a popup for the marker
-    marker.bindPopup(`Marker ${markers.length}`).openPopup();
+    // Check for markers within the circle when added
+    const geoJsonMarkersWithinRange = checkGeoJsonMarkersInRange(latlng, marker);
+
+    // Set a popup for the marker showing info from the geoJsonMarkersWithinRange
+    if (geoJsonMarkersWithinRange.length > 0) {
+        const popupContent = geoJsonMarkersWithinRange.map(marker => {
+            return `<div>
+                        <img src="${marker.iconUrl}" alt="Icon" style="width: 20px; height: 20px;">
+                        <span>${marker.description}</span>
+                    </div>`;
+        }).join('');
+        marker.bindPopup(popupContent).openPopup(); // Bind the content to the marker's popup
+    } else {
+        marker.bindPopup("No GeoJSON markers within range.").openPopup(); // Default message if none found
+    }
 
     // Update the polyline with the new marker
     updatePolyline();
@@ -174,11 +188,10 @@ function addDraggableMarkerAndCircle(latlng) {
         circle.setLatLng(newLatLng); // Move the circle with the marker
         updatePolyline(); // Update the polyline when marker is dragged
     });
-
-    // Check for markers within the circle when added
-    checkGeoJsonMarkersInRange(latlng, marker);
 }
 
+
+// Function to check if any GeoJSON markers are within the circle
 // Function to check if any GeoJSON markers are within the circle
 function checkGeoJsonMarkersInRange(centerLatLng, marker) {
     const geoJsonMarkersWithinRange = [];
@@ -216,11 +229,13 @@ function checkGeoJsonMarkersInRange(centerLatLng, marker) {
 
     if (geoJsonMarkersWithinRange.length > 0) {
         console.log('GeoJSON markers within range:', geoJsonMarkersWithinRange);
-        // You can display this information in a modal or another UI element
     } else {
         console.log('No GeoJSON markers within range.');
     }
+
+    return geoJsonMarkersWithinRange; // Return the array for further processing
 }
+
 
 // Listen for map click event to add draggable marker and circle
 map.on('click', function (e) {
