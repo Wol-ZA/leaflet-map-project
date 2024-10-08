@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Load Multiple GeoJSON Files with Different Colors and Icons</title>
+    <title>Load Multiple GeoJSON Files with Colors and Icons</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 </head>
@@ -19,7 +19,7 @@
             maxZoom: 19,
         }).addTo(map);
 
-        // Array of geojson file paths and corresponding colors
+        // Array of geojson file paths, colors, and icons
         const geojsonFiles = [
             { file: 'ATZ_CTR.geojson', color: '#FF0000' },  // Red
             { file: 'CTA.geojson', color: '#00FF00' },      // Green
@@ -71,40 +71,34 @@
                 iconSize: [13, 13],
                 iconAnchor: [7, 5],
             }),
-            waypoints_red: L.icon({
-                iconUrl: 'http://156.38.138.194/CLOUD_FLIGHT_PLAN_WEB/images/waypoint_red.png',
-                iconSize: [13, 13],
-                iconAnchor: [7, 5],
-            }),
-            waypoints_green: L.icon({
-                iconUrl: 'http://156.38.138.194/CLOUD_FLIGHT_PLAN_WEB/images/waypoint_green.png',
-                iconSize: [13, 13],
-                iconAnchor: [7, 5],
-            }),
-            navaids: L.icon({
-                iconUrl: 'http://156.38.138.194/CLOUD_FLIGHT_PLAN_WEB/images/navaids.png',
-                iconSize: [13, 13],
-                iconAnchor: [7, 5],
-            })
         };
 
-        // Function to fetch and add GeoJSON data with style and icons to the map
+        // Function to fetch and add GeoJSON data with styles and icons to the map
         function loadGeojson(file, color, iconKey) {
-            console.log(file);
-            console.log(color);
-            console.log(iconKey);
             fetch(file)
                 .then(response => response.json())
                 .then(data => {
                     L.geoJSON(data, {
-                        style: function () {
-                            return { color: color };
+                        // Style for polygons and lines
+                        style: function (feature) {
+                            return {
+                                color: color,
+                                weight: 2,
+                                opacity: 1,
+                                fillOpacity: 0.6
+                            };
                         },
+                        // For point features (markers), use the custom icons
                         pointToLayer: function (feature, latlng) {
                             if (iconKey && icons[iconKey]) {
                                 return L.marker(latlng, { icon: icons[iconKey] });
                             } else {
-                                return L.circleMarker(latlng, { radius: 6, fillColor: color, color: color, fillOpacity: 0.8 });
+                                return L.circleMarker(latlng, {
+                                    radius: 6,
+                                    fillColor: color,
+                                    color: color,
+                                    fillOpacity: 0.8
+                                });
                             }
                         }
                     }).addTo(map);
