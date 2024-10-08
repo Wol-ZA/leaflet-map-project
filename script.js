@@ -147,6 +147,20 @@ function updateCircle(latlng) {
     circle = createCircle(latlng);
 }
 
+// Function to update the polyline based on markers' positions
+function updatePolyline() {
+    if (polylines.length > 0) {
+        polylines.forEach(polyline => map.removeLayer(polyline)); // Remove existing polylines
+        polylines = []; // Clear polyline array
+    }
+
+    if (markers.length > 1) {
+        const latlngs = markers.map(marker => marker.getLatLng());
+        const polyline = L.polyline(latlngs, { color: 'blue' }).addTo(map); // Draw a polyline between markers
+        polylines.push(polyline);
+    }
+}
+
 // Function to add a draggable marker and the circle
 function addDraggableMarkerAndCircle(latlng) {
     const marker = L.marker(latlng, { draggable: true }).addTo(map);
@@ -175,22 +189,48 @@ function addDraggableMarkerAndCircle(latlng) {
     checkGeoJsonMarkersInRange(latlng, marker);
 }
 
-// Function to update the polyline based on markers' positions
-function updatePolyline() {
-    if (polylines.length > 0) {
-        polylines.forEach(polyline => map.removeLayer(polyline)); // Remove existing polylines
-        polylines = []; // Clear polyline array
-    }
+// Function to check if any GeoJSON markers are within the circle
+function checkGeoJsonMarkersInRange(centerLatLng, marker) {
+    const geoJsonMarkersWithinRange = [];
 
-    if (markers.length > 1) {
-        const latlngs = markers.map(marker => marker.getLatLng());
-        const polyline = L.polyline(latlngs, { color: 'blue' }).addTo(map); // Draw a polyline between markers
-        polylines.push(polyline);
+    // Iterate through each GeoJSON layer to check for markers within the radius
+    Object.values(geoJsonLayers).forEach(layer => {
+        layer.eachLayer(function (layer) {
+            if (layer instanceof L.Marker) {
+                const distance = centerLatLng.distanceTo(layer.getLatLng()); // Distance between points
+                if (distance <= radiusInMeters) {
+                    const feature = layer.feature;
+
+                    // Debugging: Log the properties of each feature
+                    console.log('Feature properties:', feature.properties);
+
+                    // Try to access the Description property
+                    const description = feature?.properties?.description || "Unknown"; // Get description
+
+                    // Determine the icon from the geojsonFiles based on the layer name
+                    const layerName = feature.properties?.layerName || "Unknown"; // Assuming you set layerName in your GeoJSON properties
+                    const iconKey = geojsonFiles.find(geojson => geojson.name === layerName)?.icon;
+
+                    // Get the icon URL based on the iconKey
+                    const iconUrl = iconKey ? icons[iconKey].options.iconUrl : null; // Get icon URL from the icons object
+
+                    geoJsonMarkersWithinRange.push({
+                        name: description,
+                        iconUrl: iconUrl,
+                        latlng: layer.getLatLng()
+                    });
+                }
+            }
+        });
+    });
+
+    if (geoJsonMarkersWithinRange.length > 0) {
+        console.log('GeoJSON markers within range:', geoJsonMarkersWithinRange);
+        // You can display this information in a modal or another UI element
+    } else {
+        console.log('No GeoJSON markers within range.');
     }
 }
-
-// Function to check if any GeoJSON markers are within the circle
-// ...
 
 // Listen for map click event to add draggable marker and circle
 map.on('click', function (e) {
