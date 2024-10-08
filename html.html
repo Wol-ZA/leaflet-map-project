@@ -86,7 +86,7 @@
             }),
         };
 
-      // Layer control
+             // Layer control
         let geoJsonLayers = {};  // To store each GeoJSON layer for toggling
         let overlays = {};       // For adding to the layer control
 
@@ -123,6 +123,9 @@
                     // Add the GeoJSON layer to the map and store it
                     geoJsonLayers[layerName] = geoJsonLayer;
                     overlays[layerName] = geoJsonLayer; // Add to overlays for control
+
+                    // Debugging output to verify layer names
+                    console.log(`Layer "${layerName}" added to map and overlays.`);
                 })
                 .catch(error => {
                     console.error('Error loading the GeoJSON file:', file, error);
@@ -132,8 +135,9 @@
         // Load all the GeoJSON files with their respective colors and icons
         geojsonFiles.forEach(layer => loadGeojson(layer.file, layer.color, layer.icon, layer.name));
 
-        // Add the layer control to the map
+        // Add the layer control to the map after a slight delay
         setTimeout(() => {
+            console.log('Adding layers to control', overlays);
             L.control.layers(null, overlays).addTo(map);  // Add control with overlay layers
         }, 500);  // Add a delay to ensure all layers are loaded
     </script>
