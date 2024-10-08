@@ -137,15 +137,7 @@ function createCircle(latlng) {
 // Markers and polyline
 let markers = [];
 let polylines = [];
-let circle = null;
-
-// Function to update the circle's position
-function updateCircle(latlng) {
-    if (circle) {
-        map.removeLayer(circle);
-    }
-    circle = createCircle(latlng);
-}
+let circles = [];
 
 // Function to update the polyline based on markers' positions
 function updatePolyline() {
@@ -166,24 +158,22 @@ function addDraggableMarkerAndCircle(latlng) {
     const marker = L.marker(latlng, { draggable: true }).addTo(map);
     markers.push(marker);
 
+    // Create a circle for the new marker
+    const circle = createCircle(latlng);
+    circles.push(circle); // Store the circle for future updates
+
+    // Set a popup for the marker
+    marker.bindPopup(`Marker ${markers.length}`).openPopup();
+
     // Update the polyline with the new marker
     updatePolyline();
-
-    updateCircle(latlng);
 
     // Update the circle position when the marker is dragged
     marker.on('drag', function (e) {
         const newLatLng = e.target.getLatLng();
-        updateCircle(newLatLng);
+        circle.setLatLng(newLatLng); // Move the circle with the marker
         updatePolyline(); // Update the polyline when marker is dragged
     });
-
-    // Ensure only one marker and one circle
-    if (markers.length > 1) {
-        const oldMarker = markers.shift(); // Remove the first marker
-        map.removeLayer(oldMarker); // Remove from map
-        updatePolyline(); // Update polyline after removing a marker
-    }
 
     // Check for markers within the circle when added
     checkGeoJsonMarkersInRange(latlng, marker);
@@ -212,10 +202,10 @@ function checkGeoJsonMarkersInRange(centerLatLng, marker) {
                     const iconKey = geojsonFiles.find(geojson => geojson.name === layerName)?.icon;
 
                     // Get the icon URL based on the iconKey
-                    const iconUrl = iconKey ? icons[iconKey].options.iconUrl : null; // Get icon URL from the icons object
+                    const iconUrl = iconKey ? icons[iconKey].options.iconUrl : '';
 
                     geoJsonMarkersWithinRange.push({
-                        name: description,
+                        description: description,
                         iconUrl: iconUrl,
                         latlng: layer.getLatLng()
                     });
