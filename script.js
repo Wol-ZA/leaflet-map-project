@@ -183,7 +183,7 @@ function checkGeoJsonMarkersInRange(centerLatLng, marker) {
                     const feature = layer.feature;
                     
                     // Debugging: Log the properties of each feature
-                    console.log('Feature properties:', feature.properties);
+                    console.log('Feature properties:', feature);
                     
                     // Try to access the Description property
                     const description = feature?.properties?.description || "Unknown"; // Get description
