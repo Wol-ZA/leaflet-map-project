@@ -90,6 +90,9 @@
 
         // Function to fetch and add GeoJSON data with style and icons to the map
         function loadGeojson(file, color, iconKey) {
+            console.log(file);
+            console.log(color);
+            console.log(iconKey);
             fetch(file)
                 .then(response => response.json())
                 .then(data => {
