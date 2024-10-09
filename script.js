@@ -162,6 +162,7 @@ function updatePolyline() {
 // Function to add a draggable marker and the circle
 // Function to add a draggable marker and the circle
 // Function to add a draggable marker and the circle
+// Function to add a draggable marker and the circle
 function addDraggableMarkerAndCircle(latlng) {
     const marker = L.marker(latlng, { draggable: true }).addTo(map);
     markers.push(marker);
@@ -199,6 +200,7 @@ function addDraggableMarkerAndCircle(latlng) {
             const yesButton = document.getElementById('yes-button');
             const noButton = document.getElementById('no-button');
 
+            // Handle Yes button click
             if (yesButton) {
                 yesButton.onclick = function () {
                     // Remove the marker from the map
@@ -210,12 +212,13 @@ function addDraggableMarkerAndCircle(latlng) {
                 };
             }
 
+            // Handle No button click
             if (noButton) {
                 noButton.onclick = function () {
                     marker.closePopup(); // Close the popup if "No" is clicked
                 };
             }
-        }, 500); // Adjust the time for long press duration (milliseconds)
+        }, 500); // Long press duration (milliseconds)
     });
 
     marker.on('mouseup', function () {
@@ -237,6 +240,7 @@ function addDraggableMarkerAndCircle(latlng) {
         updateMarkerPopup(marker, geoJsonMarkersWithinRange); // Update popup with new info
     });
 }
+
 
 
 // Function to update the marker's popup with information about GeoJSON markers in range
