@@ -161,6 +161,7 @@ function updatePolyline() {
 
 // Function to add a draggable marker and the circle
 // Function to add a draggable marker and the circle
+// Function to add a draggable marker and the circle
 function addDraggableMarkerAndCircle(latlng) {
     const marker = L.marker(latlng, { draggable: true }).addTo(map);
     markers.push(marker);
@@ -171,12 +172,59 @@ function addDraggableMarkerAndCircle(latlng) {
 
     // Check for markers within the circle when added
     let geoJsonMarkersWithinRange = checkGeoJsonMarkersInRange(latlng, marker);
-
-    // Set a popup for the marker showing info from the geoJsonMarkersWithinRange
     updateMarkerPopup(marker, geoJsonMarkersWithinRange);
-
-    // Update the polyline with the new marker
     updatePolyline();
+
+    // Long press event handling
+    let longPressTimeout;
+
+    marker.on('mousedown', function () {
+        longPressTimeout = setTimeout(() => {
+            // Show a different popup on long press
+            const longPressContent = `
+                <div class="popup-container">
+                    <div class="popup-header">
+                        <span class="popup-title">Delete Waypoint?</span>
+                    </div>
+                    <div class="popup-content">
+                        <p>Are you sure you want to delete this waypoint?</p>
+                        <button class="popup-button" id="yes-button">Yes</button>
+                        <button class="popup-button" id="no-button">No</button>
+                    </div>
+                </div>
+            `;
+            marker.bindPopup(longPressContent).openPopup();
+
+            // Add event listeners for buttons
+            const yesButton = document.getElementById('yes-button');
+            const noButton = document.getElementById('no-button');
+
+            if (yesButton) {
+                yesButton.onclick = function () {
+                    // Remove the marker from the map
+                    map.removeLayer(marker);
+                    // Remove the marker from the markers array
+                    markers = markers.filter(m => m !== marker);
+                    // Redraw the polyline
+                    updatePolyline();
+                };
+            }
+
+            if (noButton) {
+                noButton.onclick = function () {
+                    marker.closePopup(); // Close the popup if "No" is clicked
+                };
+            }
+        }, 500); // Adjust the time for long press duration (milliseconds)
+    });
+
+    marker.on('mouseup', function () {
+        clearTimeout(longPressTimeout); // Clear the timeout if the mouse is released before the long press
+    });
+
+    marker.on('mouseout', function () {
+        clearTimeout(longPressTimeout); // Clear the timeout if the mouse leaves the marker
+    });
 
     // Update the circle position when the marker is dragged
     marker.on('drag', function (e) {
@@ -189,6 +237,7 @@ function addDraggableMarkerAndCircle(latlng) {
         updateMarkerPopup(marker, geoJsonMarkersWithinRange); // Update popup with new info
     });
 }
+
 
 // Function to update the marker's popup with information about GeoJSON markers in range
 function updateMarkerPopup(marker, geoJsonMarkersWithinRange) {
