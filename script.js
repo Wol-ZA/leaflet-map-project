@@ -159,8 +159,7 @@ function updatePolyline() {
     }
 }
 
-let longPressTimeout;
-
+// Function to add a draggable marker and the circle
 function addDraggableMarkerAndCircle(latlng) {
     const marker = L.marker(latlng, { draggable: true }).addTo(map);
     markers.push(marker);
@@ -169,57 +168,82 @@ function addDraggableMarkerAndCircle(latlng) {
     const circle = createCircle(latlng);
     circles.push(circle); // Store the circle for future updates
 
-    // Show the default popup on marker click
-    marker.on('click', function () {
-        // Your existing logic for showing the default popup
-        const geoJsonMarkersWithinRange = checkGeoJsonMarkersInRange(latlng, marker);
-        updateMarkerPopup(marker, geoJsonMarkersWithinRange);
-    });
+    // Check for markers within the circle when added
+    let geoJsonMarkersWithinRange = checkGeoJsonMarkersInRange(latlng, marker);
+    updateMarkerPopup(marker, geoJsonMarkersWithinRange);
+    updatePolyline();
 
-    // Handle long press
-    marker.on('touchstart', function () {
+    // Long press event handling
+    let longPressTimeout;
+
+    marker.on('mousedown', function () {
         longPressTimeout = setTimeout(() => {
-            marker.bindPopup(`
+            // Show a different popup on long press
+            const longPressContent = `
                 <div class="popup-container">
-                    <div class="popup-header">Delete Waypoint?</div>
-                    <div class="popup-buttons">
-                        <button id="yes-button">Yes</button>
-                        <button id="no-button">No</button>
+                    <div class="popup-header">
+                        <span class="popup-title">Delete Waypoint?</span>
+                    </div>
+                    <div class="popup-content">
+                        <p>Are you sure you want to delete this waypoint?</p>
+                        <button class="popup-button" id="yes-button">Yes</button>
+                        <button class="popup-button" id="no-button">No</button>
                     </div>
                 </div>
-            `).openPopup();
-        }, 500); // Change 500 to your desired long press duration
+            `;
+            marker.bindPopup(longPressContent).openPopup();
+
+            // Add event listeners for buttons
+            const yesButton = document.getElementById('yes-button');
+            const noButton = document.getElementById('no-button');
+
+            // Handle Yes button click
+            if (yesButton) {
+                yesButton.onclick = function () {
+                    // Remove the marker from the map
+                    map.removeLayer(marker);
+                    // Remove the marker from the markers array
+                    markers = markers.filter(m => m !== marker);
+                    // Redraw the polyline
+                    updatePolyline();
+                };
+            }
+
+            // Handle No button click
+            if (noButton) {
+                noButton.onclick = function () {
+                    // Close the popup if "No" is clicked
+                    marker.closePopup();
+                };
+            }
+
+            // Disable marker interaction while the popup is open
+            marker.off('mousedown');
+            marker.off('mouseup');
+            marker.off('mouseleave');
+        }, 500); // Long press duration (milliseconds)
     });
 
-    // Clear timeout on touch end or touch cancel
-    marker.on('touchend touchcancel', function () {
-        clearTimeout(longPressTimeout);
-        // Optionally, you can close the popup here if you want
-        // marker.closePopup();
+    marker.on('mouseup', function () {
+        clearTimeout(longPressTimeout); // Clear the timeout if the mouse is released before the long press
     });
 
-    // Handle button clicks in the popup
-    map.on('popupopen', function () {
-        const yesButton = document.getElementById('yes-button');
-        const noButton = document.getElementById('no-button');
+    marker.on('mouseleave', function () {
+        clearTimeout(longPressTimeout); // Clear the timeout if the mouse leaves the marker
+    });
 
-        if (yesButton) {
-            yesButton.onclick = function () {
-                // Remove the marker and redraw lines
-                map.removeLayer(marker);
-                circles = circles.filter(circle => circle.getLatLng() !== latlng); // Remove associated circle
-                updatePolyline(); // Redraw lines
-                marker.closePopup(); // Close the popup
-            };
-        }
-
-        if (noButton) {
-            noButton.onclick = function () {
-                marker.closePopup(); // Close the popup without doing anything
-            };
-        }
+    // Update the circle position when the marker is dragged
+    marker.on('drag', function (e) {
+        const newLatLng = e.target.getLatLng();
+        circle.setLatLng(newLatLng); // Move the circle with the marker
+        updatePolyline(); // Update the polyline when the marker is dragged
+        
+        // Recalculate GeoJSON markers within range
+        geoJsonMarkersWithinRange = checkGeoJsonMarkersInRange(newLatLng, marker);
+        updateMarkerPopup(marker, geoJsonMarkersWithinRange); // Update popup with new info
     });
 }
+
 
 
 
