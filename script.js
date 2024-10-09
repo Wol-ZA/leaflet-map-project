@@ -66,6 +66,7 @@ let geoJsonLayers = {};  // To store each GeoJSON layer for toggling
 let overlays = {};       // For adding to the layer control
 
 // Function to fetch and add GeoJSON data with styles and icons to the map
+// Function to fetch and add GeoJSON data with styles and icons to the map
 function loadGeojson(file, color, iconKey, layerName) {
     fetch(file)
         .then(response => response.json())
@@ -82,16 +83,18 @@ function loadGeojson(file, color, iconKey, layerName) {
                 },
                 // For point features (markers), use the custom icons
                 pointToLayer: function (feature, latlng) {
+                    // Associate the geojson file name with the marker feature
+                    feature.properties.geojsonFile = file; // Store the GeoJSON file name
+
                     if (iconKey && icons[iconKey]) {
-                        console.log(`Creating marker with icon: ${iconKey}`);
-                        return L.marker(latlng, { icon: icons[iconKey] });
+                        return L.marker(latlng, { icon: icons[iconKey], feature: feature }); // Store feature in marker
                     } else {
-                        console.warn(`Icon key '${iconKey}' is not valid. Falling back to circle marker.`);
                         return L.circleMarker(latlng, {
                             radius: 6,
                             fillColor: color,
                             color: color,
-                            fillOpacity: 0.8
+                            fillOpacity: 0.8,
+                            feature: feature // Store feature in circle marker as well
                         });
                     }
                 }
@@ -103,7 +106,8 @@ function loadGeojson(file, color, iconKey, layerName) {
 
             // Add the layer to the map
             geoJsonLayer.addTo(map);
-            console.log(`Layer "${layerName}" added to map with color ${color}.`);
+
+            console.log(`Layer "${layerName}" added to map.`);
         })
         .catch(error => {
             console.error('Error loading the GeoJSON file:', file, error);
@@ -216,6 +220,7 @@ function updateMarkerPopup(marker, geoJsonMarkersWithinRange) {
 function checkGeoJsonMarkersInRange(centerLatLng, marker) {
     const geoJsonMarkersWithinRange = [];
 
+    // Iterate through each GeoJSON layer to check for markers within the radius
     Object.values(geoJsonLayers).forEach(layer => {
         layer.eachLayer(function (layer) {
             if (layer instanceof L.Marker) {
@@ -225,16 +230,16 @@ function checkGeoJsonMarkersInRange(centerLatLng, marker) {
 
                     console.log('Feature properties:', feature.properties);
 
-                    // Use the name of the point for matching
-                    const pointName = feature.properties?.name || "Unknown Point";
-                    console.log('Point name:', pointName);
+                    // Retrieve the associated GeoJSON file name
+                    const geojsonFile = feature.properties.geojsonFile; // Get the GeoJSON file name
+                    console.log('Associated GeoJSON file:', geojsonFile);
 
-                    // Find the corresponding geojsonFile by point name instead of layer name
-                    const geojsonFile = geojsonFiles.find(geojson => 
-                        geojson.name.trim().toLowerCase() === pointName.trim().toLowerCase());
-                    console.log('Geojson file found:', geojsonFile);
+                    // Find the corresponding geojsonFile in the geojsonFiles array
+                    const geojsonConfig = geojsonFiles.find(geojson =>
+                        geojson.file.trim().toLowerCase() === geojsonFile.trim().toLowerCase());
+                    console.log('Geojson config found:', geojsonConfig);
 
-                    const iconKey = geojsonFile ? geojsonFile.icon : null;
+                    const iconKey = geojsonConfig ? geojsonConfig.icon : null;
                     console.log('Icon key:', iconKey);
 
                     // Get the icon URL based on the iconKey
@@ -253,7 +258,7 @@ function checkGeoJsonMarkersInRange(centerLatLng, marker) {
 
     console.log('GeoJSON markers within range:', geoJsonMarkersWithinRange);
 
-    return geoJsonMarkersWithinRange;
+    return geoJsonMarkersWithinRange; // Return the array for further processing
 }
 
 
