@@ -222,18 +222,24 @@ function checkGeoJsonMarkersInRange(centerLatLng, marker) {
                 if (distance <= radiusInMeters) {
                     const feature = layer.feature;
 
-                    // Debugging: Log the properties of each feature
+                    // Log the properties of the feature for debugging
                     console.log('Feature properties:', feature.properties);
 
-                    // Try to access the Description property
+                    // Try to access the description property
                     const description = feature?.properties?.description || "Unknown"; // Get description
+                    console.log('Description:', description); // Log description
 
                     // Determine the icon from the geojsonFiles based on the layer name
                     const layerName = feature.properties?.layerName || "Unknown"; // Assuming you set layerName in your GeoJSON properties
-                    const iconKey = geojsonFiles.find(geojson => geojson.name === layerName)?.icon;
+                    console.log('Layer name:', layerName); // Log layer name
 
-                    // Check if iconKey exists and fetch the icon URL, else set a default icon URL
+                    const geojsonFile = geojsonFiles.find(geojson => geojson.name === layerName);
+                    const iconKey = geojsonFile ? geojsonFile.icon : null;
+                    console.log('Icon key:', iconKey); // Log icon key
+
+                    // Get the icon URL based on the iconKey
                     const iconUrl = iconKey ? (icons[iconKey]?.options.iconUrl || 'default.png') : 'default.png';
+                    console.log('Icon URL:', iconUrl); // Log icon URL
 
                     geoJsonMarkersWithinRange.push({
                         description: description,
@@ -244,6 +250,13 @@ function checkGeoJsonMarkersInRange(centerLatLng, marker) {
             }
         });
     });
+
+    // Log the geoJsonMarkersWithinRange for debugging
+    console.log('GeoJSON markers within range:', geoJsonMarkersWithinRange);
+
+    return geoJsonMarkersWithinRange; // Return the array for further processing
+}
+
 
 
     if (geoJsonMarkersWithinRange.length > 0) {
