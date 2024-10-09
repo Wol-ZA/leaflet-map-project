@@ -233,8 +233,10 @@ function checkGeoJsonMarkersInRange(centerLatLng, marker) {
                     const layerName = feature.properties?.layerName || "Unknown"; // Assuming you set layerName in your GeoJSON properties
                     console.log('Layer name:', layerName); // Log layer name
 
-                    const geojsonFile = geojsonFiles.find(geojson => geojson.name === layerName);
+                    // Check for a matching iconKey and log the comparison
+                    const geojsonFile = geojsonFiles.find(geojson => geojson.name.trim().toLowerCase() === layerName.trim().toLowerCase());
                     const iconKey = geojsonFile ? geojsonFile.icon : null;
+                    console.log('Geojson file found:', geojsonFile); // Log the entire found geojson file
                     console.log('Icon key:', iconKey); // Log icon key
 
                     // Get the icon URL based on the iconKey
@@ -253,16 +255,6 @@ function checkGeoJsonMarkersInRange(centerLatLng, marker) {
 
     // Log the geoJsonMarkersWithinRange for debugging
     console.log('GeoJSON markers within range:', geoJsonMarkersWithinRange);
-
-    return geoJsonMarkersWithinRange; // Return the array for further processing
-
-
-
-    if (geoJsonMarkersWithinRange.length > 0) {
-        console.log('GeoJSON markers within range:', geoJsonMarkersWithinRange);
-    } else {
-        console.log('No GeoJSON markers within range.');
-    }
 
     return geoJsonMarkersWithinRange; // Return the array for further processing
 }
