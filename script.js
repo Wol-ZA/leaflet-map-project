@@ -255,7 +255,6 @@ function checkGeoJsonMarkersInRange(centerLatLng, marker) {
     console.log('GeoJSON markers within range:', geoJsonMarkersWithinRange);
 
     return geoJsonMarkersWithinRange; // Return the array for further processing
-}
 
 
 
