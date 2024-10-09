@@ -211,7 +211,6 @@ function updateMarkerPopup(marker, geoJsonMarkersWithinRange) {
 }
 
 
-// Function to check if any GeoJSON markers are within the circle
 function checkGeoJsonMarkersInRange(centerLatLng, marker) {
     const geoJsonMarkersWithinRange = [];
 
@@ -233,8 +232,8 @@ function checkGeoJsonMarkersInRange(centerLatLng, marker) {
                     const layerName = feature.properties?.layerName || "Unknown"; // Assuming you set layerName in your GeoJSON properties
                     const iconKey = geojsonFiles.find(geojson => geojson.name === layerName)?.icon;
 
-                    // Get the icon URL based on the iconKey
-                    const iconUrl = iconKey ? icons[iconKey].options.iconUrl : '';
+                    // Check if iconKey exists and fetch the icon URL, else set a default icon URL
+                    const iconUrl = iconKey ? (icons[iconKey]?.options.iconUrl || 'default.png') : 'default.png';
 
                     geoJsonMarkersWithinRange.push({
                         description: description,
@@ -245,6 +244,7 @@ function checkGeoJsonMarkersInRange(centerLatLng, marker) {
             }
         });
     });
+
 
     if (geoJsonMarkersWithinRange.length > 0) {
         console.log('GeoJSON markers within range:', geoJsonMarkersWithinRange);
