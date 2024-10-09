@@ -83,8 +83,10 @@ function loadGeojson(file, color, iconKey, layerName) {
                 // For point features (markers), use the custom icons
                 pointToLayer: function (feature, latlng) {
                     if (iconKey && icons[iconKey]) {
+                        console.log(`Creating marker with icon: ${iconKey}`);
                         return L.marker(latlng, { icon: icons[iconKey] });
                     } else {
+                        console.warn(`Icon key '${iconKey}' is not valid. Falling back to circle marker.`);
                         return L.circleMarker(latlng, {
                             radius: 6,
                             fillColor: color,
@@ -94,6 +96,20 @@ function loadGeojson(file, color, iconKey, layerName) {
                     }
                 }
             });
+
+            // Add the GeoJSON layer to the map and store it
+            geoJsonLayers[layerName] = geoJsonLayer;
+            overlays[layerName] = geoJsonLayer; // Add to overlays for control
+
+            // Add the layer to the map
+            geoJsonLayer.addTo(map);
+            console.log(`Layer "${layerName}" added to map with color ${color}.`);
+        })
+        .catch(error => {
+            console.error('Error loading the GeoJSON file:', file, error);
+        });
+}
+
 
             // Add the GeoJSON layer to the map and store it
             geoJsonLayers[layerName] = geoJsonLayer;
@@ -235,6 +251,13 @@ function checkGeoJsonMarkersInRange(centerLatLng, marker) {
                     console.log('Geojson file found:', geojsonFile); // Log the entire found geojson file
                     console.log('Icon key:', iconKey); // Log icon key
 
+                    // Log the icon's URL retrieval process
+                    if (iconKey) {
+                        console.log(`Retrieving icon for key: ${iconKey}`);
+                    } else {
+                        console.warn('No icon key found for this feature.');
+                    }
+
                     // Get the icon URL based on the iconKey
                     const iconUrl = iconKey ? (icons[iconKey]?.options.iconUrl || 'default.png') : 'default.png';
                     console.log('Icon URL:', iconUrl); // Log icon URL
@@ -254,6 +277,8 @@ function checkGeoJsonMarkersInRange(centerLatLng, marker) {
 
     return geoJsonMarkersWithinRange; // Return the array for further processing
 }
+
+
 
 
 function gotfromwd(s) {
