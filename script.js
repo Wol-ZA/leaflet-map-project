@@ -160,6 +160,7 @@ function updatePolyline() {
 }
 
 // Function to add a draggable marker and the circle
+// Function to add a draggable marker and the circle
 function addDraggableMarkerAndCircle(latlng) {
     const marker = L.marker(latlng, { draggable: true }).addTo(map);
     markers.push(marker);
@@ -212,10 +213,14 @@ function addDraggableMarkerAndCircle(latlng) {
             yesButton.onclick = function () {
                 // Remove the marker from the map
                 map.removeLayer(marker);
+                // Remove the circle from the map
+                const circleToRemove = circles.find(circle => circle.getLatLng().equals(latlng));
+                if (circleToRemove) {
+                    map.removeLayer(circleToRemove); // Remove the circle from the map
+                    circles = circles.filter(c => c !== circleToRemove); // Remove from the circles array
+                }
                 // Remove the marker from the markers array
                 markers = markers.filter(m => m !== marker);
-                // Remove the associated circle
-                circles = circles.filter(circle => circle.getLatLng() !== latlng);
                 // Redraw the polyline
                 updatePolyline();
             };
@@ -240,6 +245,7 @@ function addDraggableMarkerAndCircle(latlng) {
         updateMarkerPopup(marker, geoJsonMarkersWithinRange); // Update popup with new info
     });
 }
+
 
 
 
