@@ -244,6 +244,9 @@ function checkGeoJsonMarkersInRange(centerLatLng, marker) {
     return geoJsonMarkersWithinRange; // Return the array for further processing
 }
 
+function gotfromwd(s) {
+    console.log('Got from windev' + s)
+}
 
 // Listen for map click event to add draggable marker and circle
 map.on('click', function (e) {
