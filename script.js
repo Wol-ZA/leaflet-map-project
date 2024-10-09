@@ -192,35 +192,6 @@ function addDraggableMarkerAndCircle(latlng) {
                 </div>
             `;
             marker.bindPopup(longPressContent).openPopup();
-
-            // Add event listeners for buttons
-            const yesButton = document.getElementById('yes-button');
-            const noButton = document.getElementById('no-button');
-
-            // Handle Yes button click
-            if (yesButton) {
-                yesButton.onclick = function () {
-                    // Remove the marker from the map
-                    map.removeLayer(marker);
-                    // Remove the marker from the markers array
-                    markers = markers.filter(m => m !== marker);
-                    // Redraw the polyline
-                    updatePolyline();
-                };
-            }
-
-            // Handle No button click
-            if (noButton) {
-                noButton.onclick = function () {
-                    // Close the popup if "No" is clicked
-                    marker.closePopup();
-                };
-            }
-
-            // Disable marker interaction while the popup is open
-            marker.off('mousedown');
-            marker.off('mouseup');
-            marker.off('mouseleave');
         }, 500); // Long press duration (milliseconds)
     });
 
@@ -230,6 +201,32 @@ function addDraggableMarkerAndCircle(latlng) {
 
     marker.on('mouseleave', function () {
         clearTimeout(longPressTimeout); // Clear the timeout if the mouse leaves the marker
+    });
+
+    // Setup event listeners for the popup buttons
+    marker.on('popupopen', function () {
+        const yesButton = document.getElementById('yes-button');
+        const noButton = document.getElementById('no-button');
+
+        if (yesButton) {
+            yesButton.onclick = function () {
+                // Remove the marker from the map
+                map.removeLayer(marker);
+                // Remove the marker from the markers array
+                markers = markers.filter(m => m !== marker);
+                // Remove the associated circle
+                circles = circles.filter(circle => circle.getLatLng() !== latlng);
+                // Redraw the polyline
+                updatePolyline();
+            };
+        }
+
+        if (noButton) {
+            noButton.onclick = function () {
+                // Close the popup if "No" is clicked
+                marker.closePopup();
+            };
+        }
     });
 
     // Update the circle position when the marker is dragged
@@ -243,6 +240,7 @@ function addDraggableMarkerAndCircle(latlng) {
         updateMarkerPopup(marker, geoJsonMarkersWithinRange); // Update popup with new info
     });
 }
+
 
 
 
