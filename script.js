@@ -216,37 +216,29 @@ function updateMarkerPopup(marker, geoJsonMarkersWithinRange) {
 function checkGeoJsonMarkersInRange(centerLatLng, marker) {
     const geoJsonMarkersWithinRange = [];
 
-    // Iterate through each GeoJSON layer to check for markers within the radius
     Object.values(geoJsonLayers).forEach(layer => {
         layer.eachLayer(function (layer) {
             if (layer instanceof L.Marker) {
-                const distance = centerLatLng.distanceTo(layer.getLatLng()); // Distance between points
+                const distance = centerLatLng.distanceTo(layer.getLatLng());
                 if (distance <= radiusInMeters) {
                     const feature = layer.feature;
 
-                    // Log all properties of the feature for debugging
                     console.log('Feature properties:', feature.properties);
 
-                    // Get the appropriate property based on what exists in your GeoJSON
-                    const layerName = feature.properties?.layerName || feature.properties?.name || "Unknown"; // Modify as necessary
-                    console.log('Layer name:', layerName); // Log layer name
+                    // Attempt to get layer name
+                    const layerName = feature.properties?.layerName || feature.properties?.name || "Unknown"; 
+                    console.log('Layer name:', layerName); 
 
-                    // Check for a matching iconKey
-                    const geojsonFile = geojsonFiles.find(geojson => geojson.name.trim().toLowerCase() === layerName.trim().toLowerCase());
+                    // Attempt to find the corresponding geojsonFile
+                    const geojsonFile = geojsonFiles.find(geojson => 
+                        geojson.name.trim().toLowerCase() === layerName.trim().toLowerCase());
+                    console.log('Geojson file found:', geojsonFile); 
+
                     const iconKey = geojsonFile ? geojsonFile.icon : null;
-                    console.log('Geojson file found:', geojsonFile); // Log the entire found geojson file
-                    console.log('Icon key:', iconKey); // Log icon key
+                    console.log('Icon key:', iconKey);
 
-                    // Log the icon's URL retrieval process
-                    if (iconKey) {
-                        console.log(`Retrieving icon for key: ${iconKey}`);
-                    } else {
-                        console.warn('No icon key found for this feature.');
-                    }
-
-                    // Get the icon URL based on the iconKey
                     const iconUrl = iconKey ? (icons[iconKey]?.options.iconUrl || 'default.png') : 'default.png';
-                    console.log('Icon URL:', iconUrl); // Log icon URL
+                    console.log('Icon URL:', iconUrl);
 
                     geoJsonMarkersWithinRange.push({
                         description: feature.properties?.description || "Unknown",
@@ -258,10 +250,9 @@ function checkGeoJsonMarkersInRange(centerLatLng, marker) {
         });
     });
 
-    // Log the geoJsonMarkersWithinRange for debugging
     console.log('GeoJSON markers within range:', geoJsonMarkersWithinRange);
 
-    return geoJsonMarkersWithinRange; // Return the array for further processing
+    return geoJsonMarkersWithinRange;
 }
 
 
