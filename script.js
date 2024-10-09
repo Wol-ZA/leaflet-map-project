@@ -108,7 +108,6 @@ function loadGeojson(file, color, iconKey, layerName) {
         .catch(error => {
             console.error('Error loading the GeoJSON file:', file, error);
         });
-}
 
 
             // Add the GeoJSON layer to the map and store it
