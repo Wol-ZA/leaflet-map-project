@@ -163,6 +163,7 @@ function updatePolyline() {
 // Function to add a draggable marker and the circle
 // Function to add a draggable marker and the circle
 // Function to add a draggable marker and the circle
+// Function to add a draggable marker and the circle
 function addDraggableMarkerAndCircle(latlng) {
     const marker = L.marker(latlng, { draggable: true }).addTo(map);
     markers.push(marker);
@@ -215,9 +216,15 @@ function addDraggableMarkerAndCircle(latlng) {
             // Handle No button click
             if (noButton) {
                 noButton.onclick = function () {
-                    marker.closePopup(); // Close the popup if "No" is clicked
+                    // Close the popup if "No" is clicked
+                    marker.closePopup();
                 };
             }
+
+            // Disable marker interaction while the popup is open
+            marker.off('mousedown');
+            marker.off('mouseup');
+            marker.off('mouseleave');
         }, 500); // Long press duration (milliseconds)
     });
 
@@ -225,7 +232,7 @@ function addDraggableMarkerAndCircle(latlng) {
         clearTimeout(longPressTimeout); // Clear the timeout if the mouse is released before the long press
     });
 
-    marker.on('mouseout', function () {
+    marker.on('mouseleave', function () {
         clearTimeout(longPressTimeout); // Clear the timeout if the mouse leaves the marker
     });
 
@@ -233,7 +240,7 @@ function addDraggableMarkerAndCircle(latlng) {
     marker.on('drag', function (e) {
         const newLatLng = e.target.getLatLng();
         circle.setLatLng(newLatLng); // Move the circle with the marker
-        updatePolyline(); // Update the polyline when marker is dragged
+        updatePolyline(); // Update the polyline when the marker is dragged
         
         // Recalculate GeoJSON markers within range
         geoJsonMarkersWithinRange = checkGeoJsonMarkersInRange(newLatLng, marker);
