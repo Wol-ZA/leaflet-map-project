@@ -187,12 +187,23 @@ function addDraggableMarkerAndCircle(latlng) {
 // Function to update the marker's popup with information about GeoJSON markers in range
 function updateMarkerPopup(marker, geoJsonMarkersWithinRange) {
     if (geoJsonMarkersWithinRange.length > 0) {
-        const popupContent = geoJsonMarkersWithinRange.map(marker => {
-            return `<div>
-                        <img src="${marker.iconUrl}" alt="Icon" style="width: 20px; height: 20px;">
-                        <span>${marker.description}</span>
-                    </div>`;
-        }).join('');
+        const popupContent = `
+            <div class="popup-container">
+                <div class="popup-header">
+                    <span class="popup-title">Current Location</span>
+                    <span class="popup-id">ID: EVEMU</span>
+                </div>
+                <div class="popup-add-waypoint">
+                    <span>Add New Waypoint ▼</span>
+                </div>
+                ${geoJsonMarkersWithinRange.map(marker => `
+                    <div class="popup-item">
+                        <img src="${marker.iconUrl}" alt="Icon" class="popup-icon">
+                        <span class="popup-description">${marker.description}</span>
+                    </div>
+                `).join('')}
+            </div>
+        `;
         marker.bindPopup(popupContent).openPopup(); // Bind the content to the marker's popup
     } else {
         marker.bindPopup("No GeoJSON markers within range.").openPopup(); // Default message if none found
