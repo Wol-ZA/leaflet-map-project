@@ -214,10 +214,14 @@ function addDraggableMarkerAndCircle(latlng) {
                 // Remove the marker from the map
                 map.removeLayer(marker);
                 // Remove the circle from the map
-                const circleToRemove = circles.find(circle => circle.getLatLng().equals(latlng));
-                if (circleToRemove) {
+                const circleIndex = circles.findIndex(circle => {
+                    const circleLatLng = circle.getLatLng();
+                    return circleLatLng.lat === latlng.lat && circleLatLng.lng === latlng.lng; // Compare lat and lng directly
+                });
+                if (circleIndex !== -1) {
+                    const circleToRemove = circles[circleIndex];
                     map.removeLayer(circleToRemove); // Remove the circle from the map
-                    circles = circles.filter(c => c !== circleToRemove); // Remove from the circles array
+                    circles.splice(circleIndex, 1); // Remove from the circles array
                 }
                 // Remove the marker from the markers array
                 markers = markers.filter(m => m !== marker);
@@ -245,6 +249,7 @@ function addDraggableMarkerAndCircle(latlng) {
         updateMarkerPopup(marker, geoJsonMarkersWithinRange); // Update popup with new info
     });
 }
+
 
 
 
