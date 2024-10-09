@@ -108,21 +108,8 @@ function loadGeojson(file, color, iconKey, layerName) {
         .catch(error => {
             console.error('Error loading the GeoJSON file:', file, error);
         });
-
-
-            // Add the GeoJSON layer to the map and store it
-            geoJsonLayers[layerName] = geoJsonLayer;
-            overlays[layerName] = geoJsonLayer; // Add to overlays for control
-
-            // Add the layer to the map
-            geoJsonLayer.addTo(map);
-
-            console.log(`Layer "${layerName}" added to map.`);
-        })
-        .catch(error => {
-            console.error('Error loading the GeoJSON file:', file, error);
-        });
 }
+
 
 // Load all the GeoJSON files with their respective colors and icons
 geojsonFiles.forEach(layer => loadGeojson(layer.file, layer.color, layer.icon, layer.name));
@@ -276,6 +263,7 @@ function checkGeoJsonMarkersInRange(centerLatLng, marker) {
 
     return geoJsonMarkersWithinRange; // Return the array for further processing
 }
+
 
 
 
