@@ -14,7 +14,6 @@ const flyControl = L.Control.extend({
 
     onAdd: function (map) {
         const container = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom');
-
         container.innerHTML = 'Fly'; // Initial button caption
         container.style.backgroundColor = 'white';
         container.style.width = '50px';
@@ -94,7 +93,6 @@ function updateFlyPosition(position) {
 
         // Center the map on the current location
         map.setView([lat, lng], 16); // Zoom level 16 to focus on the user
-
     } else {
         // If marker already exists, just update its position
         flyMarker.setLatLng([lat, lng]);
@@ -122,6 +120,17 @@ L.Marker.include({
         this._icon.style[L.DomUtil.TRANSFORM] += ' rotate(' + angle + 'deg)';
     }
 });
+
+container.onclick = function () {
+    console.log('Button clicked. Is tracking:', isTracking); // Debug line
+    if (!isTracking) {
+        startTracking();
+        container.innerHTML = 'Stop'; 
+    } else {
+        stopTracking(); 
+        container.innerHTML = 'Fly'; 
+    }
+};
 
 // Array of geojson file paths, colors, and icons
 const geojsonFiles = [
