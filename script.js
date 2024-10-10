@@ -6,6 +6,81 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
 }).addTo(map);
 
+// Create a custom Fly control
+const flyControl = L.Control.extend({
+    options: {
+        position: 'topright' // Set the button position in the top right
+    },
+
+    onAdd: function (map) {
+        const container = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom');
+
+        container.innerHTML = 'Fly';
+        container.style.backgroundColor = 'white';
+        container.style.width = '50px';
+        container.style.height = '30px';
+        container.style.lineHeight = '30px';
+        container.style.textAlign = 'center';
+        container.style.cursor = 'pointer';
+        container.style.fontWeight = 'bold';
+
+        container.onclick = function () {
+            startFlying();
+        };
+
+        return container;
+    }
+});
+
+// Add the Fly button to the map
+map.addControl(new flyControl());
+
+// Add the image that will follow and rotate as you fly
+let flyMarker = null; // Store the image marker
+let flyAngle = 0; // Store the current rotation angle
+
+function startFlying() {
+    // If marker already exists, remove it
+    if (flyMarker) {
+        map.removeLayer(flyMarker);
+    }
+
+    // Create a new marker with a custom image (replace 'plane.png' with your image path)
+    flyMarker = L.marker(map.getCenter(), {
+        icon: L.icon({
+            iconUrl: 'plane.png', // Path to your image
+            iconSize: [50, 50],
+            iconAnchor: [25, 25], // Center the icon on the marker
+        }),
+        rotationAngle: flyAngle, // Initial rotation angle
+        draggable: false // Marker should not be draggable
+    }).addTo(map);
+
+    // Start tracking your location and rotate the image
+    map.on('mousemove', updateFlyPosition);
+}
+
+function updateFlyPosition(e) {
+    // Update marker position to follow the mouse location
+    flyMarker.setLatLng(e.latlng);
+
+    // Calculate rotation angle based on mouse movement (you can use heading data if available)
+    const deltaX = e.latlng.lng - map.getCenter().lng;
+    const deltaY = e.latlng.lat - map.getCenter().lat;
+    flyAngle = Math.atan2(deltaY, deltaX) * (180 / Math.PI); // Convert radians to degrees
+
+    // Apply the rotation to the marker
+    flyMarker.setRotationAngle(flyAngle);
+}
+
+// Enable rotation for the marker (you can use a plugin like leaflet-rotatedmarker.js)
+// Make sure you include the 'leaflet-rotatedmarker.js' plugin in your HTML.
+L.Marker.include({
+    setRotationAngle: function (angle) {
+        this._icon.style[L.DomUtil.TRANSFORM] += ' rotate(' + angle + 'deg)';
+    }
+});
+
 // Array of geojson file paths, colors, and icons
 const geojsonFiles = [
     { file: 'ATZ_CTR.geojson', color: '#FF0000', name: 'ATZ_CTR' },  // Red
