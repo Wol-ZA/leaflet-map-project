@@ -45,6 +45,7 @@ map.addControl(new flyControl());
 let flyMarker = null;
 let flyAngle = 0;
 let isTracking = false; // State variable to track if we are currently tracking
+let watchId = null; // Store the watch ID for geolocation
 
 // Function to start tracking the user's location
 function startTracking() {
@@ -52,7 +53,7 @@ function startTracking() {
     if (navigator.geolocation) {
         isTracking = true; // Set tracking state to true
         // Track the user's position in real time
-        navigator.geolocation.watchPosition(updateFlyPosition, handleError, {
+        watchId = navigator.geolocation.watchPosition(updateFlyPosition, handleError, {
             enableHighAccuracy: true, // Use GPS if available
             maximumAge: 0,
             timeout: 5000
@@ -68,14 +69,17 @@ function stopTracking() {
         map.removeLayer(flyMarker); // Remove the fly marker from the map
         flyMarker = null; // Reset the marker variable
     }
-    if (navigator.geolocation) {
-        navigator.geolocation.clearWatch(); // Stop watching the user's position
+    if (watchId) {
+        navigator.geolocation.clearWatch(watchId); // Stop watching the user's position
+        watchId = null; // Reset the watch ID
     }
     isTracking = false; // Set tracking state to false
 }
 
 // Function to update the fly marker's position and heading
 function updateFlyPosition(position) {
+    if (!isTracking) return; // Prevent updates if not tracking
+
     const lat = position.coords.latitude;
     const lng = position.coords.longitude;
     const heading = position.coords.heading; // Heading (if available, only on devices with compass)
@@ -114,7 +118,6 @@ function handleError(error) {
 }
 
 // Enable rotation for the marker (using leaflet-rotatedmarker.js plugin)
-// Make sure you include the 'leaflet-rotatedmarker.js' plugin in your HTML.
 L.Marker.include({
     setRotationAngle: function (angle) {
         this._icon.style[L.DomUtil.TRANSFORM] += ' rotate(' + angle + 'deg)';
