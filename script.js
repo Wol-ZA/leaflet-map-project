@@ -245,7 +245,14 @@ const layerOrder = [
     { file: 'CTA.geojson', color: '#00FF00', opacity: 0.47, name: 'CTA' },
     { file: 'FAD_FAP_FAR.geojson', color: '#0000FF', opacity: 0.87, name: 'FAD_FAP_FAR' },
     { file: 'TMA.geojson', color: '#0000FF', opacity: 0.60, name: 'TMA' },
-    { file: 'ATZ_CTR.geojson', color: '#FF0000', opacity: 0.67, name: 'ATZ_CTR' }
+    { file: 'ATZ_CTR.geojson', color: '#FF0000', opacity: 0.67, name: 'ATZ_CTR' },
+    { file: 'SACAA.geojson', color: '#FF00FF', icon: 'sacaa', name: 'SACAA' }, // Add SACAA
+    { file: 'Un-Licensed.geojson', color: '#00FFFF', icon: 'unlicensed', name: 'Un-Licensed' }, // Add Un-Licensed
+    { file: 'Aerodrome_AIC.geojson', color: '#FFA500', icon: 'aic', name: 'AIC' }, // Add AIC
+    { file: 'Aerodrome_AIP.geojson', color: '#800080', icon: 'aip', name: 'AIP' }, // Add AIP
+    { file: 'ATNS.geojson', color: '#808080', icon: 'atns', name: 'ATNS' }, // Add ATNS
+    { file: 'Military.geojson', color: '#000000', icon: 'military', name: 'Military' }, // Add Military
+    { file: 'helistops.geojson', color: '#8B4513', icon: 'helistops', name: 'Helistops' } // Add Helistops
 ];
 
 // Sequentially load layers
