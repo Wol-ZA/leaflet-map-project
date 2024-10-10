@@ -46,6 +46,7 @@ let flyMarker = null;
 let flyAngle = 0;
 let isTracking = false; // State variable to track if we are currently tracking
 let watchId = null; // Store the watch ID for geolocation
+let isAddingMarker = false; // State variable to track if adding a draggable marker
 
 // Function to start tracking the user's location
 function startTracking() {
@@ -74,6 +75,7 @@ function stopTracking() {
         watchId = null; // Reset the watch ID
     }
     isTracking = false; // Set tracking state to false
+    isAddingMarker = false; // Reset marker adding state
 }
 
 // Function to update the fly marker's position and heading
@@ -280,6 +282,8 @@ function updatePolyline() {
 // Function to add a draggable marker and the circle
 // Function to add a draggable marker and the circle
 function addDraggableMarkerAndCircle(latlng) {
+     if (isTracking) return;
+     isAddingMarker = true;
     const marker = L.marker(latlng, { draggable: true }).addTo(map);
     markers.push(marker);
 
