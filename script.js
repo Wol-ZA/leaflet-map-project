@@ -25,7 +25,8 @@ const flyControl = L.Control.extend({
         container.style.fontWeight = 'bold';
 
         // Start tracking on button click
-        container.onclick = function () {
+        container.onclick = function (e) {
+            L.DomEvent.stopPropagation(e); // Prevent the event from bubbling to the map
             startTracking();
         };
 
