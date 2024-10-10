@@ -129,11 +129,11 @@ L.Marker.include({
 
 // Array of geojson file paths, colors, and icons
 const geojsonFiles = [
-    { file: 'ATZ_CTR.geojson', color: '#FF0000', name: 'ATZ_CTR', opacity: 0.67 },  // Red, 67%
+    { file: 'ACCFIS.geojson', color: '#FFFF00', name: 'ACCFIS', opacity: 0.18, icon: 'accfis' },    // Yellow, 18%
     { file: 'CTA.geojson', color: '#00FF00', name: 'CTA', opacity: 0.47 },          // Green, 47%
     { file: 'FAD_FAP_FAR.geojson', color: '#0000FF', name: 'FAD_FAP_FAR', opacity: 0.87 }, // Blue, 87%
-    { file: 'TMA.geojson', color: '#0000FF', name: 'TMA', opacity: 0.35 }, // Blue, 60%
-    { file: 'ACCFIS.geojson', color: '#FFFF00', name: 'ACCFIS', opacity: 0.18, icon: 'accfis' },    // Yellow, 18%
+    { file: 'TMA.geojson', color: '#0000FF', name: 'TMA', opacity: 0.60 }, // Blue, 60%
+    { file: 'ATZ_CTR.geojson', color: '#FF0000', name: 'ATZ_CTR', opacity: 0.67 },  // Red, 67%
     { file: 'SACAA.geojson', color: '#FF00FF', name: 'SACAA', icon: 'sacaa' }, // Magenta
     { file: 'Un-Licensed.geojson', color: '#00FFFF', name: 'Un-Licensed', icon: 'unlicensed' }, // Cyan
     { file: 'Aerodrome_AIC.geojson', color: '#FFA500', name: 'AIC', icon: 'aic' }, // Orange
@@ -182,12 +182,13 @@ const icons = {
     }),
 };
 
+// Layer control
 let geoJsonLayers = {};  // To store each GeoJSON layer for toggling
 let overlays = {};       // For adding to the layer control
 
 // Function to fetch and add GeoJSON data with styles and icons to the map
 function loadGeojson(file, color, opacity, iconKey, layerName) {
-    fetch(file)
+    return fetch(file)
         .then(response => response.json())
         .then(data => {
             let geoJsonLayer = L.geoJSON(data, {
@@ -223,25 +224,35 @@ function loadGeojson(file, color, opacity, iconKey, layerName) {
             geoJsonLayers[layerName] = geoJsonLayer;
             overlays[layerName] = geoJsonLayer; // Add to overlays for control
 
-            // Add the layer to the map
-            geoJsonLayer.addTo(map);
-
-            console.log(`Layer "${layerName}" added to map.`);
+            // Return the geoJsonLayer for further manipulation
+            return geoJsonLayer;
         })
         .catch(error => {
             console.error('Error loading the GeoJSON file:', file, error);
         });
 }
 
-// Load all GeoJSON files with their specified properties
-geojsonFiles.forEach(geojsonFile => {
-    loadGeojson(geojsonFile.file, geojsonFile.color, geojsonFile.opacity || 1, geojsonFile.icon, geojsonFile.name);
-});
+// Load all GeoJSON files in the specified order
+const layerOrder = [
+    { file: 'ACCFIS.geojson', color: '#FFFF00', opacity: 0.18, icon: 'accfis', name: 'ACCFIS' },
+    { file: 'CTA.geojson', color: '#00FF00', opacity: 0.47, name: 'CTA' },
+    { file: 'FAD_FAP_FAR.geojson', color: '#0000FF', opacity: 0.87, name: 'FAD_FAP_FAR' },
+    { file: 'TMA.geojson', color: '#0000FF', opacity: 0.60, name: 'TMA' },
+    { file: 'ATZ_CTR.geojson', color: '#FF0000', opacity: 0.67, name: 'ATZ_CTR' }
+];
 
-// Add the layer control to the map after a slight delay
-setTimeout(() => {
-    L.control.layers(null, overlays).addTo(map);  // Add control with overlay layers
-}, 500);
+// Sequentially load layers
+Promise.all(layerOrder.map(layer => 
+    loadGeojson(layer.file, layer.color, layer.opacity, layer.icon, layer.name)
+)).then(layers => {
+    // Add the layers to the map
+    layers.forEach(layer => {
+        layer.addTo(map);
+    });
+    // Bring ATZ_CTR layer to front
+    geoJsonLayers['ATZ_CTR'].bringToFront();
+    console.log('All layers added to map in specified order.');
+});
 
 // Convert nautical miles to meters (1 nautical mile = 1852 meters)
 const nauticalMileToMeters = 1852;
