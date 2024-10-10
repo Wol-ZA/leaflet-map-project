@@ -92,8 +92,12 @@ function updateFlyPosition(position) {
         flyMarker = L.marker([lat, lng], {
             icon: L.icon({
                 iconUrl: 'plane.png', // Path to the plane image
-                iconSize: [50, 50],
-                iconAnchor: [25, 25] // Center the icon on the marker
+                iconSize: [50, 50],   // Size of the image
+                iconAnchor: [25, 25], // Center the icon on the marker
+                // Optional shadow for better visual effect (if you have a shadow image)
+                // shadowUrl: 'shadow.png',
+                // shadowSize: [60, 60],
+                // shadowAnchor: [30, 30]
             }),
             draggable: false
         }).addTo(map);
@@ -108,7 +112,10 @@ function updateFlyPosition(position) {
     // If heading information is available, rotate the marker
     if (heading !== null && heading !== undefined) {
         flyAngle = heading;
+
+        // Using the rotation plugin to rotate the marker
         flyMarker.setRotationAngle(flyAngle);
+        flyMarker.setRotationOrigin('center center'); // Ensure the rotation origin is the center of the image
     }
 
     // Keep the map centered on the current position as you move
