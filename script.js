@@ -249,9 +249,14 @@ Promise.all(layerOrder.map(layer =>
     layers.forEach(layer => {
         layer.addTo(map);
     });
+
     // Bring ATZ_CTR layer to front
     geoJsonLayers['ATZ_CTR'].bringToFront();
-    console.log('All layers added to map in specified order.');
+
+    // Create layer control
+    const layerControl = L.control.layers(null, overlays, { collapsed: false }).addTo(map);
+    
+    console.log('All layers added to map in specified order with layer control enabled.');
 });
 
 // Convert nautical miles to meters (1 nautical mile = 1852 meters)
