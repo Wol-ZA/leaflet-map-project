@@ -129,11 +129,11 @@ L.Marker.include({
 
 // Array of geojson file paths, colors, and icons
 const geojsonFiles = [
-    { file: 'ATZ_CTR.geojson', color: '#FF0000', name: 'ATZ_CTR' },  // Red
-    { file: 'CTA.geojson', color: '#00FF00', name: 'CTA' },          // Green
-    { file: 'FAD_FAP_FAR.geojson', color: '#0000FF', name: 'FAD_FAP_FAR' }, // Blue
-    { file: 'TMA.geojson', color: '#0000FF', name: 'TMA' }, // Blue
-    { file: 'ACCFIS.geojson', color: '#FFFF00', name: 'ACCFIS' },    // Yellow
+    { file: 'ATZ_CTR.geojson', color: '#FF0000', name: 'ATZ_CTR', opacity: 0.67 },  // Red, 67%
+    { file: 'CTA.geojson', color: '#00FF00', name: 'CTA', opacity: 0.47 },          // Green, 47%
+    { file: 'FAD_FAP_FAR.geojson', color: '#0000FF', name: 'FAD_FAP_FAR', opacity: 0.87 }, // Blue, 87%
+    { file: 'TMA.geojson', color: '#0000FF', name: 'TMA', opacity: 0.60 }, // Blue, 60%
+    { file: 'ACCFIS.geojson', color: '#FFFF00', name: 'ACCFIS', opacity: 0.18, icon: 'accfis' },    // Yellow, 18%
     { file: 'SACAA.geojson', color: '#FF00FF', name: 'SACAA', icon: 'sacaa' }, // Magenta
     { file: 'Un-Licensed.geojson', color: '#00FFFF', name: 'Un-Licensed', icon: 'unlicensed' }, // Cyan
     { file: 'Aerodrome_AIC.geojson', color: '#FFA500', name: 'AIC', icon: 'aic' }, // Orange
@@ -182,13 +182,11 @@ const icons = {
     }),
 };
 
-// Layer control
 let geoJsonLayers = {};  // To store each GeoJSON layer for toggling
 let overlays = {};       // For adding to the layer control
 
 // Function to fetch and add GeoJSON data with styles and icons to the map
-// Function to fetch and add GeoJSON data with styles and icons to the map
-function loadGeojson(file, color, iconKey, layerName) {
+function loadGeojson(file, color, opacity, iconKey, layerName) {
     fetch(file)
         .then(response => response.json())
         .then(data => {
@@ -199,7 +197,7 @@ function loadGeojson(file, color, iconKey, layerName) {
                         color: color,
                         weight: 2,
                         opacity: 1,
-                        fillOpacity: 0.6
+                        fillOpacity: opacity // Use the provided opacity
                     };
                 },
                 // For point features (markers), use the custom icons
@@ -235,9 +233,10 @@ function loadGeojson(file, color, iconKey, layerName) {
         });
 }
 
-
-// Load all the GeoJSON files with their respective colors and icons
-geojsonFiles.forEach(layer => loadGeojson(layer.file, layer.color, layer.icon, layer.name));
+// Load all GeoJSON files with their specified properties
+geojsonFiles.forEach(geojsonFile => {
+    loadGeojson(geojsonFile.file, geojsonFile.color, geojsonFile.opacity || 1, geojsonFile.icon, geojsonFile.name);
+});
 
 // Add the layer control to the map after a slight delay
 setTimeout(() => {
