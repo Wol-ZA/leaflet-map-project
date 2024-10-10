@@ -66,6 +66,7 @@ function startTracking() {
 
 // Function to stop tracking the user's location
 function stopTracking() {
+    event.preventDefault();
     if (flyMarker) {
         map.removeLayer(flyMarker); // Remove the fly marker from the map
         flyMarker = null; // Reset the marker variable
