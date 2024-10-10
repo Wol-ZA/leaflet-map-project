@@ -6,7 +6,6 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
 }).addTo(map);
 
-// Create a custom Fly control
 const flyControl = L.Control.extend({
     options: {
         position: 'topright' // Set the button position in the top right
@@ -25,7 +24,7 @@ const flyControl = L.Control.extend({
         container.style.fontWeight = 'bold';
 
         container.onclick = function () {
-            startFlying();
+            startTracking();
         };
 
         return container;
@@ -35,42 +34,61 @@ const flyControl = L.Control.extend({
 // Add the Fly button to the map
 map.addControl(new flyControl());
 
-// Add the image that will follow and rotate as you fly
-let flyMarker = null; // Store the image marker
-let flyAngle = 0; // Store the current rotation angle
+// Variables to store the fly marker and heading angle
+let flyMarker = null;
+let flyAngle = 0;
 
-function startFlying() {
-    // If marker already exists, remove it
-    if (flyMarker) {
-        map.removeLayer(flyMarker);
+// Function to start tracking location
+function startTracking() {
+    // Check if geolocation is available
+    if (navigator.geolocation) {
+        navigator.geolocation.watchPosition(updateFlyPosition, handleError, {
+            enableHighAccuracy: true,
+            maximumAge: 0,
+            timeout: 5000
+        });
+    } else {
+        alert("Geolocation is not supported by your browser.");
     }
-
-    // Create a new marker with a custom image (replace 'plane.png' with your image path)
-    flyMarker = L.marker(map.getCenter(), {
-        icon: L.icon({
-            iconUrl: 'plane.png', // Path to your image
-            iconSize: [50, 50],
-            iconAnchor: [25, 25], // Center the icon on the marker
-        }),
-        rotationAngle: flyAngle, // Initial rotation angle
-        draggable: false // Marker should not be draggable
-    }).addTo(map);
-
-    // Start tracking your location and rotate the image
-    map.on('mousemove', updateFlyPosition);
 }
 
-function updateFlyPosition(e) {
-    // Update marker position to follow the mouse location
-    flyMarker.setLatLng(e.latlng);
+// Function to update the fly marker's position and heading
+function updateFlyPosition(position) {
+    const lat = position.coords.latitude;
+    const lng = position.coords.longitude;
+    const heading = position.coords.heading; // Heading in degrees (if available)
 
-    // Calculate rotation angle based on mouse movement (you can use heading data if available)
-    const deltaX = e.latlng.lng - map.getCenter().lng;
-    const deltaY = e.latlng.lat - map.getCenter().lat;
-    flyAngle = Math.atan2(deltaY, deltaX) * (180 / Math.PI); // Convert radians to degrees
+    // If this is the first time, create the marker
+    if (!flyMarker) {
+        flyMarker = L.marker([lat, lng], {
+            icon: L.icon({
+                iconUrl: 'plane.png', // Path to your image
+                iconSize: [50, 50],
+                iconAnchor: [25, 25] // Center the icon on the marker
+            }),
+            draggable: false
+        }).addTo(map);
 
-    // Apply the rotation to the marker
-    flyMarker.setRotationAngle(flyAngle);
+        // Center the map on the initial location
+        map.setView([lat, lng], 16);
+    } else {
+        // Update the marker's position
+        flyMarker.setLatLng([lat, lng]);
+    }
+
+    // Update the marker's rotation based on the heading if available
+    if (heading !== null) {
+        flyAngle = heading;
+        flyMarker.setRotationAngle(flyAngle);
+    }
+
+    // Optionally: Keep the map centered on the marker as you move
+    map.panTo([lat, lng]);
+}
+
+// Function to handle errors
+function handleError(error) {
+    console.warn(`ERROR(${error.code}): ${error.message}`);
 }
 
 // Enable rotation for the marker (you can use a plugin like leaflet-rotatedmarker.js)
