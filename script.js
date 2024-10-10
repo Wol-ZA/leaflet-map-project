@@ -206,25 +206,17 @@ function loadGeojson(file, color, opacity, iconKey, layerName) {
                     // Associate the geojson file name with the marker feature
                     feature.properties.geojsonFile = file; // Store the GeoJSON file name
 
-                    let marker;
                     if (iconKey && icons[iconKey]) {
-                        marker = L.marker(latlng, { icon: icons[iconKey], feature: feature }); // Store feature in marker
+                        return L.marker(latlng, { icon: icons[iconKey], feature: feature });
                     } else {
-                        marker = L.circleMarker(latlng, {
+                        return L.circleMarker(latlng, {
                             radius: 6,
                             fillColor: color,
                             color: color,
                             fillOpacity: 0.8,
-                            feature: feature // Store feature in circle marker as well
+                            feature: feature
                         });
                     }
-
-                    // Add marker to overlays for control
-                    overlays[layerName] = overlays[layerName] || []; // Ensure the array exists
-                    overlays[layerName].push(marker); // Add the marker to the specific layer's markers
-
-                    // Return the created marker
-                    return marker;
                 }
             });
 
@@ -246,30 +238,45 @@ const layerOrder = [
     { file: 'FAD_FAP_FAR.geojson', color: '#0000FF', opacity: 0.87, name: 'FAD_FAP_FAR' },
     { file: 'TMA.geojson', color: '#0000FF', opacity: 0.60, name: 'TMA' },
     { file: 'ATZ_CTR.geojson', color: '#FF0000', opacity: 0.67, name: 'ATZ_CTR' },
-    { file: 'SACAA.geojson', color: '#FF00FF', icon: 'sacaa', name: 'SACAA' }, // Add SACAA
-    { file: 'Un-Licensed.geojson', color: '#00FFFF', icon: 'unlicensed', name: 'Un-Licensed' }, // Add Un-Licensed
-    { file: 'Aerodrome_AIC.geojson', color: '#FFA500', icon: 'aic', name: 'AIC' }, // Add AIC
-    { file: 'Aerodrome_AIP.geojson', color: '#800080', icon: 'aip', name: 'AIP' }, // Add AIP
-    { file: 'ATNS.geojson', color: '#808080', icon: 'atns', name: 'ATNS' }, // Add ATNS
-    { file: 'Military.geojson', color: '#000000', icon: 'military', name: 'Military' }, // Add Military
-    { file: 'helistops.geojson', color: '#8B4513', icon: 'helistops', name: 'Helistops' } // Add Helistops
+    { file: 'SACAA.geojson', color: '#FF00FF', icon: 'sacaa', name: 'SACAA' },
+    { file: 'Un-Licensed.geojson', color: '#00FFFF', icon: 'unlicensed', name: 'Un-Licensed' },
+    { file: 'Aerodrome_AIC.geojson', color: '#FFA500', icon: 'aic', name: 'AIC' },
+    { file: 'Aerodrome_AIP.geojson', color: '#800080', icon: 'aip', name: 'AIP' },
+    { file: 'ATNS.geojson', color: '#808080', icon: 'atns', name: 'ATNS' },
+    { file: 'Military.geojson', color: '#000000', icon: 'military', name: 'Military' },
+    { file: 'helistops.geojson', color: '#8B4513', icon: 'helistops', name: 'Helistops' }
 ];
 
 // Sequentially load layers
 Promise.all(layerOrder.map(layer => 
     loadGeojson(layer.file, layer.color, layer.opacity, layer.icon, layer.name)
 )).then(layers => {
-    // Add the layers to the map
-    layers.forEach(layer => {
-        layer.addTo(map);
+    // Create overlays for layer control
+    const layerControl = L.control.layers(null, {}, { collapsed: false }).addTo(map);
+    
+    // Add layers to the map in the specified order
+    layers.forEach((layer, index) => {
+        layer.addTo(map); // Add all layers to the map initially
+        layerControl.addOverlay(layer, layerOrder[index].name); // Add layer to control
     });
 
     // Bring ATZ_CTR layer to front
     geoJsonLayers['ATZ_CTR'].bringToFront();
 
-    // Create layer control
-    const layerControl = L.control.layers(null, overlays, { collapsed: false }).addTo(map);
-    
+    // Add event listeners for layer control checkboxes
+    Object.keys(geoJsonLayers).forEach(layerName => {
+        layerControl.on('overlayadd', function (eventLayer) {
+            geoJsonLayers[layerName].addTo(map);
+            if (layerName === 'ATZ_CTR') {
+                geoJsonLayers[layerName].bringToFront(); // Ensure ATZ_CTR is on top
+            }
+        });
+
+        layerControl.on('overlayremove', function (eventLayer) {
+            map.removeLayer(geoJsonLayers[layerName]);
+        });
+    });
+
     console.log('All layers added to map in specified order with layer control enabled.');
 });
 
