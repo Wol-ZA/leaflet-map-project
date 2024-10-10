@@ -206,10 +206,11 @@ function loadGeojson(file, color, opacity, iconKey, layerName) {
                     // Associate the geojson file name with the marker feature
                     feature.properties.geojsonFile = file; // Store the GeoJSON file name
 
+                    let marker;
                     if (iconKey && icons[iconKey]) {
-                        return L.marker(latlng, { icon: icons[iconKey], feature: feature }); // Store feature in marker
+                        marker = L.marker(latlng, { icon: icons[iconKey], feature: feature }); // Store feature in marker
                     } else {
-                        return L.circleMarker(latlng, {
+                        marker = L.circleMarker(latlng, {
                             radius: 6,
                             fillColor: color,
                             color: color,
@@ -217,12 +218,18 @@ function loadGeojson(file, color, opacity, iconKey, layerName) {
                             feature: feature // Store feature in circle marker as well
                         });
                     }
+
+                    // Add marker to overlays for control
+                    overlays[layerName] = overlays[layerName] || []; // Ensure the array exists
+                    overlays[layerName].push(marker); // Add the marker to the specific layer's markers
+
+                    // Return the created marker
+                    return marker;
                 }
             });
 
             // Add the GeoJSON layer to the map and store it
             geoJsonLayers[layerName] = geoJsonLayer;
-            overlays[layerName] = geoJsonLayer; // Add to overlays for control
 
             // Return the geoJsonLayer for further manipulation
             return geoJsonLayer;
