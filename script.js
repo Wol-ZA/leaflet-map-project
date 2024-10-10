@@ -121,17 +121,6 @@ L.Marker.include({
     }
 });
 
-container.onclick = function () {
-    console.log('Button clicked. Is tracking:', isTracking); // Debug line
-    if (!isTracking) {
-        startTracking();
-        container.innerHTML = 'Stop'; 
-    } else {
-        stopTracking(); 
-        container.innerHTML = 'Fly'; 
-    }
-};
-
 // Array of geojson file paths, colors, and icons
 const geojsonFiles = [
     { file: 'ATZ_CTR.geojson', color: '#FF0000', name: 'ATZ_CTR' },  // Red
