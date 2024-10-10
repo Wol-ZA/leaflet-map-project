@@ -247,6 +247,24 @@ const layerOrder = [
     { file: 'helistops.geojson', color: '#8B4513', icon: 'helistops', name: 'Helistops' }
 ];
 
+function manageLayerOrder() {
+    // Remove all layers
+    Object.values(geoJsonLayers).forEach(layer => {
+        map.removeLayer(layer);
+    });
+
+    // Re-add layers in the specified order, ensuring ATZ_CTR is on top
+    layerOrder.forEach(layerInfo => {
+        const layerName = layerInfo.name;
+        if (geoJsonLayers[layerName]) {
+            geoJsonLayers[layerName].addTo(map);
+            if (layerName === 'ATZ_CTR') {
+                geoJsonLayers[layerName].bringToFront(); // Ensure ATZ_CTR is always on top
+            }
+        }
+    });
+}
+
 // Sequentially load layers
 Promise.all(layerOrder.map(layer => 
     loadGeojson(layer.file, layer.color, layer.opacity, layer.icon, layer.name)
@@ -254,29 +272,23 @@ Promise.all(layerOrder.map(layer =>
     // Create overlays for layer control
     const layerControl = L.control.layers(null, {}, { collapsed: false }).addTo(map);
     
-    // Add layers to the map in the specified order
+    // Add layers to the layer control
     layers.forEach((layer, index) => {
-        layer.addTo(map); // Add all layers to the map initially
         layerControl.addOverlay(layer, layerOrder[index].name); // Add layer to control
     });
 
-    // Bring ATZ_CTR layer to front
-    geoJsonLayers['ATZ_CTR'].bringToFront();
-
-    // Add event listeners for layer control checkboxes
-    Object.keys(geoJsonLayers).forEach(layerName => {
-        layerControl.on('overlayadd', function (eventLayer) {
-            geoJsonLayers[layerName].addTo(map);
-            if (layerName === 'ATZ_CTR') {
-                geoJsonLayers[layerName].bringToFront(); // Ensure ATZ_CTR is on top
-            }
-        });
-
-        layerControl.on('overlayremove', function (eventLayer) {
-            map.removeLayer(geoJsonLayers[layerName]);
-        });
+    // Set up event listeners for layer control checkboxes
+    layerControl.on('overlayadd', function (eventLayer) {
+        manageLayerOrder(); // Re-manage layer order when a layer is added
     });
 
+    layerControl.on('overlayremove', function (eventLayer) {
+        manageLayerOrder(); // Re-manage layer order when a layer is removed
+    });
+
+    // Initial layer display order
+    manageLayerOrder();
+    
     console.log('All layers added to map in specified order with layer control enabled.');
 });
 
