@@ -15,7 +15,7 @@ const flyControl = L.Control.extend({
     onAdd: function (map) {
         const container = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom');
 
-        container.innerHTML = 'Fly';
+        container.innerHTML = 'Fly'; // Initial button caption
         container.style.backgroundColor = 'white';
         container.style.width = '50px';
         container.style.height = '30px';
@@ -25,9 +25,14 @@ const flyControl = L.Control.extend({
         container.style.fontWeight = 'bold';
 
         // Start tracking on button click
-        container.onclick = function (e) {
-            L.DomEvent.stopPropagation(e); // Prevent the event from bubbling to the map
-            startTracking();
+        container.onclick = function () {
+            if (!isTracking) { // Check if not currently tracking
+                startTracking(); // Start tracking
+                container.innerHTML = 'Stop'; // Change caption to "Stop"
+            } else {
+                stopTracking(); // Stop tracking
+                container.innerHTML = 'Fly'; // Change caption back to "Fly"
+            }
         };
 
         return container;
@@ -40,11 +45,13 @@ map.addControl(new flyControl());
 // Variables to store the fly marker and the heading (angle)
 let flyMarker = null;
 let flyAngle = 0;
+let isTracking = false; // State variable to track if we are currently tracking
 
 // Function to start tracking the user's location
 function startTracking() {
     // Check if geolocation is available
     if (navigator.geolocation) {
+        isTracking = true; // Set tracking state to true
         // Track the user's position in real time
         navigator.geolocation.watchPosition(updateFlyPosition, handleError, {
             enableHighAccuracy: true, // Use GPS if available
@@ -54,6 +61,18 @@ function startTracking() {
     } else {
         alert("Geolocation is not supported by your browser.");
     }
+}
+
+// Function to stop tracking the user's location
+function stopTracking() {
+    if (flyMarker) {
+        map.removeLayer(flyMarker); // Remove the fly marker from the map
+        flyMarker = null; // Reset the marker variable
+    }
+    if (navigator.geolocation) {
+        navigator.geolocation.clearWatch(); // Stop watching the user's position
+    }
+    isTracking = false; // Set tracking state to false
 }
 
 // Function to update the fly marker's position and heading
