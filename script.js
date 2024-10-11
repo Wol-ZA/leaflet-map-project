@@ -469,7 +469,19 @@ let longPressDuration = 500; // Adjust the duration for what you consider a long
 
 function startLongPress(e) {
     longPressTimeout = setTimeout(function () {
-        addDraggableMarkerAndCircle(e.latlng); // Only trigger after long press
+        let latlng;
+        if (e.latlng) {
+            // This is for mouse events
+            latlng = e.latlng;
+        } else if (e.touches && e.touches.length > 0) {
+            // This is for touch events
+            let touch = e.touches[0];
+            let point = map.mouseEventToLayerPoint(touch);
+            latlng = map.layerPointToLatLng(point);
+        }
+        if (latlng) {
+            addDraggableMarkerAndCircle(latlng); // Trigger marker creation
+        }
     }, longPressDuration);
 }
 
@@ -489,4 +501,5 @@ map.on('mouseup touchend', function () {
 map.on('mousemove touchmove', function () {
     cancelLongPress();
 });
+
 
