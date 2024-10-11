@@ -464,42 +464,18 @@ function checkGeoJsonMarkersInRange(centerLatLng, marker) {
     return geoJsonMarkersWithinRange; // Return the array for further processing
 }
 
-let longPressTimeout;
-let longPressDuration = 500; // Adjust the duration for what you consider a long press
-
-function startLongPress(e) {
+map.on('mousedown', function (e) {
     longPressTimeout = setTimeout(function () {
-        let latlng;
-        if (e.latlng) {
-            // This is for mouse events
-            latlng = e.latlng;
-        } else if (e.touches && e.touches.length > 0) {
-            // This is for touch events
-            let touch = e.touches[0];
-            let point = map.mouseEventToLayerPoint(touch);
-            latlng = map.layerPointToLatLng(point);
-        }
-        if (latlng) {
-            addDraggableMarkerAndCircle(latlng); // Trigger marker creation
-        }
+        addDraggableMarkerAndCircle(e.latlng); // Only trigger after long press
     }, longPressDuration);
-}
-
-function cancelLongPress() {
-    clearTimeout(longPressTimeout); // Cancel if press is released or moved before long press duration
-}
-
-// Handle both mouse and touch events for desktop and mobile
-map.on('mousedown touchstart', function (e) {
-    startLongPress(e);
 });
 
-map.on('mouseup touchend', function () {
-    cancelLongPress();
+map.on('mouseup', function () {
+    clearTimeout(longPressTimeout); // Cancel if mouse is released before long press duration
 });
 
-map.on('mousemove touchmove', function () {
-    cancelLongPress();
+map.on('mousemove', function () {
+    clearTimeout(longPressTimeout); // Cancel if mouse is moved before long press duration
 });
 
 
