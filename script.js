@@ -192,7 +192,7 @@ const icons = {
 let geoJsonLayers = {};  // To store each GeoJSON layer for toggling
 let overlays = {};       // For adding to the layer control
 
-// Function to fetch and add GeoJSON data with styles and icons to the map
+// Function to load GeoJSON data and return a Leaflet layer
 function loadGeojson(file, color, opacity, iconKey, layerName) {
     return fetch(file)
         .then(response => response.json())
@@ -237,7 +237,7 @@ function loadGeojson(file, color, opacity, iconKey, layerName) {
         });
 }
 
-// Load all GeoJSON files in the specified order
+// Layer order and details for each GeoJSON file
 const layerOrder = [
     { file: 'ACCFIS.geojson', color: '#FFFF00', opacity: 0.18, icon: 'accfis', name: 'ACCFIS' },
     { file: 'CTA.geojson', color: '#00FF00', opacity: 0.47, name: 'CTA' },
@@ -253,6 +253,7 @@ const layerOrder = [
     { file: 'helistops.geojson', color: '#8B4513', icon: 'helistops', name: 'Helistops' }
 ];
 
+// Function to ensure layers are displayed in the correct order
 function manageLayerOrder() {
     // Remove all layers
     Object.values(geoJsonLayers).forEach(layer => {
@@ -271,31 +272,28 @@ function manageLayerOrder() {
     });
 }
 
+// Base layers for the control (can be left empty if not needed)
+const baseLayers = {};
+
+// Overlays object to hold GeoJSON layers for the control
+const overlays = {};
+
 // Sequentially load layers
 Promise.all(layerOrder.map(layer => 
     loadGeojson(layer.file, layer.color, layer.opacity, layer.icon, layer.name)
 )).then(layers => {
-    // Create overlays for layer control
-    const layerControl = L.control.layers(null, {}, { collapsed: false }).addTo(map);
-    
-    // Add layers to the layer control
+    // Add layers to the overlays object for the control
     layers.forEach((layer, index) => {
-        layerControl.addOverlay(layer, layerOrder[index].name); // Add layer to control
+        overlays[layerOrder[index].name] = layer;
     });
 
-    // Set up event listeners for layer control checkboxes
-    layerControl.on('overlayadd', function (eventLayer) {
-        manageLayerOrder(); // Re-manage layer order when a layer is added
-    });
+    // Create the Leaflet control with a collapsible option
+    L.control.layers(baseLayers, overlays, { collapsed: true }).addTo(map);
 
-    layerControl.on('overlayremove', function (eventLayer) {
-        manageLayerOrder(); // Re-manage layer order when a layer is removed
-    });
-
-    // Initial layer display order
+    // Set the initial layer display order
     manageLayerOrder();
     
-    console.log('All layers added to map in specified order with layer control enabled.');
+    console.log('All layers added to map in specified order with collapsible layer control.');
 });
 
 // Convert nautical miles to meters (1 nautical mile = 1852 meters)
