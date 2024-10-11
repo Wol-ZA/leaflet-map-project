@@ -275,36 +275,22 @@ function manageLayerOrder() {
 // Base layers for the control (can be left empty if not needed)
 const baseLayers = {};
 
-Promise.all(layerOrder.map(layer =>
+// Sequentially load layers
+Promise.all(layerOrder.map(layer => 
     loadGeojson(layer.file, layer.color, layer.opacity, layer.icon, layer.name)
 )).then(layers => {
+    // Add layers to the overlays object for the control
     layers.forEach((layer, index) => {
         overlays[layerOrder[index].name] = layer;
     });
 
     // Create the Leaflet control with a collapsible option
-    const layerControl = L.control.layers(baseLayers, overlays, { collapsed: false }).addTo(map);
+    L.control.layers(baseLayers, overlays, { collapsed: true }).addTo(map);
 
-    // Add a custom close button to the control
-    const layerControlContainer = layerControl.getContainer();
-    const closeButton = L.DomUtil.create('button', 'close-button', layerControlContainer);
-    closeButton.innerHTML = 'Close';
-
-    // Style the close button
-    closeButton.style.position = 'absolute';
-    closeButton.style.top = '5px';
-    closeButton.style.right = '5px';
-    closeButton.style.zIndex = '1000';
-    closeButton.style.padding = '5px';
-    closeButton.style.cursor = 'pointer';
-
-    // Add event listener to close the layer control
-    L.DomEvent.on(closeButton, 'click', function () {
-        layerControl.collapse(); // Collapse the layer control when the close button is clicked
-    });
-
+    // Set the initial layer display order
     manageLayerOrder();
-    console.log('Layers added to map with manual close button.');
+    
+    console.log('All layers added to map in specified order with collapsible layer control.');
 });
 
 // Convert nautical miles to meters (1 nautical mile = 1852 meters)
