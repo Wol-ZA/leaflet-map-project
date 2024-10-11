@@ -275,9 +275,6 @@ function manageLayerOrder() {
 // Base layers for the control (can be left empty if not needed)
 const baseLayers = {};
 
-// Overlays object to hold GeoJSON layers for the control
-const overlays = {};
-
 // Sequentially load layers
 Promise.all(layerOrder.map(layer => 
     loadGeojson(layer.file, layer.color, layer.opacity, layer.icon, layer.name)
