@@ -6,41 +6,6 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
 }).addTo(map);
 
-// Create a custom Fly control (a button to start tracking)
-const flyControl = L.Control.extend({
-    options: {
-        position: 'topright' // Position the button on the top right
-    },
-
-    onAdd: function (map) {
-        const container = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom');
-        container.innerHTML = 'Fly'; // Initial button caption
-        container.style.backgroundColor = 'white';
-        container.style.width = '50px';
-        container.style.height = '30px';
-        container.style.lineHeight = '30px';
-        container.style.textAlign = 'center';
-        container.style.cursor = 'pointer';
-        container.style.fontWeight = 'bold';
-
-        // Start tracking on button click
-        container.onclick = function () {
-            if (!isTracking) { // Check if not currently tracking
-                startTracking(); // Start tracking
-                container.innerHTML = 'Stop'; // Change caption to "Stop"
-            } else {
-                stopTracking(); // Stop tracking
-                container.innerHTML = 'Fly'; // Change caption back to "Fly"
-            }
-        };
-
-        return container;
-    }
-});
-
-// Add the Fly button to the map
-map.addControl(new flyControl());
-
 // Variables to store the fly marker and the heading (angle)
 let flyMarker = null;
 let flyAngle = 0;
