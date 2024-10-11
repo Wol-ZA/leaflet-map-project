@@ -464,13 +464,34 @@ function checkGeoJsonMarkersInRange(centerLatLng, marker) {
     return geoJsonMarkersWithinRange; // Return the array for further processing
 }
 
+// Get the modal
+const modal = document.getElementById("markerConfirmModal");
+const confirmButton = document.getElementById("confirmButton");
+const cancelButton = document.getElementById("cancelButton");
+const closeButton = document.getElementsByClassName("close-button")[0];
+
+// When the map is clicked
 map.on('click', function (e) {
-    // Prompt the user for confirmation
-    const createMarker = confirm("Do you want to create a marker at this location?");
-    if (createMarker) {
-        // If the user confirms, add the draggable marker and circle
+    // Show the modal
+    modal.style.display = "block";
+
+    // When the user clicks "Yes"
+    confirmButton.onclick = function () {
         addDraggableMarkerAndCircle(e.latlng);
+        modal.style.display = "none"; // Close the modal
+    }
+
+    // When the user clicks "No" or the close button
+    cancelButton.onclick = closeButton.onclick = function () {
+        modal.style.display = "none"; // Close the modal
     }
 });
+
+// Close the modal if the user clicks outside of it
+window.onclick = function (event) {
+    if (event.target === modal) {
+        modal.style.display = "none"; // Close the modal
+    }
+}
 
 
