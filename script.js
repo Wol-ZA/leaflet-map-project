@@ -464,16 +464,19 @@ function checkGeoJsonMarkersInRange(centerLatLng, marker) {
     return geoJsonMarkersWithinRange; // Return the array for further processing
 }
 
+let longPressTimeout;
+let longPressDuration = 500; // Adjust the duration for what you consider a long press
 
+map.on('mousedown', function (e) {
+    longPressTimeout = setTimeout(function () {
+        addDraggableMarkerAndCircle(e.latlng); // Only trigger after long press
+    }, longPressDuration);
+});
 
+map.on('mouseup', function () {
+    clearTimeout(longPressTimeout); // Cancel if mouse is released before long press duration
+});
 
-
-
-function gotfromwd(s) {
-    alert('Got from windev' + s)
-}
-
-// Listen for map click event to add draggable marker and circle
-map.on('click', function (e) {
-    addDraggableMarkerAndCircle(e.latlng);
+map.on('mousemove', function () {
+    clearTimeout(longPressTimeout); // Cancel if mouse is moved before long press duration
 });
