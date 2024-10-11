@@ -91,6 +91,7 @@ html, body {
     background-color: #0056b3; /* Darker shade on hover */
 }
 
+/* Modal Background */
 .modal {
     display: none; /* Hidden by default */
     position: fixed; /* Stay in place */
@@ -100,33 +101,51 @@ html, body {
     width: 100%; /* Full width */
     height: 100%; /* Full height */
     overflow: auto; /* Enable scroll if needed */
-    background-color: rgb(0,0,0); /* Fallback color */
-    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+    background-color: rgba(0, 0, 0, 0.6); /* Dark background with opacity */
 }
 
+/* Modal Content */
 .modal-content {
-    background-color: #fefefe;
-    margin: 15% auto; /* 15% from the top and centered */
+    background-color: #fff;
+    margin: 10% auto; /* Center vertically and horizontally */
     padding: 20px;
-    border: 1px solid #888;
-    width: 80%; /* Could be more or less, depending on screen size */
+    border-radius: 10px; /* Rounded corners */
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2); /* Soft shadow */
+    width: 90%; /* Could be more or less, depending on screen size */
+    max-width: 500px; /* Maximum width */
+    text-align: center; /* Center text */
 }
 
+/* Close Button */
 .close-button {
     color: #aaa;
     float: right;
-    font-size: 28px;
+    font-size: 24px;
     font-weight: bold;
-}
-
-.close-button:hover,
-.close-button:focus {
-    color: black;
-    text-decoration: none;
     cursor: pointer;
 }
 
+/* Close Button Hover Effect */
+.close-button:hover,
+.close-button:focus {
+    color: #000;
+    text-decoration: none;
+}
+
+/* Button Styles */
 button {
-    margin: 5px;
+    background-color: #007bff; /* Blue background */
+    color: white; /* White text */
+    border: none; /* No border */
+    border-radius: 5px; /* Rounded corners */
+    padding: 10px 20px; /* Padding */
+    margin: 5px; /* Space between buttons */
+    cursor: pointer; /* Pointer cursor on hover */
+    transition: background-color 0.3s; /* Smooth transition */
+}
+
+/* Button Hover Effect */
+button:hover {
+    background-color: #0056b3; /* Darker blue on hover */
 }
 
