@@ -465,8 +465,12 @@ function checkGeoJsonMarkersInRange(centerLatLng, marker) {
 }
 
 map.on('click', function (e) {
-    addDraggableMarkerAndCircle(e.latlng);
+    // Prompt the user for confirmation
+    const createMarker = confirm("Do you want to create a marker at this location?");
+    if (createMarker) {
+        // If the user confirms, add the draggable marker and circle
+        addDraggableMarkerAndCircle(e.latlng);
+    }
 });
-
 
 
