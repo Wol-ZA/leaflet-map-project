@@ -485,14 +485,20 @@ map.on('mouseleave', function () {
 
 // Start long press timer on touchstart
 map.on('touchstart', function (e) {
-    const latlng = e.touches[0]; // Access the first touch point
+    e.preventDefault(); // Prevent default touch behavior
+    const latlng = map.mouseEventToLatLng(e.touches[0]); // Get latlng from touch event
     longPressTimeout1 = setTimeout(function () {
         addDraggableMarkerAndCircle(latlng); // Trigger after long press
     }, longPressDuration1);
 });
 
+// Cancel the long press on touchend or touchmove
 map.on('touchend', function () {
     clearTimeout(longPressTimeout1);
+});
+
+map.on('touchmove', function () {
+    clearTimeout(longPressTimeout1); // Cancel the long press
 });
 
 
