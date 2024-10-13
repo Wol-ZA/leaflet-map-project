@@ -43,7 +43,6 @@ function stopTracking() {
     isAddingMarker = false; // Reset marker adding state
 }
 
-// Function to update the fly marker's position and heading
 function updateFlyPosition(position) {
     if (!isTracking) return; // Prevent updates if not tracking
 
@@ -58,10 +57,6 @@ function updateFlyPosition(position) {
                 iconUrl: 'plane.png', // Path to the plane image
                 iconSize: [50, 50],   // Size of the image
                 iconAnchor: [25, 25], // Center the icon on the marker
-                // Optional shadow for better visual effect (if you have a shadow image)
-                // shadowUrl: 'shadow.png',
-                // shadowSize: [60, 60],
-                // shadowAnchor: [30, 30]
             }),
             draggable: false
         }).addTo(map);
@@ -94,9 +89,10 @@ function handleError(error) {
 // Enable rotation for the marker (using leaflet-rotatedmarker.js plugin)
 L.Marker.include({
     setRotationAngle: function (angle) {
-        this._icon.style[L.DomUtil.TRANSFORM] += ' rotate(' + angle + 'deg)';
+        this._icon.style[L.DomUtil.TRANSFORM] = 'rotate(' + angle + 'deg)'; // Overwrite the transform
     }
 });
+
 
 // Array of geojson file paths, colors, and icons
 const geojsonFiles = [
