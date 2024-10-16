@@ -248,7 +248,7 @@ Promise.all(layerOrder.map(layer =>
     // Create the Leaflet control with a collapsible option
     L.control.layers(baseLayers, overlays, {
     collapsed: true,
-    position: 'bottomright' // Set the position to bottom-right
+    position: 'bottomleft' // Set the position to bottom-right
     }).addTo(map);
 
     // Set the initial layer display order
