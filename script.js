@@ -200,18 +200,18 @@ function loadGeojson(file, color, opacity, iconKey, layerName) {
 
 // Layer order and details for each GeoJSON file
 const layerOrder = [
-    { file: 'ACCFIS.geojson', color: '#FFFF00', opacity: 0.18, icon: 'accfis', name: 'ACCFIS' },
-    { file: 'CTA.geojson', color: '#00FF00', opacity: 0.47, name: 'CTA' },
-    { file: 'FAD_FAP_FAR.geojson', color: '#0000FF', opacity: 0.41, name: 'FAD_FAP_FAR' },
-    { file: 'TMA.geojson', color: '#0000FF', opacity: 0.40, name: 'TMA' },
-    { file: 'ATZ_CTR.geojson', color: '#FF0000', opacity: 0.40, name: 'ATZ_CTR' },
-    { file: 'SACAA.geojson', color: '#FF00FF', icon: 'sacaa', name: 'SACAA' },
-    { file: 'Un-Licensed.geojson', color: '#00FFFF', icon: 'unlicensed', name: 'Un-Licensed' },
-    { file: 'Aerodrome_AIC.geojson', color: '#FFA500', icon: 'aic', name: 'AIC' },
-    { file: 'Aerodrome_AIP.geojson', color: '#800080', icon: 'aip', name: 'AIP' },
-    { file: 'ATNS.geojson', color: '#808080', icon: 'atns', name: 'ATNS' },
-    { file: 'Military.geojson', color: '#000000', icon: 'military', name: 'Military' },
-    { file: 'helistops.geojson', color: '#8B4513', icon: 'helistops', name: 'Helistops' }
+    { file: 'ACCFIS.geojson', color: '#FFFF00', name: 'ACCFIS', opacity: 0.20, icon: 'accfis' },    // Yellow, 18%
+    { file: 'CTA.geojson', color: '#00FF00', name: 'CTA', opacity: 0.03 },          // Green, 47%
+    { file: 'FAD_FAP_FAR.geojson', color: '#0000FF', name: 'FAD_FAP_FAR', opacity: 0.25 }, // Blue, 87%
+    { file: 'TMA.geojson', color: '#0000FF', name: 'TMA', opacity: 0.05 }, // Blue, 60%
+    { file: 'ATZ_CTR.geojson', color: '#FF0000', name: 'ATZ_CTR', opacity: 0.01 },  // Red, 67%
+    { file: 'SACAA.geojson', color: '#FF00FF', name: 'SACAA', icon: 'sacaa' }, // Magenta
+    { file: 'Un-Licensed.geojson', color: '#00FFFF', name: 'Un-Licensed', icon: 'unlicensed' }, // Cyan
+    { file: 'Aerodrome_AIC.geojson', color: '#FFA500', name: 'AIC', icon: 'aic' }, // Orange
+    { file: 'Aerodrome_AIP.geojson', color: '#800080', name: 'AIP', icon: 'aip' }, // Purple
+    { file: 'ATNS.geojson', color: '#808080', name: 'ATNS', icon: 'atns' }, // Gray
+    { file: 'Military.geojson', color: '#000000', name: 'Military', icon: 'military' }, // Black
+    { file: 'helistops.geojson', color: '#8B4513', name: 'Helistops', icon: 'helistops' } // SaddleBrown
 ];
 
 // Function to ensure layers are displayed in the correct order
