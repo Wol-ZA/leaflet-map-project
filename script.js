@@ -96,11 +96,11 @@ L.Marker.include({
 
 // Array of geojson file paths, colors, and icons
 const geojsonFiles = [
-    { file: 'ACCFIS.geojson', color: '#FFFF00', name: 'ACCFIS', opacity: 0.18, icon: 'accfis' },    // Yellow, 18%
-    { file: 'CTA.geojson', color: '#00FF00', name: 'CTA', opacity: 0.47 },          // Green, 47%
-    { file: 'FAD_FAP_FAR.geojson', color: '#0000FF', name: 'FAD_FAP_FAR', opacity: 0.41 }, // Blue, 87%
-    { file: 'TMA.geojson', color: '#0000FF', name: 'TMA', opacity: 0.40 }, // Blue, 60%
-    { file: 'ATZ_CTR.geojson', color: '#FF0000', name: 'ATZ_CTR', opacity: 0.40 },  // Red, 67%
+    { file: 'ACCFIS.geojson', color: '#FFFF00', name: 'ACCFIS', opacity: 0.20, icon: 'accfis' },    // Yellow, 18%
+    { file: 'CTA.geojson', color: '#00FF00', name: 'CTA', opacity: 0.03 },          // Green, 47%
+    { file: 'FAD_FAP_FAR.geojson', color: '#0000FF', name: 'FAD_FAP_FAR', opacity: 0.25 }, // Blue, 87%
+    { file: 'TMA.geojson', color: '#0000FF', name: 'TMA', opacity: 0.05 }, // Blue, 60%
+    { file: 'ATZ_CTR.geojson', color: '#FF0000', name: 'ATZ_CTR', opacity: 0.01 },  // Red, 67%
     { file: 'SACAA.geojson', color: '#FF00FF', name: 'SACAA', icon: 'sacaa' }, // Magenta
     { file: 'Un-Licensed.geojson', color: '#00FFFF', name: 'Un-Licensed', icon: 'unlicensed' }, // Cyan
     { file: 'Aerodrome_AIC.geojson', color: '#FFA500', name: 'AIC', icon: 'aic' }, // Orange
