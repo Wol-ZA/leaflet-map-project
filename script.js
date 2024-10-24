@@ -50,6 +50,8 @@ function updateFlyPosition(position) {
     const lng = position.coords.longitude;
     const heading = position.coords.heading; // Heading (if available, only on devices with compass)
 
+    console.log("Latitude:", lat, "Longitude:", lng, "Heading:", heading); // Debugging
+
     // If the marker doesn't exist yet, create it at the current location
     if (!flyMarker) {
         flyMarker = L.marker([lat, lng], {
@@ -68,13 +70,16 @@ function updateFlyPosition(position) {
         flyMarker.setLatLng([lat, lng]);
     }
 
-    // If heading information is available, rotate the marker
-    if (heading !== null && heading !== undefined) {
+    // If heading information is available and valid, rotate the marker
+    if (heading !== null && heading !== undefined && !isNaN(heading)) {
         flyAngle = heading;
 
         // Using the rotation plugin to rotate the marker
         flyMarker.setRotationAngle(flyAngle);
         flyMarker.setRotationOrigin('center center'); // Ensure the rotation origin is the center of the image
+        console.log("Rotating marker to:", flyAngle, "degrees");
+    } else {
+        console.warn("Heading information not available.");
     }
 
     // Keep the map centered on the current position as you move
@@ -92,6 +97,7 @@ L.Marker.include({
         this._icon.style[L.DomUtil.TRANSFORM] = 'rotate(' + angle + 'deg)'; // Overwrite the transform
     }
 });
+
 
 
 // Array of geojson file paths, colors, and icons
