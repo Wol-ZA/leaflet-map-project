@@ -43,6 +43,10 @@ function stopTracking() {
     isAddingMarker = false; // Reset marker adding state
 }
 
+let flyMarker, headingLine;
+const nauticalMileInMeters = 1852; // 1 nautical mile is 1852 meters
+const lineLengthNm = 20 * nauticalMileInMeters; // Line length in meters
+
 function updateFlyPosition(position) {
     if (!isTracking) return; // Prevent updates if not tracking
 
@@ -70,14 +74,23 @@ function updateFlyPosition(position) {
         flyMarker.setLatLng([lat, lng]);
     }
 
-    // If heading information is available and valid, rotate the marker
+    // If heading information is available and valid, rotate the marker and draw the line
     if (heading !== null && heading !== undefined && !isNaN(heading)) {
         flyAngle = heading;
 
-        // Using the rotation plugin to rotate the marker
+        // Rotate the marker
         flyMarker.setRotationAngle(flyAngle);
         flyMarker.setRotationOrigin('center center'); // Ensure the rotation origin is the center of the image
-        console.log("Rotating marker to:", flyAngle, "degrees");
+
+        // Calculate the 20 nm position ahead of the plane
+        const pointAhead = calculatePointAhead(lat, lng, heading, lineLengthNm);
+
+        // If the heading line exists, update it. Otherwise, create it.
+        if (!headingLine) {
+            headingLine = L.polyline([ [lat, lng], pointAhead ], { color: 'blue' }).addTo(map);
+        } else {
+            headingLine.setLatLngs([ [lat, lng], pointAhead ]);
+        }
     } else {
         console.warn("Heading information not available.");
     }
@@ -86,10 +99,41 @@ function updateFlyPosition(position) {
     map.panTo([lat, lng]);
 }
 
+// Function to calculate the point 20 nm ahead based on the heading
+function calculatePointAhead(lat, lng, heading, distanceInMeters) {
+    const R = 6371000; // Radius of the Earth in meters
+
+    const bearing = heading * (Math.PI / 180); // Convert heading to radians
+    const dist = distanceInMeters / R; // Angular distance in radians
+
+    // Convert latitude and longitude from degrees to radians
+    const latRad = lat * (Math.PI / 180);
+    const lngRad = lng * (Math.PI / 180);
+
+    // Calculate the new latitude
+    const newLatRad = Math.asin(
+        Math.sin(latRad) * Math.cos(dist) +
+        Math.cos(latRad) * Math.sin(dist) * Math.cos(bearing)
+    );
+
+    // Calculate the new longitude
+    const newLngRad = lngRad + Math.atan2(
+        Math.sin(bearing) * Math.sin(dist) * Math.cos(latRad),
+        Math.cos(dist) - Math.sin(latRad) * Math.sin(newLatRad)
+    );
+
+    // Convert back to degrees
+    const newLat = newLatRad * (180 / Math.PI);
+    const newLng = newLngRad * (180 / Math.PI);
+
+    return [newLat, newLng];
+}
+
 // Function to handle geolocation errors
 function handleError(error) {
     console.warn(`ERROR(${error.code}): ${error.message}`);
 }
+
 
 // Enable rotation for the marker (using leaflet-rotatedmarker.js plugin)
 L.Marker.include({
