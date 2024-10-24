@@ -43,7 +43,7 @@ function stopTracking() {
     isAddingMarker = false; // Reset marker adding state
 }
 
-let flyMarker, headingLine;
+let headingLine;
 const nauticalMileInMeters = 1852; // 1 nautical mile is 1852 meters
 const lineLengthNm = 20 * nauticalMileInMeters; // Line length in meters
 
