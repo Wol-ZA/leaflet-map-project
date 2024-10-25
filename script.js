@@ -87,7 +87,7 @@ function updateFlyPosition(position) {
 
         // If the heading line exists, update it. Otherwise, create it.
         if (!headingLine) {
-            headingLine = L.polyline([ [lat, lng], pointAhead ], { color: 'blue' }).addTo(map);
+            headingLine = L.polyline([ [lat, lng], pointAhead ], { color: 'red' }).addTo(map);
         } else {
             headingLine.setLatLngs([ [lat, lng], pointAhead ]);
         }
