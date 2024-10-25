@@ -131,7 +131,7 @@ function calculatePointAhead(lat, lng, heading, distanceInMeters) {
 
 // Function to handle geolocation errors
 function handleError(error) {
-    console.warn(ERROR(${error.code}): ${error.message});
+    console.warn(`ERROR(${error.code}): ${error.message}`);
 }
 
 
