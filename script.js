@@ -129,12 +129,6 @@ function calculatePointAhead(lat, lng, heading, distanceInMeters) {
     return [newLat, newLng];
 }
 
-// Function to handle geolocation errors
-function handleError(error) {
-    console.warn(`ERROR(${error.code}): ${error.message}`);
-}
-
-
 // Enable rotation for the marker (using leaflet-rotatedmarker.js plugin)
 L.Marker.include({
     setRotationAngle: function (angle) {
