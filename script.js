@@ -94,8 +94,8 @@ function updateFlyPosition(position) {
 
 // Function to rotate the map container
 function rotateMap(angle) {
-    const mapContainer = map.getContainer();
-    mapContainer.style.transform = `rotate(${-angle}deg)`;
+    const mapContainer = document.getElementById('map');
+    mapContainer.style.transform = `rotate(${-angle}deg)`; // Only the map rotates
 }
 
 // Function to calculate the point 20 nm ahead based on the heading
