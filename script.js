@@ -92,10 +92,9 @@ function updateFlyPosition(position) {
     map.panTo([lat, lng]);
 }
 
-// Function to rotate the map container
 function rotateMap(angle) {
-    const mapContainer = document.getElementById('map');
-    mapContainer.style.transform = `rotate(${-angle}deg)`; // Only the map rotates
+    const tilePane = document.querySelector('.leaflet-tile-pane');
+    tilePane.style.transform = `rotate(${-angle}deg)`; // Rotate only the tile layer
 }
 
 // Function to calculate the point 20 nm ahead based on the heading
