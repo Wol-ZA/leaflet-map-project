@@ -47,14 +47,18 @@ let headingLine;
 const nauticalMileInMeters = 1852; // 1 nautical mile is 1852 meters
 const lineLengthNm = 20 * nauticalMileInMeters; // Line length in meters
 
+let lastUpdate = 0; // Timestamp of the last update
+
 function updateFlyPosition(position) {
-    if (!isTracking) return;
+    const now = Date.now();
+
+    // Limit updates to every 100 ms (adjust as needed)
+    if (now - lastUpdate < 100) return;
+    lastUpdate = now;
 
     const lat = position.coords.latitude;
     const lng = position.coords.longitude;
     const heading = position.coords.heading;
-
-    console.log("Latitude:", lat, "Longitude:", lng, "Heading:", heading);
 
     if (!flyMarker) {
         flyMarker = L.marker([lat, lng], {
@@ -67,30 +71,16 @@ function updateFlyPosition(position) {
         }).addTo(map);
         map.setView([lat, lng], 16);
     } else {
-        flyMarker.setLatLng([lat, lng]);
+        flyMarker.setLatLng([lat, lng], { animate: true, duration: 0.5 }); // Smooth transition
     }
 
-    if (heading !== null && heading !== undefined && !isNaN(heading)) {
-        flyAngle = heading;
-        flyMarker.setRotationAngle(flyAngle);
-        flyMarker.setRotationOrigin('center center');
-
-        const pointAhead = calculatePointAhead(lat, lng, heading, lineLengthNm);
-
-        if (!headingLine) {
-            headingLine = L.polyline([[lat, lng], pointAhead], { color: 'red' }).addTo(map);
-        } else {
-            headingLine.setLatLngs([[lat, lng], pointAhead]);
-        }
-
-        // Rotate the map based on the heading
-        rotateMap(flyAngle);
-    } else {
-        console.warn("Heading information not available.");
+    if (heading !== null && !isNaN(heading)) {
+        rotateMap(heading);
     }
 
-    map.panTo([lat, lng]);
+    map.panTo([lat, lng], { animate: true, duration: 0.5 });
 }
+
 
 function rotateMap(angle) {
     const tilePane = document.querySelector('.leaflet-tile-pane');
