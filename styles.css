@@ -6,18 +6,6 @@ html, body {
 
 /* Make the map take the full height and width of the page */
 
-
-#map-wrapper {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-}
-
-.leaflet-marker-icon {
-    transition: transform 0.5s ease;
-}
-
 #map {
     position: relative;
     width: 100%;
@@ -25,10 +13,7 @@ html, body {
     overflow: hidden;
 }
 
-/* Rotate only the tiles (Leaflet uses .leaflet-tile-pane to render map tiles) */
-.leaflet-tile-pane {
-    transform-origin: center center; /* Ensures the rotation is centered */
-}
+
 
 .popup-container {
     width: 300px;
