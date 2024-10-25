@@ -48,55 +48,54 @@ const nauticalMileInMeters = 1852; // 1 nautical mile is 1852 meters
 const lineLengthNm = 20 * nauticalMileInMeters; // Line length in meters
 
 function updateFlyPosition(position) {
-    if (!isTracking) return; // Prevent updates if not tracking
+    if (!isTracking) return;
 
     const lat = position.coords.latitude;
     const lng = position.coords.longitude;
-    const heading = position.coords.heading; // Heading (if available, only on devices with compass)
+    const heading = position.coords.heading;
 
-    console.log("Latitude:", lat, "Longitude:", lng, "Heading:", heading); // Debugging
+    console.log("Latitude:", lat, "Longitude:", lng, "Heading:", heading);
 
-    // If the marker doesn't exist yet, create it at the current location
     if (!flyMarker) {
         flyMarker = L.marker([lat, lng], {
             icon: L.icon({
-                iconUrl: 'plane.png', // Path to the plane image
-                iconSize: [50, 50],   // Size of the image
-                iconAnchor: [25, 25], // Center the icon on the marker
+                iconUrl: 'plane.png',
+                iconSize: [50, 50],
+                iconAnchor: [25, 25],
             }),
             draggable: false
         }).addTo(map);
-
-        // Center the map on the current location
-        map.setView([lat, lng], 16); // Zoom level 16 to focus on the user
+        map.setView([lat, lng], 16);
     } else {
-        // If marker already exists, just update its position
         flyMarker.setLatLng([lat, lng]);
     }
 
-    // If heading information is available and valid, rotate the marker and draw the line
     if (heading !== null && heading !== undefined && !isNaN(heading)) {
         flyAngle = heading;
-
-        // Rotate the marker
         flyMarker.setRotationAngle(flyAngle);
-        flyMarker.setRotationOrigin('center center'); // Ensure the rotation origin is the center of the image
+        flyMarker.setRotationOrigin('center center');
 
-        // Calculate the 20 nm position ahead of the plane
         const pointAhead = calculatePointAhead(lat, lng, heading, lineLengthNm);
 
-        // If the heading line exists, update it. Otherwise, create it.
         if (!headingLine) {
-            headingLine = L.polyline([ [lat, lng], pointAhead ], { color: 'red' }).addTo(map);
+            headingLine = L.polyline([[lat, lng], pointAhead], { color: 'red' }).addTo(map);
         } else {
-            headingLine.setLatLngs([ [lat, lng], pointAhead ]);
+            headingLine.setLatLngs([[lat, lng], pointAhead]);
         }
+
+        // Rotate the map based on the heading
+        rotateMap(flyAngle);
     } else {
         console.warn("Heading information not available.");
     }
 
-    // Keep the map centered on the current position as you move
     map.panTo([lat, lng]);
+}
+
+// Function to rotate the map container
+function rotateMap(angle) {
+    const mapContainer = map.getContainer();
+    mapContainer.style.transform = `rotate(${-angle}deg)`;
 }
 
 // Function to calculate the point 20 nm ahead based on the heading
