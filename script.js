@@ -47,44 +47,56 @@ let headingLine;
 const nauticalMileInMeters = 1852; // 1 nautical mile is 1852 meters
 const lineLengthNm = 20 * nauticalMileInMeters; // Line length in meters
 
-let lastUpdate = 0; // Timestamp of the last update
-
 function updateFlyPosition(position) {
-    const now = Date.now();
-
-    // Limit updates to every 100 ms (adjust as needed)
-    if (now - lastUpdate < 100) return;
-    lastUpdate = now;
+    if (!isTracking) return; // Prevent updates if not tracking
 
     const lat = position.coords.latitude;
     const lng = position.coords.longitude;
-    const heading = position.coords.heading;
+    const heading = position.coords.heading; // Heading (if available, only on devices with compass)
 
+    console.log("Latitude:", lat, "Longitude:", lng, "Heading:", heading); // Debugging
+
+    // If the marker doesn't exist yet, create it at the current location
     if (!flyMarker) {
         flyMarker = L.marker([lat, lng], {
             icon: L.icon({
-                iconUrl: 'plane.png',
-                iconSize: [50, 50],
-                iconAnchor: [25, 25],
+                iconUrl: 'plane.png', // Path to the plane image
+                iconSize: [50, 50],   // Size of the image
+                iconAnchor: [25, 25], // Center the icon on the marker
             }),
             draggable: false
         }).addTo(map);
-        map.setView([lat, lng], 16);
+
+        // Center the map on the current location
+        map.setView([lat, lng], 16); // Zoom level 16 to focus on the user
     } else {
-        flyMarker.setLatLng([lat, lng], { animate: true, duration: 0.5 }); // Smooth transition
+        // If marker already exists, just update its position
+        flyMarker.setLatLng([lat, lng]);
     }
 
-    if (heading !== null && !isNaN(heading)) {
-        rotateMap(heading);
+    // If heading information is available and valid, rotate the marker and draw the line
+    if (heading !== null && heading !== undefined && !isNaN(heading)) {
+        flyAngle = heading;
+
+        // Rotate the marker
+        flyMarker.setRotationAngle(flyAngle);
+        flyMarker.setRotationOrigin('center center'); // Ensure the rotation origin is the center of the image
+
+        // Calculate the 20 nm position ahead of the plane
+        const pointAhead = calculatePointAhead(lat, lng, heading, lineLengthNm);
+
+        // If the heading line exists, update it. Otherwise, create it.
+        if (!headingLine) {
+            headingLine = L.polyline([ [lat, lng], pointAhead ], { color: 'red' }).addTo(map);
+        } else {
+            headingLine.setLatLngs([ [lat, lng], pointAhead ]);
+        }
+    } else {
+        console.warn("Heading information not available.");
     }
 
-    map.panTo([lat, lng], { animate: true, duration: 0.5 });
-}
-
-
-function rotateMap(angle) {
-    const tilePane = document.querySelector('.leaflet-tile-pane');
-    tilePane.style.transform = `rotate(${-angle}deg)`; // Rotate only the tile layer
+    // Keep the map centered on the current position as you move
+    map.panTo([lat, lng]);
 }
 
 // Function to calculate the point 20 nm ahead based on the heading
@@ -119,8 +131,24 @@ function calculatePointAhead(lat, lng, heading, distanceInMeters) {
 
 // Function to handle geolocation errors
 function handleError(error) {
-    console.warn(`ERROR(${error.code}): ${error.message}`);
+    console.warn(ERROR(${error.code}): ${error.message});
 }
+
+
+// Enable rotation for the marker (using leaflet-rotatedmarker.js plugin)
+L.Marker.include({
+    setRotationAngle: function (angle) {
+        this._icon.style[L.DomUtil.TRANSFORM] = 'rotate(' + angle + 'deg)'; // Overwrite the transform
+    }
+});
+
+
+function rotateMap(angle) {
+    const tilePane = document.querySelector('.leaflet-tile-pane');
+    tilePane.style.transform = `rotate(${-angle}deg)`; // Rotate only the tile layer
+}
+
+
 
 
 // Enable rotation for the marker (using leaflet-rotatedmarker.js plugin)
