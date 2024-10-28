@@ -63,3 +63,12 @@
         fadFapFarLayer.visible = e.target.checked;
       });
     });
+  // Toggle layer control panel visibility
+document.getElementById("toggleLayerButton").addEventListener("click", function() {
+  const layerTogglePanel = document.getElementById("layerTogglePanel");
+  if (layerTogglePanel.style.display === "none" || layerTogglePanel.style.display === "") {
+    layerTogglePanel.style.display = "block"; // Show the panel
+  } else {
+    layerTogglePanel.style.display = "none"; // Hide the panel
+  }
+});
