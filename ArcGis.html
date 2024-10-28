@@ -1,70 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Flight Tracking Map</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        html, body, #map {
-            padding: 0;
-            margin: 0;
-            height: 100%;
-            width: 100%;
-        }
-    </style>
-    <script src="https://js.arcgis.com/4.27/"></script>
-    <script>
-        require([
-            "esri/Map", "esri/views/MapView", "esri/Graphic", "esri/layers/GraphicsLayer"
-        ], function(Map, MapView, Graphic, GraphicsLayer) {
-            const map = new Map({
-                basemap: "topo-vector"
-            });
-
-            const view = new MapView({
-                container: "map",
-                map: map,
-                center: [20.9374, -34.5328], // Initial center point
-                zoom: 10
-            });
-
-            const graphicsLayer = new GraphicsLayer();
-            map.add(graphicsLayer);
-
-            const planeSymbol = {
-                type: "picture-marker",
-                url: "plane_1.png", // URL to plane icon
-                width: "24px",
-                height: "24px",
-            };
-
-            const planeGraphic = new Graphic({
-                geometry: { type: "point", longitude: 20.9374, latitude: -34.5328 },
-                symbol: planeSymbol
-            });
-            graphicsLayer.add(planeGraphic);
-
-            // Function to update plane location
-            function updatePlaneLocation(longitude, latitude) {
-                planeGraphic.geometry = {
-                    type: "point",
-                    longitude: longitude,
-                    latitude: latitude
-                };
-                view.goTo(planeGraphic.geometry); // Optional: Center on new position
-            }
-
-            // Example: Simulate updates every 2 seconds
-            setInterval(() => {
-                // Replace with actual GPS data
-                const newLongitude = planeGraphic.geometry.longitude + 0.01;
-                const newLatitude = planeGraphic.geometry.latitude + 0.005;
-                updatePlaneLocation(newLongitude, newLatitude);
-            }, 2000);
-        });
-    </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ArcGIS 3D Map Example</title>
+  <!-- Include the ArcGIS API for JavaScript -->
+  <link
+    rel="stylesheet"
+    href="https://js.arcgis.com/4.28/esri/themes/light/main.css"
+  />
+  <script src="https://js.arcgis.com/4.28/"></script>
+  <style>
+    /* Set map height */
+    #viewDiv {
+      height: 100vh;
+      width: 100vw;
+    }
+  </style>
 </head>
 <body>
-    <div id="map"></div>
+  <!-- Map container -->
+  <div id="viewDiv"></div>
+  <!-- JavaScript code to load the 3D map -->
+  <script src="script.js"></script>
 </body>
 </html>
