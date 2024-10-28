@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Real-Time GPS Tracking Map</title>
+  <link rel="stylesheet" href="https://js.arcgis.com/4.27/esri/themes/light/main.css">
+  <style>
+    /* Fullscreen map container */
+    #viewDiv {
+      height: 100vh;
+      width: 100vw;
+    }
+  </style>
+  <script src="https://js.arcgis.com/4.27/"></script>
+</head>
+<body>
+  <div id="viewDiv"></div>
+
+  <script>
+    require([
+      "esri/Map",
+      "esri/views/SceneView",
+      "esri/geometry/Point"
+    ], function(Map, SceneView, Point) {
+      // Initialize the map
+      const map = new Map({
+        basemap: "topo",
+        ground: "world-elevation"
+      });
+
+      // Create the SceneView
+      const view = new SceneView({
+        container: "viewDiv",
+        map: map,
+        camera: {
+          position: { latitude: 0, longitude: 0, z: 10000 }, // Initial position
+          tilt: 80
+        }
+      });
+
+      // Function to update location on the map
+      function updateLocation(latitude, longitude, altitude) {
+        alert("Updating location: " + latitude + ", " + longitude + ", " + (altitude || 1000));
+        const point = new Point({
+          latitude: latitude,
+          longitude: longitude,
+          z: altitude || 1000 // Default altitude if none provided
+        });
+        const camera = view.camera.clone();
+        camera.position = point;
+        view.goTo(camera, { animate: true }).catch((err) => {
+          alert("Error moving camera: " + err);
+        });
+      }
+
+      // Geolocation API to watch for changes in position
+      if (navigator.geolocation) {
+        alert("Geolocation is supported.");
+
+        navigator.geolocation.watchPosition(
+          (position) => {
+            const { latitude, longitude, altitude } = position.coords;
+            alert("Position received: Latitude " + latitude + ", Longitude " + longitude + ", Altitude " + altitude);
+            updateLocation(latitude, longitude, altitude);
+          },
+          (error) => {
+            alert("Error getting location: " + error.message);
+          },
+          {
+            enableHighAccuracy: true, // Use GPS if available for higher accuracy
+            maximumAge: 10000, // Cache location for 10 seconds
+            timeout: 5000 // Wait up to 5 seconds for a location
+          }
+        );
+      } else {
+        alert("Geolocation is not supported by this browser.");
+      }
+    });
+  </script>
+</body>
+</html>
