@@ -106,7 +106,7 @@ require([
   }
 
   // Function to start live tracking
-  function startLiveTracking() {
+  function startTracking() {
     if (navigator.geolocation) {
       console.log("Geolocation is supported.");
 
