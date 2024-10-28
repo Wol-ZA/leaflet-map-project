@@ -112,7 +112,9 @@
           // Rotate the marker based on the bearing
           if (lastPosition) {
             const bearing = calculateBearing(lastPosition, newLocation);
+            // Apply rotation to the marker
             planeSymbol.symbolLayers.getItemAt(0).angle = bearing; // Set rotation
+            planeSymbol.symbolLayers.getItemAt(0).depth = 0; // Ensure the depth is set to zero to avoid conflicts
           }
 
           // Update the last position
