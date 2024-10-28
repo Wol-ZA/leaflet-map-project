@@ -67,9 +67,8 @@
           z: altitude || 1000
         });
 
-        // Optionally adjust the camera to follow the new position
-        view.goTo({ target: planeGraphic.geometry, tilt: 80 }, { animate: true })
-          .catch((err) => console.error("Error moving camera:", err));
+        // Center the view on the updated position without affecting zoom or tilt
+        view.center = planeGraphic.geometry;
       }
 
       if (navigator.geolocation) {
