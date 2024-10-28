@@ -15,7 +15,7 @@
     /* Styling for layer toggle panel */
     .layer-toggle {
       position: absolute;
-      top: 30px;
+      top: 10px;
       left: 10px;
       background: white;
       padding: 10px;
@@ -27,7 +27,7 @@
     /* Button to toggle the layer panel */
     .toggle-button {
       position: absolute;
-      top: 30px;
+      top: 10px;
       left: 120px;
       background-color: #4CAF50;
       color: white;
@@ -43,6 +43,8 @@
   <!-- Map container -->
   <div id="viewDiv"></div>
 
+  <!-- Button to toggle the layer control panel -->
+  <button class="toggle-button" id="toggleLayerButton">Layers</button>
 
   <!-- Toggle Panel for layers -->
   <div class="layer-toggle" id="layerTogglePanel">
@@ -52,16 +54,6 @@
     <label><input type="checkbox" id="tmaLayerToggle" checked> TMA</label><br>
     <label><input type="checkbox" id="fadFapFarLayerToggle" checked> FAD_FAP_FAR</label>
   </div>
-  
-  <div id="layerTogglePanelicon" style="display: none;">
-  <input type="checkbox" id="sacaaLayerToggle" checked /> SACAA Layer<br />
-  <input type="checkbox" id="aipLayerToggle" checked /> Aerodrome AIP Layer<br />
-  <input type="checkbox" id="aicLayerToggle" checked /> Aerodrome AIC Layer<br />
-  <input type="checkbox" id="unlicensedLayerToggle" checked /> Un-Licensed Layer<br />
-  <input type="checkbox" id="atnsLayerToggle" checked /> ATNS Layer<br />
-  <input type="checkbox" id="militaryLayerToggle" checked /> Military Layer<br />
-  <input type="checkbox" id="helistopsLayerToggle" checked /> Helistops Layer<br />
-</div>
 
   <!-- Link to the JavaScript file -->
   <script src="app.js"></script>
