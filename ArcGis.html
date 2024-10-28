@@ -24,8 +24,9 @@
       "esri/geometry/Point",
       "esri/Graphic",
       "esri/symbols/IconSymbol3DLayer",
-      "esri/symbols/PointSymbol3D"
-    ], function(Map, SceneView, Point, Graphic, IconSymbol3DLayer, PointSymbol3D) {
+      "esri/symbols/PointSymbol3D",
+      "esri/geometry/geometryEngine"
+    ], function(Map, SceneView, Point, Graphic, IconSymbol3DLayer, PointSymbol3D, geometryEngine) {
       const map = new Map({
         basemap: "topo",
         ground: "world-elevation"
@@ -58,11 +59,29 @@
       view.graphics.add(planeGraphic);
 
       let currentZoom = view.camera.position.z; // Initialize current zoom
+      let lastPosition = null; // To hold the last known position
 
       // Event listener to update current zoom when user changes zoom level
       view.watch("zoom", function() {
         currentZoom = view.zoom; // Update current zoom level
       });
+
+      function calculateBearing(start, end) {
+        const lat1 = start.latitude * Math.PI / 180;
+        const lon1 = start.longitude * Math.PI / 180;
+        const lat2 = end.latitude * Math.PI / 180;
+        const lon2 = end.longitude * Math.PI / 180;
+
+        const dLon = lon2 - lon1;
+
+        const x = Math.sin(dLon) * Math.cos(lat2);
+        const y = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLon);
+
+        let initialBearing = Math.atan2(x, y) * 180 / Math.PI;
+        initialBearing = (initialBearing + 360) % 360; // Normalize to 0-360
+
+        return initialBearing;
+      }
 
       function updateLocation(latitude, longitude, altitude) {
         console.log("Updating location:", latitude, longitude, altitude);
@@ -89,6 +108,15 @@
 
           // Lock the zoom level to the stored value
           view.camera.position.z = currentZoom;
+
+          // Rotate the marker based on the bearing
+          if (lastPosition) {
+            const bearing = calculateBearing(lastPosition, newLocation);
+            planeSymbol.symbolLayers.getItemAt(0).angle = bearing; // Set rotation
+          }
+
+          // Update the last position
+          lastPosition = newLocation;
         } else {
           // Just update the graphic position without changing the view center
           planeGraphic.geometry = newLocation;
