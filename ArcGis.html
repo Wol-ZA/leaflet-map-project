@@ -73,7 +73,7 @@
         );
 
         // Update only if the new location is significantly different
-        if (distance > 0.0001) { // Adjust this threshold as needed
+        if (distance > 0.0010) { // Adjust this threshold as needed
           planeGraphic.geometry = newLocation;
           view.center = newLocation;
         } else {
