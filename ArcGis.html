@@ -73,7 +73,7 @@
         );
 
         // Only update if the new location is significantly different
-        if (distance > 0.0001) { // Adjust this threshold as needed
+        if (distance > 0.0100) { // Adjust this threshold as needed
           // Store the current zoom level and tilt
           const currentZoom = view.camera.position.z;
           const currentTilt = view.camera.tilt;
