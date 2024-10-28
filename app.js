@@ -8,7 +8,7 @@ require([
   "esri/geometry/geometryEngine"
 ], function(Map, SceneView, Point, Graphic, IconSymbol3DLayer, PointSymbol3D, geometryEngine) {
   const map = new Map({
-    basemap: "topo",
+    basemap: "topo-vector",
     ground: "world-elevation"
   });
 
