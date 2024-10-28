@@ -102,9 +102,7 @@ require([
     });
 
     // Toggle layer control panel visibility
-});
-
-function Toggle() {
+    function Toggle() {
   const layerTogglePanel = document.getElementById("layerTogglePanel");
   if (layerTogglePanel.style.display === "none" || layerTogglePanel.style.display === "") {
     layerTogglePanel.style.display = "block"; // Show the panel
@@ -112,5 +110,8 @@ function Toggle() {
     layerTogglePanel.style.display = "none"; // Hide the panel
   }
 }
+});
+
+
 
 
