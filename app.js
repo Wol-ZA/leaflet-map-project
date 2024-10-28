@@ -37,11 +37,11 @@
       }
 
       // Define the color for each layer and add to the map
-      const accfisLayer = createGeoJSONLayer("ACCFIS.geojson", [255, 0, 0, 0.35]); // Red
-      const atzCtrLayer = createGeoJSONLayer("ATZ_CTR.geojson", [0, 255, 0, 0.35]); // Green
-      const ctaLayer = createGeoJSONLayer("CTA.geojson", [0, 0, 255, 0.35]); // Blue
-      const tmaLayer = createGeoJSONLayer("TMA.geojson", [255, 255, 0, 0.35]); // Yellow
-      const fadFapFarLayer = createGeoJSONLayer("FAD_FAP_FAR.geojson", [255, 0, 255, 0.35]); // Magenta
+      const accfisLayer = createGeoJSONLayer("ACCFIS.geojson", [255, 0, 0, 0.45]); // Red
+      const atzCtrLayer = createGeoJSONLayer("ATZ_CTR.geojson", [0, 255, 0, 0.45]); // Green
+      const ctaLayer = createGeoJSONLayer("CTA.geojson", [0, 0, 255, 0.45]); // Blue
+      const tmaLayer = createGeoJSONLayer("TMA.geojson", [255, 255, 0, 0.45]); // Yellow
+      const fadFapFarLayer = createGeoJSONLayer("FAD_FAP_FAR.geojson", [255, 0, 255, 0.45]); // Magenta
 
       // Add layers to the map
       map.addMany([accfisLayer, atzCtrLayer, ctaLayer, tmaLayer, fadFapFarLayer]);
