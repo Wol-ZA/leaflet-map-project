@@ -104,7 +104,7 @@ require([
     // Toggle layer control panel visibility
 });
 
-document.getElementById("toggleLayerButton").addEventListener("click", function() {
+function Toggle() {
   const layerTogglePanel = document.getElementById("layerTogglePanel");
   if (layerTogglePanel.style.display === "none" || layerTogglePanel.style.display === "") {
     layerTogglePanel.style.display = "block"; // Show the panel
