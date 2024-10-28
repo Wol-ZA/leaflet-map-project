@@ -111,6 +111,6 @@ function Toggle() {
   } else {
     layerTogglePanel.style.display = "none"; // Hide the panel
   }
-});
+}
 
 
