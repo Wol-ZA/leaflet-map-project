@@ -66,16 +66,27 @@
           z: altitude || 1000
         });
 
-        // Calculate the distance between current view center and the new location
+        // Calculate the distance between the current view center and the new location
         const distance = Math.sqrt(
           Math.pow(view.center.latitude - newLocation.latitude, 2) +
           Math.pow(view.center.longitude - newLocation.longitude, 2)
         );
 
-        // Update only if the new location is significantly different
-        if (distance > 0.0010) { // Adjust this threshold as needed
+        // Only update if the new location is significantly different
+        if (distance > 0.0001) { // Adjust this threshold as needed
+          // Store the current zoom level and tilt
+          const currentZoom = view.camera.position.z;
+          const currentTilt = view.camera.tilt;
+
+          // Update the plane's graphic geometry
           planeGraphic.geometry = newLocation;
+
+          // Update the view center without changing zoom or tilt
           view.center = newLocation;
+
+          // Restore the original zoom level and tilt
+          view.camera.position.z = currentZoom;
+          view.camera.tilt = currentTilt;
         } else {
           // Just update the graphic position without changing the view center
           planeGraphic.geometry = newLocation;
