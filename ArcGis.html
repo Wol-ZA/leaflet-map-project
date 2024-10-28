@@ -57,6 +57,13 @@
       });
       view.graphics.add(planeGraphic);
 
+      let currentZoom = view.camera.position.z; // Initialize current zoom
+
+      // Event listener to update current zoom when user changes zoom level
+      view.watch("zoom", function() {
+        currentZoom = view.zoom; // Update current zoom level
+      });
+
       function updateLocation(latitude, longitude, altitude) {
         console.log("Updating location:", latitude, longitude, altitude);
 
@@ -73,20 +80,15 @@
         );
 
         // Only update if the new location is significantly different
-        if (distance > 0.0100) { // Adjust this threshold as needed
-          // Store the current zoom level and tilt
-          const currentZoom = view.camera.position.z;
-          const currentTilt = view.camera.tilt;
-
+        if (distance > 0.0001) { // Adjust this threshold as needed
           // Update the plane's graphic geometry
           planeGraphic.geometry = newLocation;
 
-          // Update the view center without changing zoom or tilt
+          // Update the view center without changing zoom
           view.center = newLocation;
 
-          // Restore the original zoom level and tilt
+          // Lock the zoom level to the stored value
           view.camera.position.z = currentZoom;
-          view.camera.tilt = currentTilt;
         } else {
           // Just update the graphic position without changing the view center
           planeGraphic.geometry = newLocation;
