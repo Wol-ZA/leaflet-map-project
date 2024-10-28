@@ -1,28 +1,65 @@
-require([
-  "esri/Map",
-  "esri/views/MapView",
-  "esri/layers/SceneLayer"
-], function(Map, MapView, SceneLayer) {
-  
-  // Create a 2D map with the "topo" basemap
-  const map = new Map({
-    basemap: "topo" // Use a 2D basemap
-  });
+ require([
+      "esri/Map",
+      "esri/views/MapView",
+      "esri/layers/GeoJSONLayer"
+    ], function(Map, MapView, GeoJSONLayer) {
 
-  // Create the 2D MapView
-  const view = new MapView({
-    container: "viewDiv",             // Reference to the container element
-    map: map,                         // Reference to the Map object created before the view
-    center: [22.4617, -33.9646],      // Longitude, latitude (George, South Africa)
-    zoom: 12                          // Zoom level
-  });
+      // Create the map
+      const map = new Map({
+        basemap: "topo"
+      });
 
-  // Add a 3D building layer as 2D feature (optional)
-  const buildingsLayer = new SceneLayer({
-    portalItem: {
-      id: "f2e9b762544945f390ca4ac3671cfa72" // Sample building layer from ArcGIS
-    }
-  });
+      // Create the MapView centered on George, South Africa
+      const view = new MapView({
+        container: "viewDiv",
+        map: map,
+        center: [22.4617, -33.9646],
+        zoom: 12
+      });
 
-  map.add(buildingsLayer); // Add the layer to the map
-});
+      // Function to create a GeoJSONLayer with a specific color and opacity
+      function createGeoJSONLayer(url, color) {
+        return new GeoJSONLayer({
+          url: url,
+          renderer: {
+            type: "simple",
+            symbol: {
+              type: "simple-fill",
+              color: color,
+              outline: {
+                color: [255, 255, 255, 0.5],
+                width: 1
+              }
+            }
+          },
+          opacity: 0.15
+        });
+      }
+
+      // Define the color for each layer and add to the map
+      const accfisLayer = createGeoJSONLayer("ACCFIS.geojson", [255, 0, 0, 0.15]); // Red
+      const atzCtrLayer = createGeoJSONLayer("ATZ_CTR.geojson", [0, 255, 0, 0.15]); // Green
+      const ctaLayer = createGeoJSONLayer("CTA.geojson", [0, 0, 255, 0.15]); // Blue
+      const tmaLayer = createGeoJSONLayer("TMA.geojson", [255, 255, 0, 0.15]); // Yellow
+      const fadFapFarLayer = createGeoJSONLayer("FAD_FAP_FAR.geojson", [255, 0, 255, 0.15]); // Magenta
+
+      // Add layers to the map
+      map.addMany([accfisLayer, atzCtrLayer, ctaLayer, tmaLayer, fadFapFarLayer]);
+
+      // Layer toggle event listeners
+      document.getElementById("accfisLayerToggle").addEventListener("change", (e) => {
+        accfisLayer.visible = e.target.checked;
+      });
+      document.getElementById("atzCtrLayerToggle").addEventListener("change", (e) => {
+        atzCtrLayer.visible = e.target.checked;
+      });
+      document.getElementById("ctaLayerToggle").addEventListener("change", (e) => {
+        ctaLayer.visible = e.target.checked;
+      });
+      document.getElementById("tmaLayerToggle").addEventListener("change", (e) => {
+        tmaLayer.visible = e.target.checked;
+      });
+      document.getElementById("fadFapFarLayerToggle").addEventListener("change", (e) => {
+        fadFapFarLayer.visible = e.target.checked;
+      });
+    });
