@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Real-Time GPS Tracking Map</title>
+  <title>Real-Time GPS Tracking Map with Custom Marker</title>
   <link rel="stylesheet" href="https://js.arcgis.com/4.27/esri/themes/light/main.css">
   <style>
     /* Fullscreen map container */
@@ -21,40 +21,57 @@
     require([
       "esri/Map",
       "esri/views/SceneView",
-      "esri/geometry/Point"
-    ], function(Map, SceneView, Point) {
-      // Initialize the map
+      "esri/geometry/Point",
+      "esri/Graphic",
+      "esri/symbols/IconSymbol3DLayer",
+      "esri/symbols/PointSymbol3D"
+    ], function(Map, SceneView, Point, Graphic, IconSymbol3DLayer, PointSymbol3D) {
       const map = new Map({
         basemap: "topo",
         ground: "world-elevation"
       });
 
-      // Create the SceneView
       const view = new SceneView({
         container: "viewDiv",
         map: map,
         camera: {
-          position: { latitude: 0, longitude: 0, z: 10000 }, // Initial position
+          position: { latitude: 0, longitude: 0, z: 10000 },
           tilt: 80
         }
       });
 
-      // Function to update location on the map
+      // Define the custom marker symbol
+      const planeSymbol = new PointSymbol3D({
+        symbolLayers: [
+          new IconSymbol3DLayer({
+            resource: { href: "plane_1.png" },
+            size: 30
+          })
+        ]
+      });
+
+      // Create a graphic to represent the user's position
+      const planeGraphic = new Graphic({
+        geometry: new Point({ latitude: 0, longitude: 0, z: 1000 }),
+        symbol: planeSymbol
+      });
+      view.graphics.add(planeGraphic);
+
       function updateLocation(latitude, longitude, altitude) {
         console.log("Updating location:", latitude, longitude, altitude);
-        const point = new Point({
+
+        // Update the position of the plane marker
+        planeGraphic.geometry = new Point({
           latitude: latitude,
           longitude: longitude,
-          z: altitude || 1000 // Default altitude if none provided
+          z: altitude || 1000
         });
-        const camera = view.camera.clone();
-        camera.position = point;
-        view.goTo(camera, { animate: true }).catch((err) => {
-          console.error("Error moving camera:", err);
-        });
+
+        // Optionally adjust the camera to follow the new position
+        view.goTo({ target: planeGraphic.geometry, tilt: 80 }, { animate: true })
+          .catch((err) => console.error("Error moving camera:", err));
       }
 
-      // Geolocation API to watch for changes in position
       if (navigator.geolocation) {
         console.log("Geolocation is supported.");
 
@@ -68,9 +85,9 @@
             console.error("Error getting location:", error);
           },
           {
-            enableHighAccuracy: true, // Use GPS if available for higher accuracy
-            maximumAge: 10000, // Cache location for 10 seconds
-            timeout: 5000 // Wait up to 5 seconds for a location
+            enableHighAccuracy: true,
+            maximumAge: 10000,
+            timeout: 5000
           }
         );
       } else {
