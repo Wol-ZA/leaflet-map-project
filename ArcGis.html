@@ -1,21 +1,34 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Real-Time GPS Tracking Map with Custom Marker</title>
-  <link rel="stylesheet" href="https://js.arcgis.com/4.27/esri/themes/light/main.css">
-  <style>
-    /* Fullscreen map container */
-  #viewDiv {
-    width: 100%;
-    height: 100vh; /* Sets the height to the full viewport height */
-}
-  </style>
-  <script src="https://js.arcgis.com/4.27/"></script>
-  <script src="app.js" defer></script> <!-- Link to external JavaScript file -->
+    <meta charset="UTF-8">
+    <title>ArcGIS Map</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        html, body, #map {
+            padding: 0;
+            margin: 0;
+            height: 100%;
+            width: 100%;
+        }
+    </style>
+    <script src="https://js.arcgis.com/4.27/"></script>
+    <script>
+        require(["esri/Map", "esri/views/MapView"], function(Map, MapView) {
+            const map = new Map({
+                basemap: "topo-vector"  // Basemap options: "streets", "satellite", "hybrid", etc.
+            });
+
+            const view = new MapView({
+                container: "map",   // Div ID to bind the map
+                map: map,
+                center: [20.9374, -34.5328], // Longitude, Latitude (example coordinates)
+                zoom: 10
+            });
+        });
+    </script>
 </head>
 <body>
-  <div id="viewDiv"></div>
+    <div id="map"></div>
 </body>
 </html>
