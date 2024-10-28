@@ -2,41 +2,42 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>2D ArcGIS Map Centered on George, South Africa</title>
+  <title>2D ArcGIS Map with Toggleable GeoJSON Layers</title>
   <link rel="stylesheet" href="https://js.arcgis.com/4.28/esri/themes/light/main.css">
   <script src="https://js.arcgis.com/4.28/"></script>
   <style>
-    /* Set map container to occupy full screen without scroll bars */
     html, body, #viewDiv {
       height: 100%;
       width: 100%;
       margin: 0;
       overflow: hidden;
     }
+    /* Styling for layer toggle panel */
+    .layer-toggle {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: white;
+      padding: 10px;
+      border-radius: 4px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    }
   </style>
 </head>
 <body>
+  <!-- Map container -->
   <div id="viewDiv"></div>
-  <script>
-    require([
-      "esri/Map",
-      "esri/views/MapView",
-      "esri/layers/SceneLayer"
-    ], function(Map, MapView, SceneLayer) {
-      
-      // Create a 2D map with the "topo" basemap
-      const map = new Map({
-        basemap: "topo"
-      });
 
-      // Create the 2D MapView centered on George, South Africa
-      const view = new MapView({
-        container: "viewDiv",
-        map: map,
-        center: [22.4617, -33.9646], // George, South Africa coordinates
-        zoom: 12
-      });
-    });
-  </script>
+  <!-- Toggle Panel for layers -->
+  <div class="layer-toggle">
+    <label><input type="checkbox" id="accfisLayerToggle" checked> ACCFIS</label><br>
+    <label><input type="checkbox" id="atzCtrLayerToggle" checked> ATZ_CTR</label><br>
+    <label><input type="checkbox" id="ctaLayerToggle" checked> CTA</label><br>
+    <label><input type="checkbox" id="tmaLayerToggle" checked> TMA</label><br>
+    <label><input type="checkbox" id="fadFapFarLayerToggle" checked> FAD_FAP_FAR</label>
+  </div>
+
+  <!-- Link to the JavaScript file -->
+  <script src="app.js"></script>
 </body>
 </html>
