@@ -41,7 +41,7 @@
 
       // Function to update location on the map
       function updateLocation(latitude, longitude, altitude) {
-        alert("Updating location: " + latitude + ", " + longitude + ", " + (altitude || 1000));
+        console.log("Updating location:", latitude, longitude, altitude);
         const point = new Point({
           latitude: latitude,
           longitude: longitude,
@@ -50,22 +50,22 @@
         const camera = view.camera.clone();
         camera.position = point;
         view.goTo(camera, { animate: true }).catch((err) => {
-          alert("Error moving camera: " + err);
+          console.error("Error moving camera:", err);
         });
       }
 
       // Geolocation API to watch for changes in position
       if (navigator.geolocation) {
-        alert("Geolocation is supported.");
+        console.log("Geolocation is supported.");
 
         navigator.geolocation.watchPosition(
           (position) => {
             const { latitude, longitude, altitude } = position.coords;
-            alert("Position received: Latitude " + latitude + ", Longitude " + longitude + ", Altitude " + altitude);
+            console.log("Position received:", position.coords);
             updateLocation(latitude, longitude, altitude);
           },
           (error) => {
-            alert("Error getting location: " + error.message);
+            console.error("Error getting location:", error);
           },
           {
             enableHighAccuracy: true, // Use GPS if available for higher accuracy
@@ -74,7 +74,7 @@
           }
         );
       } else {
-        alert("Geolocation is not supported by this browser.");
+        console.error("Geolocation is not supported by this browser.");
       }
     });
   </script>
