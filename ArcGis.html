@@ -2,26 +2,41 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ArcGIS 3D Map Example</title>
-  <!-- Include the ArcGIS API for JavaScript -->
-  <link
-    rel="stylesheet"
-    href="https://js.arcgis.com/4.28/esri/themes/light/main.css"
-  />
+  <title>2D ArcGIS Map Centered on George, South Africa</title>
+  <link rel="stylesheet" href="https://js.arcgis.com/4.28/esri/themes/light/main.css">
   <script src="https://js.arcgis.com/4.28/"></script>
   <style>
-    /* Set map height */
-    #viewDiv {
-      height: 100vh;
-      width: 100vw;
+    /* Set map container to occupy full screen without scroll bars */
+    html, body, #viewDiv {
+      height: 100%;
+      width: 100%;
+      margin: 0;
+      overflow: hidden;
     }
   </style>
 </head>
 <body>
-  <!-- Map container -->
   <div id="viewDiv"></div>
-  <!-- JavaScript code to load the 3D map -->
-  <script src="app.js"></script>
+  <script>
+    require([
+      "esri/Map",
+      "esri/views/MapView",
+      "esri/layers/SceneLayer"
+    ], function(Map, MapView, SceneLayer) {
+      
+      // Create a 2D map with the "topo" basemap
+      const map = new Map({
+        basemap: "topo"
+      });
+
+      // Create the 2D MapView centered on George, South Africa
+      const view = new MapView({
+        container: "viewDiv",
+        map: map,
+        center: [22.4617, -33.9646], // George, South Africa coordinates
+        zoom: 12
+      });
+    });
+  </script>
 </body>
 </html>
