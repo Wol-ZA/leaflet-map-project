@@ -131,5 +131,5 @@ require([
   }
 
   // Call startLiveTracking when needed
-  startLiveTracking();
+  //startLiveTracking();
 });
