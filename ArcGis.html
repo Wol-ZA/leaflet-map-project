@@ -60,15 +60,26 @@
       function updateLocation(latitude, longitude, altitude) {
         console.log("Updating location:", latitude, longitude, altitude);
 
-        // Update the position of the plane marker
-        planeGraphic.geometry = new Point({
+        const newLocation = new Point({
           latitude: latitude,
           longitude: longitude,
           z: altitude || 1000
         });
 
-        // Center the view on the updated position without affecting zoom or tilt
-        view.center = planeGraphic.geometry;
+        // Calculate the distance between current view center and the new location
+        const distance = Math.sqrt(
+          Math.pow(view.center.latitude - newLocation.latitude, 2) +
+          Math.pow(view.center.longitude - newLocation.longitude, 2)
+        );
+
+        // Update only if the new location is significantly different
+        if (distance > 0.0001) { // Adjust this threshold as needed
+          planeGraphic.geometry = newLocation;
+          view.center = newLocation;
+        } else {
+          // Just update the graphic position without changing the view center
+          planeGraphic.geometry = newLocation;
+        }
       }
 
       if (navigator.geolocation) {
