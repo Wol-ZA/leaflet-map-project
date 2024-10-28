@@ -93,7 +93,7 @@ require([
   // Expose the tracking function globally
   window.startTracking = function() {
     if (navigator.geolocation) {
-      console.log("Geolocation is supported.");
+      alert("Geolocation is supported.");
 
       navigator.geolocation.watchPosition(
         (position) => {
