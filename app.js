@@ -261,17 +261,14 @@ window.StartTracking = function() {
                     }
                 };
 
-                // Define popup template for the marker
-                const popupTemplate = new PopupTemplate({
-                    title: name,
-                    content: description
-                });
-
-                // Create and add marker graphic to the layer
+                // Create and add marker graphic with popupTemplate directly in Graphic
                 const markerGraphic = new Graphic({
                     geometry: markerPoint,
                     symbol: markerSymbol,
-                    popupTemplate: popupTemplate
+                    popupTemplate: {
+                        title: name,
+                        content: description
+                    }
                 });
                 graphicsLayer.add(markerGraphic);
             });
