@@ -150,15 +150,18 @@ require([
     document.getElementById("helistopsLayerToggle").addEventListener("change", toggleLayerVisibility);
 
     // Function to start tracking
-    function StartTracking() {
+   window.StartTracking = function() {
         if (!tracking) {
             tracking = true; // Set tracking status to true
+
+            // Switch to SceneView for 3D
             view = new SceneView({
                 container: "viewDiv", // Reuse the same container
                 map: map,
                 center: [22.4617, -33.9646],
                 zoom: 12
             });
+
             navigator.geolocation.watchPosition(addUserLocationMarker, function(error) {
                 console.error("Geolocation error: ", error);
             }, {
@@ -167,26 +170,27 @@ require([
                 timeout: 5000
             });
         }
-    }
+    };
 
-    // Function to stop tracking
-    function EndTracking() {
+    window.EndTracking = function() {
         if (tracking) {
             tracking = false; // Set tracking status to false
+
             if (userGraphic) {
                 graphicsLayer.remove(userGraphic); // Remove the user graphic
                 userGraphic = null; // Clear the user graphic reference
             }
+
+            // Optionally switch back to MapView if needed
             view = new MapView({
                 container: "viewDiv",
                 map: map,
                 center: [22.4617, -33.9646],
                 zoom: 12
             });
-            // Optionally stop watching the position (this requires saving the watchPosition ID)
-            // navigator.geolocation.clearWatch(watchId); // Uncomment if you save watchId from watchPosition
         }
-    }
+    };
+
 
     // Initial layer visibility toggle
     toggleLayerVisibility();
