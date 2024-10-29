@@ -118,13 +118,14 @@ require([
 
         // Calculate heading if lastLocation is defined
         if (lastLocation) {
-            const heading = Math.atan2(
-                userPoint.longitude - lastLocation.longitude,
-                userPoint.latitude - lastLocation.latitude
-            ) * (180 / Math.PI);
+            const deltaLongitude = userPoint.longitude - lastLocation.longitude;
+            const deltaLatitude = userPoint.latitude - lastLocation.latitude;
 
+            // Calculate heading in degrees
+            const heading = Math.atan2(deltaLongitude, deltaLatitude) * (180 / Math.PI);
+            
             // Update the map rotation to face the direction of travel
-            view.rotation = heading;
+            view.rotation = heading >= 0 ? heading : heading + 360; // Normalize to 0-360 degrees
         }
 
         // Update lastLocation with the current position
