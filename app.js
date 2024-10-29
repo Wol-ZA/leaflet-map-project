@@ -1,12 +1,13 @@
 require([
     "esri/Map",
     "esri/views/MapView",
+    "esri/views/SceneView", // Import SceneView for 3D view
     "esri/layers/GeoJSONLayer",
     "esri/Graphic",
     "esri/geometry/Point",
     "esri/symbols/PictureMarkerSymbol",
     "esri/layers/GraphicsLayer"
-], function(Map, MapView, GeoJSONLayer, Graphic, Point, PictureMarkerSymbol, GraphicsLayer) {
+], function(Map, MapView, SceneView, GeoJSONLayer, Graphic, Point, PictureMarkerSymbol, GraphicsLayer) {
 
     // Create the map
     const map = new Map({
@@ -85,6 +86,7 @@ require([
     // Create a variable to hold the user graphic
     let userGraphic;
     let tracking = false; // Variable to track the status of tracking
+    let watchId; // Variable to hold the watch position ID
 
     // Function to add a marker at the user's current location
     function addUserLocationMarker(location) {
@@ -153,27 +155,41 @@ require([
     window.StartTracking = function() {
         if (!tracking) {
             tracking = true; // Set tracking status to true
-            navigator.geolocation.watchPosition(addUserLocationMarker, function(error) {
+            watchId = navigator.geolocation.watchPosition(addUserLocationMarker, function(error) {
                 console.error("Geolocation error: ", error);
             }, {
                 enableHighAccuracy: true,
                 maximumAge: 0,
                 timeout: 5000
             });
+            view.container = null; // Remove current view
+            const sceneView = new SceneView({
+                container: "viewDiv",
+                map: map,
+                center: [22.4617, -33.9646],
+                zoom: 12
+            });
+            view = sceneView; // Update the view variable
         }
     }
 
     // Function to stop tracking
-   window.EndTracking = function() {
+    window.EndTracking = function() {
         if (tracking) {
             tracking = false; // Set tracking status to false
             if (userGraphic) {
                 graphicsLayer.remove(userGraphic); // Remove the user graphic
                 userGraphic = null; // Clear the user graphic reference
             }
-            // Optionally stop watching the position (this requires saving the watchPosition ID)
-            
-            // navigator.geolocation.clearWatch(watchId); // Uncomment if you save watchId from watchPosition
+            navigator.geolocation.clearWatch(watchId); // Stop watching the position
+             view.container = null; // Remove current view
+            const mapView = new MapView({
+                container: "viewDiv",
+                map: map,
+                center: [22.4617, -33.9646],
+                zoom: 12
+            });
+            view = mapView; // Update the view variable
         }
     }
 
