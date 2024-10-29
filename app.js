@@ -82,58 +82,42 @@ require([
     const graphicsLayer = new GraphicsLayer();
     map.add(graphicsLayer);
 
-    // Add a plane marker at George Airport
-    const georgeAirportPoint = {
-        type: "point",
-        longitude: 22.3789,
-        latitude: -34.0056
-    };
+    // Function to add a marker at the user's current location
+    function addUserLocationMarker(location) {
+        const userPoint = {
+            type: "point",
+            longitude: location.coords.longitude,
+            latitude: location.coords.latitude
+        };
 
-    // Define the Bloemfontein Airport coordinates
-    const bloemfonteinAirportPoint = {
-        latitude: -29.0821,
-        longitude: 26.3192
-    };
+        // Create a marker symbol
+        const markerSymbol = new PictureMarkerSymbol({
+            url: "plane_1.png", // URL for your marker image
+            width: "32px",
+            height: "32px"
+        });
 
-    // Function to calculate the bearing from George Airport to Bloemfontein Airport
-    function calculateBearing(startPoint, endPoint) {
-        const startLat = startPoint.latitude * Math.PI / 180;
-        const startLon = startPoint.longitude * Math.PI / 180;
-        const endLat = endPoint.latitude * Math.PI / 180;
-        const endLon = endPoint.longitude * Math.PI / 180;
+        // Create a graphic for the user's location
+        const userGraphic = new Graphic({
+            geometry: userPoint,
+            symbol: markerSymbol
+        });
 
-        const dLon = endLon - startLon;
-
-        const y = Math.sin(dLon) * Math.cos(endLat);
-        const x = Math.cos(startLat) * Math.sin(endLat) -
-                  Math.sin(startLat) * Math.cos(endLat) * Math.cos(dLon);
-
-        const bearing = Math.atan2(y, x) * (180 / Math.PI);
-        return (bearing + 360) % 360; // Normalize to 0-360 degrees
+        // Add the user's location marker to the graphics layer
+        graphicsLayer.add(userGraphic);
+        
+        // Center the view on the user's location
+        view.center = userPoint;
     }
 
-    // Calculate the bearing from George to Bloemfontein
-    const bearing = calculateBearing(
-        georgeAirportPoint,
-        bloemfonteinAirportPoint
-    );
-
-    // Create a static marker symbol that will not rotate with the map
-    const planeSymbol = new PictureMarkerSymbol({
-        url: "plane_1.png",
-        width: "32px",
-        height: "32px",
-        angle: bearing // Set the angle to the bearing
-    });
-
-    // Create a graphic for the plane
-    const planeGraphic = new Graphic({
-        geometry: georgeAirportPoint,
-        symbol: planeSymbol
-    });
-
-    // Add the plane marker to the graphics layer
-    graphicsLayer.add(planeGraphic);
+    // Get the user's current location using the Geolocation API
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(addUserLocationMarker, function(error) {
+            console.error("Geolocation error: ", error);
+        });
+    } else {
+        console.error("Geolocation is not supported by this browser.");
+    }
 
     // Layer toggle control panel visibility
     document.getElementById("toggleLayerButton").addEventListener("click", function() {
