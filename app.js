@@ -2,7 +2,7 @@ require([
     "esri/Map",
     "esri/views/MapView",
     "esri/layers/GeoJSONLayer"
-], function(Map, MapView, GeoJSONLayer,Graphic,PictureMarkerSymbol) {
+], function(Map, MapView, GeoJSONLayer,Graphic) {
 
     // Create the map
     const map = new Map({
@@ -114,11 +114,6 @@ require([
         helistopsLayer.visible = e.target.checked;
     });
 
-    const planeSymbol = new PictureMarkerSymbol({
-    url: "plane_1.png", // Path to your plane icon
-    width: "32px",      // Adjust the width as needed
-    height: "32px"
-  });
 
   const georgeAirportPoint = {
     type: "point",
@@ -128,8 +123,12 @@ require([
 
   const planeGraphic = new Graphic({
     geometry: georgeAirportPoint,
-    symbol: planeSymbol
-  });
+    symbol: {
+      type: "picture-marker",    // Set the symbol type to picture-marker
+      url: "plane_1.png",        // Path to the plane icon image
+      width: "32px",             // Adjust width
+      height: "32px"             // Adjust height
+    }
 
   // Add the plane marker graphic to the view
   view.graphics.add(planeGraphic);
