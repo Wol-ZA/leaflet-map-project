@@ -150,7 +150,7 @@ require([
     document.getElementById("helistopsLayerToggle").addEventListener("change", toggleLayerVisibility);
 
     // Function to start tracking
-    function StartTracking() {
+    window.StartTracking = function() {
         if (!tracking) {
             tracking = true; // Set tracking status to true
             navigator.geolocation.watchPosition(addUserLocationMarker, function(error) {
@@ -164,7 +164,7 @@ require([
     }
 
     // Function to stop tracking
-    function EndTracking() {
+   window.EndTracking = function() {
         if (tracking) {
             tracking = false; // Set tracking status to false
             if (userGraphic) {
@@ -172,6 +172,7 @@ require([
                 userGraphic = null; // Clear the user graphic reference
             }
             // Optionally stop watching the position (this requires saving the watchPosition ID)
+            
             // navigator.geolocation.clearWatch(watchId); // Uncomment if you save watchId from watchPosition
         }
     }
