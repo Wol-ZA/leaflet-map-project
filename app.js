@@ -2,8 +2,9 @@ require([
     "esri/Map",
     "esri/views/MapView",
     "esri/layers/GeoJSONLayer",
-    "esri/Graphic"
-], function(Map, MapView, GeoJSONLayer, Graphic) {
+    "esri/Graphic",
+    "esri/geometry/Point"
+], function(Map, MapView, GeoJSONLayer, Graphic, Point) {
 
     // Create the map
     const map = new Map({
@@ -95,26 +96,37 @@ require([
     // Add the plane marker to the view
     view.graphics.add(planeGraphic);
 
-    // Function to update the plane's position (if needed)
-    function updatePlanePosition() {
-        // Set the position of the plane marker
-        planeGraphic.geometry = {
-            type: "point",
-            longitude: 22.3789, // Longitude of George Airport
-            latitude: -34.0056   // Latitude of George Airport
-        };
+    // Function to calculate the bearing from George Airport to Bloemfontein Airport
+    function calculateBearing(startPoint, endPoint) {
+        const startLat = startPoint.latitude * Math.PI / 180;
+        const startLon = startPoint.longitude * Math.PI / 180;
+        const endLat = endPoint.latitude * Math.PI / 180;
+        const endLon = endPoint.longitude * Math.PI / 180;
+
+        const dLon = endLon - startLon;
+
+        const y = Math.sin(dLon) * Math.cos(endLat);
+        const x = Math.cos(startLat) * Math.sin(endLat) -
+                  Math.sin(startLat) * Math.cos(endLat) * Math.cos(dLon);
+
+        const bearing = Math.atan2(y, x) * (180 / Math.PI);
+        return (bearing + 360) % 360; // Normalize to 0-360 degrees
     }
 
-    // Keep updating the position without rotating
-    setInterval(updatePlanePosition, 1000); // Updates every second
+    // Coordinates for Bloemfontein Airport
+    const bloemfonteinAirportPoint = {
+        latitude: -29.0821,
+        longitude: 26.3192
+    };
 
-    // Rotate function to simulate the effect of the plane rotating in place
-    function rotatePlane() {
-        planeGraphic.symbol.angle = (planeGraphic.symbol.angle || 0) + 10; // Rotate 10 degrees
-    }
+    // Calculate the bearing from George to Bloemfontein
+    const bearing = calculateBearing(
+        georgeAirportPoint,
+        bloemfonteinAirportPoint
+    );
 
-    // Call the rotate function every second to simulate rotation
-    setInterval(rotatePlane, 1000);
+    // Set the marker's angle to the calculated bearing
+    planeGraphic.symbol.angle = bearing;
 
     // Toggle layer control panel visibility
     document.getElementById("toggleLayerButton").addEventListener("click", function() {
