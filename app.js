@@ -84,6 +84,7 @@ require([
 
     // Create a variable to hold the user graphic
     let userGraphic;
+    let lastLocation; // Variable to store the last known location for calculating heading
 
     // Function to add a marker at the user's current location
     function addUserLocationMarker(location) {
@@ -115,10 +116,19 @@ require([
         // Center the view on the user's location
         view.center = userPoint;
 
-        // Optionally set a fixed heading (e.g., direction towards Bloemfontein airport)
-        const targetLocation = { longitude: 26.2583, latitude: -29.0833 }; // Bloemfontein airport
-        const heading = Math.atan2(targetLocation.longitude - userPoint.longitude, targetLocation.latitude - userPoint.latitude) * (180 / Math.PI);
-        view.rotation = heading; // Rotate the map to face the target
+        // Calculate heading if lastLocation is defined
+        if (lastLocation) {
+            const heading = Math.atan2(
+                userPoint.longitude - lastLocation.longitude,
+                userPoint.latitude - lastLocation.latitude
+            ) * (180 / Math.PI);
+
+            // Update the map rotation to face the direction of travel
+            view.rotation = heading;
+        }
+
+        // Update lastLocation with the current position
+        lastLocation = userPoint;
     }
 
     // Get the user's current location using the Geolocation API and track updates
