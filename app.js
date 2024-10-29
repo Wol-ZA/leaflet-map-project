@@ -230,6 +230,72 @@ window.StartTracking = function() {
         }
     }
 
+window.addMarkersAndDrawLine = function(data, graphicsLayer) {
+    // Ensure the data is parsed as an array of points with longitude and latitude
+    const points = JSON.parse(data);
+
+    // Array to hold coordinates for the polyline
+    const polylineCoordinates = [];
+
+    // Loop through each point in the data
+    points.forEach((point, index) => {
+        const { longitude, latitude } = point;
+
+        // Add the point to the polyline coordinates array
+        polylineCoordinates.push([longitude, latitude]);
+
+        // Create a marker for the point
+        const markerPoint = {
+            type: "point",
+            longitude: longitude,
+            latitude: latitude
+        };
+
+        // Define the marker symbol
+        const markerSymbol = {
+            type: "simple-marker",
+            color: "red",
+            size: "10px",
+            outline: {
+                color: "white",
+                width: 1
+            }
+        };
+
+        // Create the graphic for the marker
+        const markerGraphic = new Graphic({
+            geometry: markerPoint,
+            symbol: markerSymbol
+        });
+
+        // Add the marker to the graphics layer
+        graphicsLayer.add(markerGraphic);
+    });
+
+    // Create a polyline geometry using the coordinates array
+    const polyline = {
+        type: "polyline",
+        paths: polylineCoordinates
+    };
+
+    // Define the polyline symbol
+    const lineSymbol = {
+        type: "simple-line",
+        color: [0, 0, 255, 0.5],
+        width: 2
+    };
+
+    // Create the graphic for the polyline
+    const polylineGraphic = new Graphic({
+        geometry: polyline,
+        symbol: lineSymbol
+    });
+
+    // Add the polyline to the graphics layer
+    graphicsLayer.add(polylineGraphic);
+}
+
+    
     // Initial layer visibility toggle
     toggleLayerVisibility();
 });
