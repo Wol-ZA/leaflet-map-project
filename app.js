@@ -243,68 +243,76 @@ window.StartTracking = function() {
         }
     }
 
-  window.addMarkersAndDrawLine = function(data) {
-            // Clear previous graphics
-            graphicsLayer.removeAll();
+window.addMarkersAndDrawLine = function(data) {
+    // Clear previous graphics
+    graphicsLayer.removeAll();
 
-            // Array to hold coordinates for the polyline
-            const polylineCoordinates = [];
+    // Array to hold coordinates for the polyline
+    const polylineCoordinates = [];
 
-            data.forEach((point) => {
-                const { latitude, longitude, name, description } = point;
+    data.forEach((point, index) => {
+        const { latitude, longitude, name, description } = point;
 
-                // Add to polyline coordinates
-                polylineCoordinates.push([longitude, latitude]);
+        // Add to polyline coordinates
+        polylineCoordinates.push([longitude, latitude]);
 
-                // Define the point geometry
-                const markerPoint = {
-                    type: "point",
-                    longitude: longitude,
-                    latitude: latitude
-                };
-
-                // Define marker symbol
-                const markerSymbol = {
-                    type: "simple-marker",
-                    color: "red",
-                    size: "10px",
-                    outline: {
-                        color: "white",
-                        width: 1
-                    }
-                };
-
-                // Create and add marker graphic with popupTemplate directly in Graphic
-                const markerGraphic = new Graphic({
-                    geometry: markerPoint,
-                    symbol: markerSymbol,
-                    popupTemplate: {
-                        title: name,
-                        content: description
-                    }
-                });
-                graphicsLayer.add(markerGraphic);
-            });
-
-            // Define polyline geometry and symbol
-            const polyline = {
-                type: "polyline",
-                paths: polylineCoordinates
-            };
-
-            const lineSymbol = {
-                type: "simple-line",
-                color: [0, 0, 255, 0.5], // Semi-transparent blue
-                width: 2
-            };
-
-            // Create and add polyline graphic to the layer
-            const polylineGraphic = new Graphic({
-                geometry: polyline,
-                symbol: lineSymbol
-            });
-            graphicsLayer.add(polylineGraphic);
+        // Define the point geometry
+        const markerPoint = {
+            type: "point",
+            longitude: longitude,
+            latitude: latitude
         };
+
+        // Determine the correct PNG based on position in data
+        let markerUrl;
+        if (index === 0) {
+            markerUrl = "marker_start.png"; // First point
+        } else if (index === data.length - 1) {
+            markerUrl = "marker_end.png"; // Last point
+        } else {
+            markerUrl = "marker_default.png"; // Intermediate points
+        }
+
+        // Define marker symbol using the selected PNG
+        const markerSymbol = {
+            type: "picture-marker",
+            url: markerUrl,
+            width: "24px",
+            height: "24px"
+        };
+
+        // Create and add marker graphic with popupTemplate directly in Graphic
+        const markerGraphic = new Graphic({
+            geometry: markerPoint,
+            symbol: markerSymbol,
+            popupTemplate: {
+                title: name,
+                content: description
+            }
+        });
+        graphicsLayer.add(markerGraphic);
+    });
+
+    // Define polyline geometry and symbol
+    const polyline = {
+        type: "polyline",
+        paths: polylineCoordinates
+    };
+
+    const lineSymbol = {
+        type: "simple-line",
+        color: [0, 0, 255, 0.5], // Semi-transparent blue
+        width: 2
+    };
+
+    // Create and add polyline graphic to the layer
+    const polylineGraphic = new Graphic({
+        geometry: polyline,
+        symbol: lineSymbol
+    });
+    graphicsLayer.add(polylineGraphic);
+};
+
 
     
     // Initial layer visibility toggle
