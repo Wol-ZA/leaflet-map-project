@@ -53,10 +53,10 @@ require([
     }
 
     // Define the color for each polygon layer and add to the map
-    const accfisLayer = createPolygonGeoJSONLayer("ACCFIS.geojson", [255, 0, 0, 0.45]); // Red
-    const atzCtrLayer = createPolygonGeoJSONLayer("ATZ_CTR.geojson", [0, 255, 0, 0.45]); // Green
-    const ctaLayer = createPolygonGeoJSONLayer("CTA.geojson", [0, 0, 255, 0.45]); // Blue
-    const tmaLayer = createPolygonGeoJSONLayer("TMA.geojson", [255, 255, 0, 0.45]); // Yellow
+    const accfisLayer = createPolygonGeoJSONLayer("ACCFIS.geojson", [255, 0, 0, 0.01]); // Red
+    const atzCtrLayer = createPolygonGeoJSONLayer("ATZ_CTR.geojson", [0, 255, 0, 0.31]); // Green
+    const ctaLayer = createPolygonGeoJSONLayer("CTA.geojson", [0, 0, 255, 0.01]); // Blue
+    const tmaLayer = createPolygonGeoJSONLayer("TMA.geojson", [255, 255, 0, 0.13]); // Yellow
     const fadFapFarLayer = createPolygonGeoJSONLayer("FAD_FAP_FAR.geojson", [255, 0, 255, 0.45]); // Magenta
 
     // Add polygon layers to the map
