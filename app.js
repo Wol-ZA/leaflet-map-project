@@ -1,8 +1,9 @@
 require([
     "esri/Map",
     "esri/views/MapView",
-    "esri/layers/GeoJSONLayer"
-], function(Map, MapView, GeoJSONLayer) {
+    "esri/layers/GeoJSONLayer",
+    "esri/Graphic"
+], function(Map, MapView, GeoJSONLayer, Graphic) {
 
     // Create the map
     const map = new Map({
@@ -114,6 +115,25 @@ require([
         helistopsLayer.visible = e.target.checked;
     });
 
+    // Add a plane marker at George Airport
+    const georgeAirportPoint = {
+        type: "point",
+        longitude: 22.3789,  // Longitude of George Airport
+        latitude: -34.0056   // Latitude of George Airport
+    };
+
+    const planeGraphic = new Graphic({
+        geometry: georgeAirportPoint,
+        symbol: {
+            type: "picture-marker",
+            url: "plane_1.png",
+            width: "32px",
+            height: "32px"
+        }
+    });
+
+    // Add the plane marker to the view
+    view.graphics.add(planeGraphic);
 
     // Toggle layer control panel visibility
     document.getElementById("toggleLayerButton").addEventListener("click", function() {
