@@ -114,6 +114,25 @@ require([
         helistopsLayer.visible = e.target.checked;
     });
 
+    const planeSymbol = new PictureMarkerSymbol({
+    url: "plane_1.png", // Path to your plane icon
+    width: "32px",      // Adjust the width as needed
+    height: "32px"
+  });
+
+  const georgeAirportPoint = {
+    type: "point",
+    longitude: 22.3789,  // Longitude of George Airport
+    latitude: -34.0056   // Latitude of George Airport
+  };
+
+  const planeGraphic = new Graphic({
+    geometry: georgeAirportPoint,
+    symbol: planeSymbol
+  });
+
+  // Add the plane marker graphic to the view
+  view.graphics.add(planeGraphic);
     // Toggle layer control panel visibility
     document.getElementById("toggleLayerButton").addEventListener("click", function() {
         const layerTogglePanel = document.getElementById("layerTogglePanel");
