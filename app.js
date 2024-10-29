@@ -2,7 +2,7 @@ require([
     "esri/Map",
     "esri/views/MapView",
     "esri/layers/GeoJSONLayer"
-], function(Map, MapView, GeoJSONLayer) {
+], function(Map, MapView, GeoJSONLayer,PictureMarkerSymbol) {
 
     // Create the map
     const map = new Map({
