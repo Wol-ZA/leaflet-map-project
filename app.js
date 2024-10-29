@@ -277,8 +277,8 @@ window.addMarkersAndDrawLine = function(data) {
         const markerSymbol = {
             type: "picture-marker",
             url: markerUrl,
-            width: "24px",
-            height: "24px"
+            width: "36px",
+            height: "36px"
         };
 
         // Create and add marker graphic with popupTemplate directly in Graphic
