@@ -128,12 +128,22 @@ require([
             type: "picture-marker",
             url: "plane_1.png",
             width: "32px",
-            height: "32px"
+            height: "32px",
+            angle: 0 // Starting angle
         }
     });
 
     // Add the plane marker to the view
     view.graphics.add(planeGraphic);
+
+    // Rotate the plane marker 10 degrees every second
+    let angle = 0;
+    setInterval(() => {
+        angle = (angle + 10) % 360; // Increment and wrap angle at 360
+        planeGraphic.symbol.angle = angle;
+        view.graphics.remove(planeGraphic); // Remove the old graphic
+        view.graphics.add(planeGraphic);    // Add the updated graphic
+    }, 1000);
 
     // Toggle layer control panel visibility
     document.getElementById("toggleLayerButton").addEventListener("click", function() {
