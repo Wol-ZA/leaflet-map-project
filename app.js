@@ -116,10 +116,17 @@ function addUserLocationMarker(location, heading) {
 
     // Calculate the endpoint 20 nautical miles away in the direction of the heading
     const nauticalMilesToMeters = 20 * 1852; // 1 nautical mile = 1852 meters
+    const earthRadiusMeters = 6371000; // Earth's radius in meters
+
+    const headingRadians = heading * (Math.PI / 180); // Convert heading to radians
+
+    const endLatitude = location[1] + (nauticalMilesToMeters / earthRadiusMeters) * (180 / Math.PI) * Math.sin(headingRadians);
+    const endLongitude = location[0] + (nauticalMilesToMeters / earthRadiusMeters) * (180 / Math.PI) * Math.cos(headingRadians) / Math.cos(location[1] * Math.PI / 180);
+
     const endpoint = {
         type: "point",
-        longitude: location[0] + (nauticalMilesToMeters * Math.cos(heading * Math.PI / 180) / 111319.9),
-        latitude: location[1] + (nauticalMilesToMeters * Math.sin(heading * Math.PI / 180) / 111319.9)
+        longitude: endLongitude,
+        latitude: endLatitude
     };
 
     // Create or update the polyline graphic
@@ -152,15 +159,13 @@ function addUserLocationMarker(location, heading) {
     // Center on user's location with zoom level or scale
     view.goTo({
         target: userPoint,
-        zoom: 15, // Set an appropriate zoom level or use `scale` for finer control
+        zoom: 15,
         heading: heading
     }, {
-        animate: true, // Enable animation for a smoother experience
-        duration: 1000  // Duration in milliseconds for the transition
+        animate: true,
+        duration: 1000
     });
 }
-
-
 
     // Function to toggle layer visibility based on checkbox states
     function toggleLayerVisibility() {
