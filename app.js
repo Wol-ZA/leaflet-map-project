@@ -82,7 +82,6 @@ require([
         latitude: -34.0056
     };
 
-    let angle = 0; // Initialize angle
     const planeGraphic = new Graphic({
         geometry: georgeAirportPoint,
         symbol: {
@@ -90,31 +89,26 @@ require([
             url: "plane_1.png",
             width: "32px",
             height: "32px",
-            angle: angle // Initial angle
+            // No angle property to maintain fixed orientation
         }
     });
 
     // Add the plane marker to the view
     view.graphics.add(planeGraphic);
 
-    // Rotate the plane marker 10 degrees every second
-    setInterval(() => {
-        angle = (angle + 10) % 360; // Increment and wrap angle at 360
-
-        // Update the plane's symbol by creating a new symbol object
-        planeGraphic.symbol = {
-            type: "picture-marker",
-            url: "plane_1.png",
-            width: "32px",
-            height: "32px",
-            angle: angle // Update angle
+    // Update the plane's position (if needed)
+    function updatePlanePosition() {
+        // For this example, we are keeping it at the same position.
+        // If you want to simulate movement, update the longitude/latitude accordingly.
+        planeGraphic.geometry = {
+            type: "point",
+            longitude: 22.3789, // Longitude of George Airport
+            latitude: -34.0056   // Latitude of George Airport
         };
+    }
 
-        // Refresh graphic by removing and adding it again
-        view.graphics.remove(planeGraphic);
-        view.graphics.add(planeGraphic);
-
-    }, 1000);
+    // Call the update function to keep the plane in the same location
+    setInterval(updatePlanePosition, 1000); // Updates every second
 
     // Toggle layer control panel visibility
     document.getElementById("toggleLayerButton").addEventListener("click", function() {
