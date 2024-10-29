@@ -2,7 +2,7 @@ require([
     "esri/Map",
     "esri/views/MapView",
     "esri/layers/GeoJSONLayer"
-], function(Map, MapView, GeoJSONLayer,Graphic) {
+], function(Map, MapView, GeoJSONLayer) {
 
     // Create the map
     const map = new Map({
@@ -115,23 +115,6 @@ require([
     });
 
 
-  const georgeAirportPoint = {
-    type: "point",
-    longitude: 22.3789,  // Longitude of George Airport
-    latitude: -34.0056   // Latitude of George Airport
-  };
-
-  const planeGraphic = new Graphic({
-    geometry: georgeAirportPoint,
-    symbol: {
-      type: "picture-marker",    // Set the symbol type to picture-marker
-      url: "plane_1.png",        // Path to the plane icon image
-      width: "32px",             // Adjust width
-      height: "32px"             // Adjust height
-    };
-
-  // Add the plane marker graphic to the view
-  view.graphics.add(planeGraphic);
     // Toggle layer control panel visibility
     document.getElementById("toggleLayerButton").addEventListener("click", function() {
         const layerTogglePanel = document.getElementById("layerTogglePanel");
