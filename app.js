@@ -4,8 +4,9 @@ require([
     "esri/layers/GeoJSONLayer",
     "esri/Graphic",
     "esri/geometry/Point",
-    "esri/symbols/PictureMarkerSymbol"
-], function(Map, MapView, GeoJSONLayer, Graphic, Point, PictureMarkerSymbol) {
+    "esri/symbols/PictureMarkerSymbol",
+    "esri/layers/GraphicsLayer"
+], function(Map, MapView, GeoJSONLayer, Graphic, Point, PictureMarkerSymbol, GraphicsLayer) {
 
     // Create the map
     const map = new Map({
@@ -77,6 +78,10 @@ require([
     // Add point layers to the map
     map.addMany([sacaaLayer, aerodromeAipLayer, aerodromeAicLayer, unlicensedLayer, atnsLayer, militaryLayer, helistopsLayer]);
 
+    // Create a GraphicsLayer for static graphics
+    const graphicsLayer = new GraphicsLayer();
+    map.add(graphicsLayer);
+
     // Add a plane marker at George Airport
     const georgeAirportPoint = {
         type: "point",
@@ -127,8 +132,8 @@ require([
         symbol: planeSymbol
     });
 
-    // Add the plane marker to the view
-    view.graphics.add(planeGraphic);
+    // Add the plane marker to the graphics layer
+    graphicsLayer.add(planeGraphic);
 
     // Layer toggle control panel visibility
     document.getElementById("toggleLayerButton").addEventListener("click", function() {
