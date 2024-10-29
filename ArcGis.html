@@ -37,6 +37,39 @@
       cursor: pointer;
       z-index: 10; /* Ensure it is above other elements */
     }
+
+      .layer-toggle {
+      padding: 10px;
+      background-color: #f0f0f0;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      width: 200px;
+  }
+
+  .layer-toggle h3 {
+      margin-top: 10px;
+      margin-bottom: 5px;
+      font-size: 16px;
+      color: #333;
+      border-bottom: 1px solid #ccc;
+      padding-bottom: 5px;
+  }
+
+  .layer-toggle label {
+      display: flex;
+      align-items: center;
+      margin: 5px 0;
+  }
+
+  .layer-toggle img {
+      width: 20px;
+      height: 20px;
+      margin-right: 8px;
+  }
+
+  .layer-toggle input[type="checkbox"] {
+      margin-right: 8px;
+  }
   </style>
 </head>
 <body>
@@ -47,13 +80,26 @@
 
   <!-- Toggle Panel for layers -->
   <div class="layer-toggle" id="layerTogglePanel">
-    <label><input type="checkbox" id="accfisLayerToggle" checked> ACCFIS</label><br>
-    <label><input type="checkbox" id="atzCtrLayerToggle" checked> ATZ_CTR</label><br>
-    <label><input type="checkbox" id="ctaLayerToggle" checked> CTA</label><br>
-    <label><input type="checkbox" id="tmaLayerToggle" checked> TMA</label><br>
+    <!-- Section for airspace polygon layers -->
+    <h3>Airspaces</h3>
+    <label><input type="checkbox" id="accfisLayerToggle" checked> ACCFIS</label>
+    <label><input type="checkbox" id="atzCtrLayerToggle" checked> ATZ_CTR</label>
+    <label><input type="checkbox" id="ctaLayerToggle" checked> CTA</label>
+    <label><input type="checkbox" id="tmaLayerToggle" checked> TMA</label>
     <label><input type="checkbox" id="fadFapFarLayerToggle" checked> FAD_FAP_FAR</label>
-  </div>
-
+    
+    <!-- Divider between sections -->
+    <h3>Points of Interest</h3>
+    
+    <!-- Section for point icon layers with icons displayed next to labels -->
+    <label><img src="sacaa.png" alt="SACAA Icon"><input type="checkbox" id="sacaaLayerToggle" checked> SACAA</label>
+    <label><img src="aip.png" alt="Aerodrome AIP Icon"><input type="checkbox" id="aerodromeAipLayerToggle" checked> Aerodrome AIP</label>
+    <label><img src="aic.png" alt="Aerodrome AIC Icon"><input type="checkbox" id="aerodromeAicLayerToggle" checked> Aerodrome AIC</label>
+    <label><img src="unlicensed.png" alt="Un-Licensed Icon"><input type="checkbox" id="unlicensedLayerToggle" checked> Un-Licensed</label>
+    <label><img src="atns.png" alt="ATNS Icon"><input type="checkbox" id="atnsLayerToggle" checked> ATNS</label>
+    <label><img src="military.png" alt="Military Icon"><input type="checkbox" id="militaryLayerToggle" checked> Military</label>
+    <label><img src="helistops.png" alt="Helistops Icon"><input type="checkbox" id="helistopsLayerToggle" checked> Helistops</label>
+</div>
   <!-- Link to the JavaScript file -->
   <script src="app.js"></script>
 </body>
