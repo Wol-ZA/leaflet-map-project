@@ -149,7 +149,15 @@ function addUserLocationMarker(location, heading) {
         view.rotation = 360 - heading;
     }
 
-    view.goTo(userPoint); // Center on user's location
+    // Center on user's location with zoom level or scale
+    view.goTo({
+        target: userPoint,
+        zoom: 15, // Set an appropriate zoom level or use `scale` for finer control
+        heading: heading
+    }, {
+        animate: true, // Enable animation for a smoother experience
+        duration: 1000  // Duration in milliseconds for the transition
+    });
 }
 
 
