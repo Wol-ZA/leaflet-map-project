@@ -6,7 +6,7 @@ require([
     "esri/geometry/Point",
     "esri/symbols/PictureMarkerSymbol",
     "esri/layers/GraphicsLayer"
-], function(Map, MapView, GeoJSONLayer, Graphic, Point, PictureMarkerSymbol, GraphicsLayer) {
+], function(Map, MapView,SceneView, GeoJSONLayer, Graphic, Point, PictureMarkerSymbol, GraphicsLayer) {
 
     // Create the map
     const map = new Map({
