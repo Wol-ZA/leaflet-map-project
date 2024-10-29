@@ -230,20 +230,20 @@ window.StartTracking = function() {
         }
     }
 
-window.addMarkersAndDrawLine = function(data) {
+  window.addMarkersAndDrawLine = function(data) {
             // Clear previous graphics
             graphicsLayer.removeAll();
 
             // Array to hold coordinates for the polyline
             const polylineCoordinates = [];
 
-            points.forEach((point) => {
-                const { longitude, latitude } = point;
+            data.forEach((point) => {
+                const { latitude, longitude, name, description } = point;
 
                 // Add to polyline coordinates
                 polylineCoordinates.push([longitude, latitude]);
 
-                // Create a marker for each point
+                // Define the point geometry
                 const markerPoint = {
                     type: "point",
                     longitude: longitude,
@@ -261,10 +261,17 @@ window.addMarkersAndDrawLine = function(data) {
                     }
                 };
 
+                // Define popup template for the marker
+                const popupTemplate = new PopupTemplate({
+                    title: name,
+                    content: description
+                });
+
                 // Create and add marker graphic to the layer
                 const markerGraphic = new Graphic({
                     geometry: markerPoint,
-                    symbol: markerSymbol
+                    symbol: markerSymbol,
+                    popupTemplate: popupTemplate
                 });
                 graphicsLayer.add(markerGraphic);
             });
