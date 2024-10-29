@@ -11,7 +11,7 @@ require([
 
     // Create the map
     const map = new Map({
-        basemap: "topo-vector"
+        basemap: "topo-vector",
         ground: "world-elevation"
     });
 
