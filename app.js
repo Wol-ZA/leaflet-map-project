@@ -230,70 +230,67 @@ window.StartTracking = function() {
         }
     }
 
-window.addMarkersAndDrawLine = function(data, graphicsLayer) {
-    // Ensure the data is parsed as an array of points with longitude and latitude
-    const points = JSON.parse(data);
+window.addMarkersAndDrawLine = function(data) {
+            // Clear previous graphics
+            graphicsLayer.removeAll();
 
-    // Array to hold coordinates for the polyline
-    const polylineCoordinates = [];
+            // Parse JSON data to get points array
+            const points = JSON.parse(data);
 
-    // Loop through each point in the data
-    points.forEach((point, index) => {
-        const { longitude, latitude } = point;
+            // Array to hold coordinates for the polyline
+            const polylineCoordinates = [];
 
-        // Add the point to the polyline coordinates array
-        polylineCoordinates.push([longitude, latitude]);
+            points.forEach((point) => {
+                const { longitude, latitude } = point;
 
-        // Create a marker for the point
-        const markerPoint = {
-            type: "point",
-            longitude: longitude,
-            latitude: latitude
+                // Add to polyline coordinates
+                polylineCoordinates.push([longitude, latitude]);
+
+                // Create a marker for each point
+                const markerPoint = {
+                    type: "point",
+                    longitude: longitude,
+                    latitude: latitude
+                };
+
+                // Define marker symbol
+                const markerSymbol = {
+                    type: "simple-marker",
+                    color: "red",
+                    size: "10px",
+                    outline: {
+                        color: "white",
+                        width: 1
+                    }
+                };
+
+                // Create and add marker graphic to the layer
+                const markerGraphic = new Graphic({
+                    geometry: markerPoint,
+                    symbol: markerSymbol
+                });
+                graphicsLayer.add(markerGraphic);
+            });
+
+            // Define polyline geometry and symbol
+            const polyline = {
+                type: "polyline",
+                paths: polylineCoordinates
+            };
+
+            const lineSymbol = {
+                type: "simple-line",
+                color: [0, 0, 255, 0.5], // Semi-transparent blue
+                width: 2
+            };
+
+            // Create and add polyline graphic to the layer
+            const polylineGraphic = new Graphic({
+                geometry: polyline,
+                symbol: lineSymbol
+            });
+            graphicsLayer.add(polylineGraphic);
         };
-
-        // Define the marker symbol
-        const markerSymbol = {
-            type: "simple-marker",
-            color: "red",
-            size: "10px",
-            outline: {
-                color: "white",
-                width: 1
-            }
-        };
-
-        // Create the graphic for the marker
-        const markerGraphic = new Graphic({
-            geometry: markerPoint,
-            symbol: markerSymbol
-        });
-
-        // Add the marker to the graphics layer
-        graphicsLayer.add(markerGraphic);
-    });
-
-    // Create a polyline geometry using the coordinates array
-    const polyline = {
-        type: "polyline",
-        paths: polylineCoordinates
-    };
-
-    // Define the polyline symbol
-    const lineSymbol = {
-        type: "simple-line",
-        color: [0, 0, 255, 0.5],
-        width: 2
-    };
-
-    // Create the graphic for the polyline
-    const polylineGraphic = new Graphic({
-        geometry: polyline,
-        symbol: lineSymbol
-    });
-
-    // Add the polyline to the graphics layer
-    graphicsLayer.add(polylineGraphic);
-}
 
     
     // Initial layer visibility toggle
