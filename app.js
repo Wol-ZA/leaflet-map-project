@@ -128,7 +128,7 @@ require([
       url: "plane_1.png",        // Path to the plane icon image
       width: "32px",             // Adjust width
       height: "32px"             // Adjust height
-    }
+    };
 
   // Add the plane marker graphic to the view
   view.graphics.add(planeGraphic);
