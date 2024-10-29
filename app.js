@@ -160,9 +160,6 @@ window.StartTracking = function() {
             if (position && position.coords) {
                 const userLocation = [position.coords.longitude, position.coords.latitude];
                 addUserLocationMarker(userLocation); // Update user location marker
-                
-                // Only create the view if it doesn't exist
-                if (!view) {
                     // Create the scene view and center on the user's location
                     view = new SceneView({
                         container: "viewDiv",
@@ -173,16 +170,6 @@ window.StartTracking = function() {
                             tilt: 45 // Set the tilt to 45 degrees
                         }
                     });
-                } else {
-                    // Update the view's center and tilt dynamically
-                    view.goTo({
-                        center: userLocation,
-                        tilt: 45 // Maintain the tilt at 45 degrees
-                    });
-                }
-            } else {
-                console.error("Position is undefined or does not have coordinates.");
-            }
         }, function(error) {
             console.error("Geolocation error: ", error);
         }, {
