@@ -153,6 +153,12 @@ require([
     function StartTracking() {
         if (!tracking) {
             tracking = true; // Set tracking status to true
+            view = new SceneView({
+                container: "viewDiv", // Reuse the same container
+                map: map,
+                center: [22.4617, -33.9646],
+                zoom: 12
+            });
             navigator.geolocation.watchPosition(addUserLocationMarker, function(error) {
                 console.error("Geolocation error: ", error);
             }, {
@@ -171,6 +177,12 @@ require([
                 graphicsLayer.remove(userGraphic); // Remove the user graphic
                 userGraphic = null; // Clear the user graphic reference
             }
+            view = new MapView({
+                container: "viewDiv",
+                map: map,
+                center: [22.4617, -33.9646],
+                zoom: 12
+            });
             // Optionally stop watching the position (this requires saving the watchPosition ID)
             // navigator.geolocation.clearWatch(watchId); // Uncomment if you save watchId from watchPosition
         }
