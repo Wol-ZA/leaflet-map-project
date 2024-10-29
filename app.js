@@ -163,7 +163,17 @@ require([
     document.getElementById("helistopsLayerToggle").addEventListener("change", toggleLayerVisibility);
 
     // Get the user's current location using the Geolocation API and track updates
-   
+    if (navigator.geolocation) {
+        navigator.geolocation.watchPosition(addUserLocationMarker, function(error) {
+            console.error("Geolocation error: ", error);
+        }, {
+            enableHighAccuracy: true,
+            maximumAge: 0,
+            timeout: 5000
+        });
+    } else {
+        console.error("Geolocation is not supported by this browser.");
+    }
     // Initial layer visibility toggle
     toggleLayerVisibility();
 });
