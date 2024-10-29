@@ -160,16 +160,26 @@ window.StartTracking = function() {
             if (position && position.coords) {
                 const userLocation = [position.coords.longitude, position.coords.latitude];
                 addUserLocationMarker(userLocation); // Update user location marker
-                    // Create the scene view and center on the user's location
-                    view = new SceneView({
-                        container: "viewDiv",
-                        map: map,
-                        center: userLocation, // Center on user's location
-                        zoom: 12,
-                        camera: {
-                            tilt: 45 // Set the tilt to 45 degrees
-                        }
-                    });
+
+                // Always create a new scene view centered on the user's location
+                view = new SceneView({
+                    container: "viewDiv",
+                    map: map,
+                    center: userLocation, // Center on user's location
+                    zoom: 12,
+                    camera: {
+                        tilt: 45 // Set the tilt to 45 degrees
+                    }
+                });
+
+                // Update the camera position and tilt
+                view.goTo({
+                    center: userLocation,
+                    tilt: 45 // Maintain the tilt at 45 degrees
+                });
+            } else {
+                console.error("Position is undefined or does not have coordinates.");
+            }
         }, function(error) {
             console.error("Geolocation error: ", error);
         }, {
@@ -179,6 +189,7 @@ window.StartTracking = function() {
         });
     }
 }
+
 
 
     // Function to stop tracking
