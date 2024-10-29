@@ -82,6 +82,9 @@ require([
     const graphicsLayer = new GraphicsLayer();
     map.add(graphicsLayer);
 
+    // Create a variable to hold the user graphic
+    let userGraphic;
+
     // Function to add a marker at the user's current location
     function addUserLocationMarker(location) {
         const userPoint = {
@@ -97,23 +100,35 @@ require([
             height: "32px"
         });
 
-        // Create a graphic for the user's location
-        const userGraphic = new Graphic({
-            geometry: userPoint,
-            symbol: markerSymbol
-        });
+        // If userGraphic exists, update its position; otherwise create a new one
+        if (userGraphic) {
+            userGraphic.geometry = userPoint; // Update existing graphic
+        } else {
+            // Create a new graphic for the user's location
+            userGraphic = new Graphic({
+                geometry: userPoint,
+                symbol: markerSymbol
+            });
+            graphicsLayer.add(userGraphic); // Add to graphics layer
+        }
 
-        // Add the user's location marker to the graphics layer
-        graphicsLayer.add(userGraphic);
-        
         // Center the view on the user's location
         view.center = userPoint;
+
+        // Optionally set a fixed heading (e.g., direction towards Bloemfontein airport)
+        const targetLocation = { longitude: 26.2583, latitude: -29.0833 }; // Bloemfontein airport
+        const heading = Math.atan2(targetLocation.longitude - userPoint.longitude, targetLocation.latitude - userPoint.latitude) * (180 / Math.PI);
+        view.rotation = heading; // Rotate the map to face the target
     }
 
-    // Get the user's current location using the Geolocation API
+    // Get the user's current location using the Geolocation API and track updates
     if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(addUserLocationMarker, function(error) {
+        navigator.geolocation.watchPosition(addUserLocationMarker, function(error) {
             console.error("Geolocation error: ", error);
+        }, {
+            enableHighAccuracy: true,
+            maximumAge: 0,
+            timeout: 5000
         });
     } else {
         console.error("Geolocation is not supported by this browser.");
