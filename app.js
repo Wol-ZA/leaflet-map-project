@@ -3,8 +3,9 @@ require([
     "esri/views/MapView",
     "esri/layers/GeoJSONLayer",
     "esri/Graphic",
-    "esri/geometry/Point"
-], function(Map, MapView, GeoJSONLayer, Graphic, Point) {
+    "esri/geometry/Point",
+    "esri/symbols/PictureMarkerSymbol"
+], function(Map, MapView, GeoJSONLayer, Graphic, Point, PictureMarkerSymbol) {
 
     // Create the map
     const map = new Map({
@@ -83,18 +84,11 @@ require([
         latitude: -34.0056
     };
 
-    const planeGraphic = new Graphic({
-        geometry: georgeAirportPoint,
-        symbol: {
-            type: "picture-marker",
-            url: "plane_1.png",
-            width: "32px",
-            height: "32px"
-        }
-    });
-
-    // Add the plane marker to the view
-    view.graphics.add(planeGraphic);
+    // Define the Bloemfontein Airport coordinates
+    const bloemfonteinAirportPoint = {
+        latitude: -29.0821,
+        longitude: 26.3192
+    };
 
     // Function to calculate the bearing from George Airport to Bloemfontein Airport
     function calculateBearing(startPoint, endPoint) {
@@ -113,22 +107,30 @@ require([
         return (bearing + 360) % 360; // Normalize to 0-360 degrees
     }
 
-    // Coordinates for Bloemfontein Airport
-    const bloemfonteinAirportPoint = {
-        latitude: -29.0821,
-        longitude: 26.3192
-    };
-
     // Calculate the bearing from George to Bloemfontein
     const bearing = calculateBearing(
         georgeAirportPoint,
         bloemfonteinAirportPoint
     );
 
-    // Set the marker's angle to the calculated bearing
-    planeGraphic.symbol.angle = bearing;
+    // Create a static marker symbol that will not rotate with the map
+    const planeSymbol = new PictureMarkerSymbol({
+        url: "plane_1.png",
+        width: "32px",
+        height: "32px",
+        angle: bearing // Set the angle to the bearing
+    });
 
-    // Toggle layer control panel visibility
+    // Create a graphic for the plane
+    const planeGraphic = new Graphic({
+        geometry: georgeAirportPoint,
+        symbol: planeSymbol
+    });
+
+    // Add the plane marker to the view
+    view.graphics.add(planeGraphic);
+
+    // Layer toggle control panel visibility
     document.getElementById("toggleLayerButton").addEventListener("click", function() {
         const layerTogglePanel = document.getElementById("layerTogglePanel");
         layerTogglePanel.style.display = layerTogglePanel.style.display === "none" ? "block" : "none";
