@@ -153,32 +153,36 @@ require([
     document.getElementById("helistopsLayerToggle").addEventListener("change", toggleLayerVisibility);
 
     // Function to start tracking
-   window.StartTracking = function() {
+window.StartTracking = function() {
     if (!tracking) {
         tracking = true; // Set tracking status to true
         watchId = navigator.geolocation.watchPosition(function(position) {
-            const userLocation = [position.coords.longitude, position.coords.latitude];
-            addUserLocationMarker(userLocation); // Update user location marker
-            
-            // Only set the view center the first time
-            if (view) {
-                view.goTo({
-                    center: userLocation,
-                    tilt: 45 // Set the tilt to 45 degrees
-                });
-            } else {
-                // Create the scene view if it doesn't exist
-                view.container = null; // Remove current view
-                const sceneView = new SceneView({
-                    container: "viewDiv",
-                    map: map,
-                    center: userLocation, // Center on user's location
-                    zoom: 12,
-                    camera: {
+            if (position && position.coords) {
+                const userLocation = [position.coords.longitude, position.coords.latitude];
+                addUserLocationMarker(userLocation); // Update user location marker
+
+                // Only set the view center the first time
+                if (view) {
+                    view.goTo({
+                        center: userLocation,
                         tilt: 45 // Set the tilt to 45 degrees
-                    }
-                });
-                view = sceneView; // Update the view variable
+                    });
+                } else {
+                    // Create the scene view if it doesn't exist
+                    view.container = null; // Remove current view
+                    const sceneView = new SceneView({
+                        container: "viewDiv",
+                        map: map,
+                        center: userLocation, // Center on user's location
+                        zoom: 12,
+                        camera: {
+                            tilt: 45 // Set the tilt to 45 degrees
+                        }
+                    });
+                    view = sceneView; // Update the view variable
+                }
+            } else {
+                console.error("Position is undefined or does not have coordinates.");
             }
         }, function(error) {
             console.error("Geolocation error: ", error);
@@ -189,6 +193,7 @@ require([
         });
     }
 }
+
 
 
     // Function to stop tracking
