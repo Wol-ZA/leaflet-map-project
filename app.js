@@ -266,11 +266,11 @@ window.addMarkersAndDrawLine = function(data) {
         // Determine the correct PNG based on position in data
         let markerUrl;
         if (index === 0) {
-            markerUrl = "marker_start.png"; // First point
+            markerUrl = "markerstart.png"; // First point
         } else if (index === data.length - 1) {
-            markerUrl = "marker_end.png"; // Last point
+            markerUrl = "markerend.png"; // Last point
         } else {
-            markerUrl = "marker_default.png"; // Intermediate points
+            markerUrl = "markerdefault.png"; // Intermediate points
         }
 
         // Define marker symbol using the selected PNG
