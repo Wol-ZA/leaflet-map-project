@@ -234,9 +234,6 @@ window.addMarkersAndDrawLine = function(data) {
             // Clear previous graphics
             graphicsLayer.removeAll();
 
-            // Parse JSON data to get points array
-            const points = JSON.parse(data);
-
             // Array to hold coordinates for the polyline
             const polylineCoordinates = [];
 
