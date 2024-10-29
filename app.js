@@ -168,7 +168,9 @@ require([
                 container: "viewDiv",
                 map: map,
                 center: [22.4617, -33.9646],
-                zoom: 12
+                zoom: 12,
+                 camera: {
+                tilt: 45 // Set the tilt to 45 degrees
             });
             view = sceneView; // Update the view variable
         }
