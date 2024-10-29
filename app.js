@@ -90,7 +90,7 @@ require([
     let watchId; // Variable to hold the watch position ID
 
     // Function to add a marker at the user's current location
- function addUserLocationMarker(location) {
+function addUserLocationMarker(location) {
     const userPoint = {
         type: "point",
         longitude: location[0], // Access longitude from the array
@@ -119,7 +119,6 @@ require([
     // Center the view on the user's location
     view.goTo(userPoint); // Use goTo for smoother centering
 }
-
 
     // Function to toggle layer visibility based on checkbox states
     function toggleLayerVisibility() {
@@ -161,17 +160,11 @@ window.StartTracking = function() {
             if (position && position.coords) {
                 const userLocation = [position.coords.longitude, position.coords.latitude];
                 addUserLocationMarker(userLocation); // Update user location marker
-
-                // Only set the view center the first time
-                if (view) {
-                    view.goTo({
-                        center: userLocation,
-                        tilt: 45 // Set the tilt to 45 degrees
-                    });
-                } else {
-                    // Create the scene view if it doesn't exist
-                    view.container = null; // Remove current view
-                    const sceneView = new SceneView({
+                
+                // Only create the view if it doesn't exist
+                if (!view) {
+                    // Create the scene view and center on the user's location
+                    view = new SceneView({
                         container: "viewDiv",
                         map: map,
                         center: userLocation, // Center on user's location
@@ -180,7 +173,12 @@ window.StartTracking = function() {
                             tilt: 45 // Set the tilt to 45 degrees
                         }
                     });
-                    view = sceneView; // Update the view variable
+                } else {
+                    // Update the view's center and tilt dynamically
+                    view.goTo({
+                        center: userLocation,
+                        tilt: 45 // Maintain the tilt at 45 degrees
+                    });
                 }
             } else {
                 console.error("Position is undefined or does not have coordinates.");
@@ -194,7 +192,6 @@ window.StartTracking = function() {
         });
     }
 }
-
 
 
     // Function to stop tracking
