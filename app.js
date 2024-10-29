@@ -21,7 +21,7 @@ require([
         zoom: 12
     });
 
-    // Function to create a GeoJSONLayer with a specific color and opacity for polygons
+    // Function to create the GeoJSONLayer with specified color
     function createGeoJSONLayer(url, color) {
         return new GeoJSONLayer({
             url: url,
@@ -40,7 +40,7 @@ require([
         });
     }
 
-    // Define the color for each polygon layer and add to the map
+    // Define layers
     const accfisLayer = createGeoJSONLayer("ACCFIS.geojson", [255, 0, 0, 0.45]);
     const atzCtrLayer = createGeoJSONLayer("ATZ_CTR.geojson", [0, 255, 0, 0.45]);
     const ctaLayer = createGeoJSONLayer("CTA.geojson", [0, 0, 255, 0.45]);
@@ -66,7 +66,7 @@ require([
         });
     }
 
-    // Define each point layer with its icon and add to the map
+    // Define point layers and add to the map
     const sacaaLayer = createIconGeoJSONLayer("SACAA.geojson", "sacaa.png");
     const aerodromeAipLayer = createIconGeoJSONLayer("Aerodrome_AIP.geojson", "aip.png");
     const aerodromeAicLayer = createIconGeoJSONLayer("Aerodrome_AIC.geojson", "aic.png");
@@ -123,14 +123,44 @@ require([
 
             // Calculate heading in degrees
             const heading = Math.atan2(deltaLongitude, deltaLatitude) * (180 / Math.PI);
-            
-            // Update the map rotation to face the direction of travel
             view.rotation = heading >= 0 ? heading : heading + 360; // Normalize to 0-360 degrees
         }
 
         // Update lastLocation with the current position
         lastLocation = userPoint;
     }
+
+    // Function to toggle layer visibility based on checkbox states
+    function toggleLayerVisibility() {
+        accfisLayer.visible = document.getElementById("accfisLayerToggle").checked;
+        atzCtrLayer.visible = document.getElementById("atzCtrLayerToggle").checked;
+        ctaLayer.visible = document.getElementById("ctaLayerToggle").checked;
+        tmaLayer.visible = document.getElementById("tmaLayerToggle").checked;
+        fadFapFarLayer.visible = document.getElementById("fadFapFarLayerToggle").checked;
+
+        sacaaLayer.visible = document.getElementById("sacaaLayerToggle").checked;
+        aerodromeAipLayer.visible = document.getElementById("aerodromeAipLayerToggle").checked;
+        aerodromeAicLayer.visible = document.getElementById("aerodromeAicLayerToggle").checked;
+        unlicensedLayer.visible = document.getElementById("unlicensedLayerToggle").checked;
+        atnsLayer.visible = document.getElementById("atnsLayerToggle").checked;
+        militaryLayer.visible = document.getElementById("militaryLayerToggle").checked;
+        helistopsLayer.visible = document.getElementById("helistopsLayerToggle").checked;
+    }
+
+    // Add event listeners to the checkboxes
+    document.getElementById("accfisLayerToggle").addEventListener("change", toggleLayerVisibility);
+    document.getElementById("atzCtrLayerToggle").addEventListener("change", toggleLayerVisibility);
+    document.getElementById("ctaLayerToggle").addEventListener("change", toggleLayerVisibility);
+    document.getElementById("tmaLayerToggle").addEventListener("change", toggleLayerVisibility);
+    document.getElementById("fadFapFarLayerToggle").addEventListener("change", toggleLayerVisibility);
+
+    document.getElementById("sacaaLayerToggle").addEventListener("change", toggleLayerVisibility);
+    document.getElementById("aerodromeAipLayerToggle").addEventListener("change", toggleLayerVisibility);
+    document.getElementById("aerodromeAicLayerToggle").addEventListener("change", toggleLayerVisibility);
+    document.getElementById("unlicensedLayerToggle").addEventListener("change", toggleLayerVisibility);
+    document.getElementById("atnsLayerToggle").addEventListener("change", toggleLayerVisibility);
+    document.getElementById("militaryLayerToggle").addEventListener("change", toggleLayerVisibility);
+    document.getElementById("helistopsLayerToggle").addEventListener("change", toggleLayerVisibility);
 
     // Get the user's current location using the Geolocation API and track updates
     if (navigator.geolocation) {
@@ -145,9 +175,6 @@ require([
         console.error("Geolocation is not supported by this browser.");
     }
 
-    // Layer toggle control panel visibility
-    document.getElementById("toggleLayerButton").addEventListener("click", function() {
-        const layerTogglePanel = document.getElementById("layerTogglePanel");
-        layerTogglePanel.style.display = layerTogglePanel.style.display === "none" ? "block" : "none";
-    });
+    // Initial layer visibility toggle
+    toggleLayerVisibility();
 });
