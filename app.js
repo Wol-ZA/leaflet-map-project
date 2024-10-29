@@ -313,7 +313,9 @@ window.addMarkersAndDrawLine = function(data) {
     graphicsLayer.add(polylineGraphic);
 };
 
-
+window.removeMarkersAndLines = function() {
+    graphicsLayer.removeAll(); // Access graphicsLayer globally and clear all graphics
+};
     
     // Initial layer visibility toggle
     toggleLayerVisibility();
