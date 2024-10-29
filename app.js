@@ -172,11 +172,6 @@ window.StartTracking = function() {
                     }
                 });
 
-                // Update the camera position and tilt
-                view.goTo({
-                    center: userLocation,
-                    tilt: 45 // Maintain the tilt at 45 degrees
-                });
             } else {
                 console.error("Position is undefined or does not have coordinates.");
             }
