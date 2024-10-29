@@ -12,6 +12,7 @@ require([
     // Create the map
     const map = new Map({
         basemap: "topo-vector"
+        ground: "world-elevation"
     });
 
     // Create the MapView centered on George, South Africa
