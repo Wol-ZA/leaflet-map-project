@@ -90,35 +90,36 @@ require([
     let watchId; // Variable to hold the watch position ID
 
     // Function to add a marker at the user's current location
-    function addUserLocationMarker(location) {
-        const userPoint = {
-            type: "point",
-            longitude: location.coords.longitude,
-            latitude: location.coords.latitude
-        };
+ function addUserLocationMarker(location) {
+    const userPoint = {
+        type: "point",
+        longitude: location[0], // Access longitude from the array
+        latitude: location[1]    // Access latitude from the array
+    };
 
-        // Create a marker symbol
-        const markerSymbol = new PictureMarkerSymbol({
-            url: "plane_1.png", // URL for your marker image
-            width: "32px",
-            height: "32px"
+    // Create a marker symbol
+    const markerSymbol = new PictureMarkerSymbol({
+        url: "plane_1.png", // URL for your marker image
+        width: "32px",
+        height: "32px"
+    });
+
+    // If userGraphic exists, update its position; otherwise create a new one
+    if (userGraphic) {
+        userGraphic.geometry = userPoint; // Update existing graphic
+    } else {
+        // Create a new graphic for the user's location
+        userGraphic = new Graphic({
+            geometry: userPoint,
+            symbol: markerSymbol
         });
-
-        // If userGraphic exists, update its position; otherwise create a new one
-        if (userGraphic) {
-            userGraphic.geometry = userPoint; // Update existing graphic
-        } else {
-            // Create a new graphic for the user's location
-            userGraphic = new Graphic({
-                geometry: userPoint,
-                symbol: markerSymbol
-            });
-            graphicsLayer.add(userGraphic); // Add to graphics layer
-        }
-
-        // Center the view on the user's location
-        view.center = userPoint;
+        graphicsLayer.add(userGraphic); // Add to graphics layer
     }
+
+    // Center the view on the user's location
+    view.goTo(userPoint); // Use goTo for smoother centering
+}
+
 
     // Function to toggle layer visibility based on checkbox states
     function toggleLayerVisibility() {
