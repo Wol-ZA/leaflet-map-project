@@ -88,18 +88,16 @@ require([
             type: "picture-marker",
             url: "plane_1.png",
             width: "32px",
-            height: "32px",
-            // No angle property to maintain fixed orientation
+            height: "32px"
         }
     });
 
     // Add the plane marker to the view
     view.graphics.add(planeGraphic);
 
-    // Update the plane's position (if needed)
+    // Function to update the plane's position (if needed)
     function updatePlanePosition() {
-        // For this example, we are keeping it at the same position.
-        // If you want to simulate movement, update the longitude/latitude accordingly.
+        // Set the position of the plane marker
         planeGraphic.geometry = {
             type: "point",
             longitude: 22.3789, // Longitude of George Airport
@@ -107,8 +105,16 @@ require([
         };
     }
 
-    // Call the update function to keep the plane in the same location
+    // Keep updating the position without rotating
     setInterval(updatePlanePosition, 1000); // Updates every second
+
+    // Rotate function to simulate the effect of the plane rotating in place
+    function rotatePlane() {
+        planeGraphic.symbol.angle = (planeGraphic.symbol.angle || 0) + 10; // Rotate 10 degrees
+    }
+
+    // Call the rotate function every second to simulate rotation
+    setInterval(rotatePlane, 1000);
 
     // Toggle layer control panel visibility
     document.getElementById("toggleLayerButton").addEventListener("click", function() {
