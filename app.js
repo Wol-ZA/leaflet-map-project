@@ -90,34 +90,35 @@ require([
     let watchId; // Variable to hold the watch position ID
 
     // Function to add a marker at the user's current location
-function addUserLocationMarker(location) {
+function addUserLocationMarker(location, heading) {
     const userPoint = {
         type: "point",
-        longitude: location[0], // Access longitude from the array
-        latitude: location[1]    // Access latitude from the array
+        longitude: location[0],
+        latitude: location[1]
     };
 
-    // Create a marker symbol
     const markerSymbol = new PictureMarkerSymbol({
-        url: "plane_1.png", // URL for your marker image
+        url: "plane_1.png",
         width: "32px",
         height: "32px"
     });
 
-    // If userGraphic exists, update its position; otherwise create a new one
     if (userGraphic) {
-        userGraphic.geometry = userPoint; // Update existing graphic
+        userGraphic.geometry = userPoint;
     } else {
-        // Create a new graphic for the user's location
         userGraphic = new Graphic({
             geometry: userPoint,
             symbol: markerSymbol
         });
-        graphicsLayer.add(userGraphic); // Add to graphics layer
+        graphicsLayer.add(userGraphic);
     }
 
-    // Center the view on the user's location
-    view.goTo(userPoint); // Use goTo for smoother centering
+    // Rotate the map based on heading, if available
+    if (typeof heading === "number") {
+        view.rotation = 360 - heading; // Adjust to align north properly
+    }
+
+    view.goTo(userPoint); // Center on user's location
 }
 
     // Function to toggle layer visibility based on checkbox states
@@ -155,12 +156,12 @@ function addUserLocationMarker(location) {
     // Function to start tracking
 window.StartTracking = function() {
     if (!tracking) {
-        tracking = true; // Set tracking status to true
+        tracking = true;
         watchId = navigator.geolocation.watchPosition(function(position) {
             if (position && position.coords) {
                 const userLocation = [position.coords.longitude, position.coords.latitude];
-                addUserLocationMarker(userLocation); // Update user location marker
-
+                const heading = position.coords.heading || 0; // Default to 0 if heading is unavailable
+                addUserLocationMarker(userLocation, heading); // Pass heading for rotation
             } else {
                 console.error("Position is undefined or does not have coordinates.");
             }
