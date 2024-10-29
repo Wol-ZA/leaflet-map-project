@@ -38,11 +38,11 @@ require([
     }
 
     // Define the color for each polygon layer and add to the map
-    const accfisLayer = createGeoJSONLayer("ACCFIS.geojson", [255, 0, 0, 0.45]); // Red
-    const atzCtrLayer = createGeoJSONLayer("ATZ_CTR.geojson", [0, 255, 0, 0.45]); // Green
-    const ctaLayer = createGeoJSONLayer("CTA.geojson", [0, 0, 255, 0.45]); // Blue
-    const tmaLayer = createGeoJSONLayer("TMA.geojson", [255, 255, 0, 0.45]); // Yellow
-    const fadFapFarLayer = createGeoJSONLayer("FAD_FAP_FAR.geojson", [255, 0, 255, 0.45]); // Magenta
+    const accfisLayer = createGeoJSONLayer("ACCFIS.geojson", [255, 0, 0, 0.45]);
+    const atzCtrLayer = createGeoJSONLayer("ATZ_CTR.geojson", [0, 255, 0, 0.45]);
+    const ctaLayer = createGeoJSONLayer("CTA.geojson", [0, 0, 255, 0.45]);
+    const tmaLayer = createGeoJSONLayer("TMA.geojson", [255, 255, 0, 0.45]);
+    const fadFapFarLayer = createGeoJSONLayer("FAD_FAP_FAR.geojson", [255, 0, 255, 0.45]);
 
     // Add polygon layers to the map
     map.addMany([accfisLayer, atzCtrLayer, ctaLayer, tmaLayer, fadFapFarLayer]);
@@ -75,53 +75,14 @@ require([
     // Add point layers to the map
     map.addMany([sacaaLayer, aerodromeAipLayer, aerodromeAicLayer, unlicensedLayer, atnsLayer, militaryLayer, helistopsLayer]);
 
-    // Layer toggle event listeners for polygons
-    document.getElementById("accfisLayerToggle").addEventListener("change", (e) => {
-        accfisLayer.visible = e.target.checked;
-    });
-    document.getElementById("atzCtrLayerToggle").addEventListener("change", (e) => {
-        atzCtrLayer.visible = e.target.checked;
-    });
-    document.getElementById("ctaLayerToggle").addEventListener("change", (e) => {
-        ctaLayer.visible = e.target.checked;
-    });
-    document.getElementById("tmaLayerToggle").addEventListener("change", (e) => {
-        tmaLayer.visible = e.target.checked;
-    });
-    document.getElementById("fadFapFarLayerToggle").addEventListener("change", (e) => {
-        fadFapFarLayer.visible = e.target.checked;
-    });
-
-    // Layer toggle event listeners for points
-    document.getElementById("sacaaLayerToggle").addEventListener("change", (e) => {
-        sacaaLayer.visible = e.target.checked;
-    });
-    document.getElementById("aerodromeAipLayerToggle").addEventListener("change", (e) => {
-        aerodromeAipLayer.visible = e.target.checked;
-    });
-    document.getElementById("aerodromeAicLayerToggle").addEventListener("change", (e) => {
-        aerodromeAicLayer.visible = e.target.checked;
-    });
-    document.getElementById("unlicensedLayerToggle").addEventListener("change", (e) => {
-        unlicensedLayer.visible = e.target.checked;
-    });
-    document.getElementById("atnsLayerToggle").addEventListener("change", (e) => {
-        atnsLayer.visible = e.target.checked;
-    });
-    document.getElementById("militaryLayerToggle").addEventListener("change", (e) => {
-        militaryLayer.visible = e.target.checked;
-    });
-    document.getElementById("helistopsLayerToggle").addEventListener("change", (e) => {
-        helistopsLayer.visible = e.target.checked;
-    });
-
     // Add a plane marker at George Airport
     const georgeAirportPoint = {
         type: "point",
-        longitude: 22.3789,  // Longitude of George Airport
-        latitude: -34.0056   // Latitude of George Airport
+        longitude: 22.3789,
+        latitude: -34.0056
     };
 
+    let angle = 0; // Initialize angle
     const planeGraphic = new Graphic({
         geometry: georgeAirportPoint,
         symbol: {
@@ -129,7 +90,7 @@ require([
             url: "plane_1.png",
             width: "32px",
             height: "32px",
-            angle: 0 // Starting angle
+            angle: angle // Initial angle
         }
     });
 
@@ -137,21 +98,27 @@ require([
     view.graphics.add(planeGraphic);
 
     // Rotate the plane marker 10 degrees every second
-    let angle = 0;
     setInterval(() => {
         angle = (angle + 10) % 360; // Increment and wrap angle at 360
-        planeGraphic.symbol.angle = angle;
-        view.graphics.remove(planeGraphic); // Remove the old graphic
-        view.graphics.add(planeGraphic);    // Add the updated graphic
+
+        // Update the plane's symbol by creating a new symbol object
+        planeGraphic.symbol = {
+            type: "picture-marker",
+            url: "plane_1.png",
+            width: "32px",
+            height: "32px",
+            angle: angle // Update angle
+        };
+
+        // Refresh graphic by removing and adding it again
+        view.graphics.remove(planeGraphic);
+        view.graphics.add(planeGraphic);
+
     }, 1000);
 
     // Toggle layer control panel visibility
     document.getElementById("toggleLayerButton").addEventListener("click", function() {
         const layerTogglePanel = document.getElementById("layerTogglePanel");
-        if (layerTogglePanel.style.display === "none" || layerTogglePanel.style.display === "") {
-            layerTogglePanel.style.display = "block"; // Show the panel
-        } else {
-            layerTogglePanel.style.display = "none"; // Hide the panel
-        }
+        layerTogglePanel.style.display = layerTogglePanel.style.display === "none" ? "block" : "none";
     });
 });
