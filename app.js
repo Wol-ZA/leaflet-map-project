@@ -103,6 +103,7 @@ function addUserLocationMarker(location, heading) {
         height: "32px"
     });
 
+    // If userGraphic exists, update its position; otherwise, create a new one
     if (userGraphic) {
         userGraphic.geometry = userPoint;
     } else {
@@ -113,13 +114,44 @@ function addUserLocationMarker(location, heading) {
         graphicsLayer.add(userGraphic);
     }
 
+    // Calculate the endpoint of the 20-nautical-mile line based on heading
+    const nauticalMilesToDegrees = 20 * 1.852 / 111; // Approx conversion for latitude
+    const endpoint = {
+        type: "point",
+        longitude: location[0] + (nauticalMilesToDegrees * Math.cos(heading * Math.PI / 180)),
+        latitude: location[1] + (nauticalMilesToDegrees * Math.sin(heading * Math.PI / 180))
+    };
+
+    // Create or update the polyline graphic
+    const polyline = {
+        type: "polyline",
+        paths: [[location[0], location[1]], [endpoint.longitude, endpoint.latitude]]
+    };
+
+    const lineSymbol = {
+        type: "simple-line",
+        color: [0, 0, 255, 0.5],
+        width: 2
+    };
+
+    if (!userGraphic.polylineGraphic) {
+        userGraphic.polylineGraphic = new Graphic({
+            geometry: polyline,
+            symbol: lineSymbol
+        });
+        graphicsLayer.add(userGraphic.polylineGraphic);
+    } else {
+        userGraphic.polylineGraphic.geometry = polyline; // Update existing polyline
+    }
+
     // Rotate the map based on heading, if available
     if (typeof heading === "number") {
-        view.rotation = 360 - heading; // Adjust to align north properly
+        view.rotation = 360 - heading;
     }
 
     view.goTo(userPoint); // Center on user's location
 }
+
 
     // Function to toggle layer visibility based on checkbox states
     function toggleLayerVisibility() {
