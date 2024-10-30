@@ -125,6 +125,16 @@ function addUserLocationMarker(location, heading) {
 
     // Adjust heading for map rotation
     const adjustedHeading = (heading + view.rotation) % 360;
+    // Create the polyline graphic
+    const polylineGraphic = createDirectionalPolyline(location, heading);
+
+    // Add or update the polyline graphic on the map
+    if (!userGraphic.polylineGraphic) {
+        userGraphic.polylineGraphic = polylineGraphic;
+        graphicsLayer.add(userGraphic.polylineGraphic);
+    } else {
+        userGraphic.polylineGraphic.geometry = polylineGraphic.geometry; // Update existing polyline
+    }
 
     // Rotate the map view based on heading
 
@@ -138,6 +148,37 @@ function addUserLocationMarker(location, heading) {
     }
 }
 
+function createDirectionalPolyline(userPoint, heading) {
+    const nauticalMilesToMeters = 20 * 1852; // 20 nautical miles in meters
+    const earthRadiusMeters = 6371000; // Earth's radius in meters
+
+    // Convert heading to radians
+    const headingRadians = heading * (Math.PI / 180);
+
+    // Calculate the endpoint 20 nautical miles away in the direction of the heading
+    const endLatitude = userPoint[1] + (nauticalMilesToMeters / earthRadiusMeters) * (180 / Math.PI) * Math.sin(headingRadians);
+    const endLongitude = userPoint[0] + (nauticalMilesToMeters / earthRadiusMeters) * (180 / Math.PI) * Math.cos(headingRadians) / Math.cos(userPoint[1] * Math.PI / 180);
+
+    // Create the polyline geometry
+    const polylineGeometry = {
+        type: "polyline",
+        paths: [[userPoint[0], userPoint[1]], [endLongitude, endLatitude]]
+    };
+
+    // Define the line symbol
+    const lineSymbol = {
+        type: "simple-line",
+        color: [0, 0, 255, 0.5],
+        width: 2
+    };
+
+    // Return the polyline graphic
+    return new Graphic({
+        geometry: polylineGeometry,
+        symbol: lineSymbol
+    });
+}
+    
     // Function to toggle layer visibility based on checkbox states
     function toggleLayerVisibility() {
         accfisLayer.visible = document.getElementById("accfisLayerToggle").checked;
