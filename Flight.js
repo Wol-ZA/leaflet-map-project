@@ -134,67 +134,9 @@ function addUserLocationMarker(location, heading) {
           if (typeof heading === "number") {
         view.rotation = 360 - heading;
         }// Rotate the map based on heading
-      const distanceInMeters = 20 * 1852; 
-
-    // Calculate the destination point based on the current heading
-    const destinationPoint = calculateDestinationPoint(userPoint, adjustedHeading, distanceInMeters);
-
-    // Define a polyline from userPoint to destinationPoint
-    const polyline = new Polyline({
-        paths: [
-            [userPoint.longitude, userPoint.latitude],
-            [destinationPoint.longitude, destinationPoint.latitude]
-        ],
-        spatialReference: { wkid: 4326 } // Ensure the spatial reference matches your map
-    });
-
-    // Create a graphic for the polyline and set the symbol
-    const polylineGraphic = new Graphic({
-        geometry: polyline,
-        symbol: {
-            type: "simple-line",
-            color: [255, 0, 0],
-            width: 2
-        }
-    });
-
-    // Add the polyline graphic to the view
-    view.graphics.add(polylineGraphic);
         view.center = userPoint;               // Center map on user location
     }
 }
-
-
- // Function to calculate destination point based on heading and distance
-    function calculateDestinationPoint(userPoint, adjustedHeading, distance) {
-        const earthRadius = 6371000; // Earth radius in meters
-        const angularDistance = distance / earthRadius;
-        
-        // Convert heading to radians
-        const headingRad = (adjustedHeading * Math.PI) / 180;
-        
-        // Current user coordinates in radians
-        const lat1 = (userPoint.latitude * Math.PI) / 180;
-        const lon1 = (userPoint.longitude * Math.PI) / 180;
-        
-        // Calculate destination coordinates
-        const lat2 = Math.asin(
-            Math.sin(lat1) * Math.cos(angularDistance) +
-            Math.cos(lat1) * Math.sin(angularDistance) * Math.cos(headingRad)
-        );
-        
-        const lon2 = lon1 + Math.atan2(
-            Math.sin(headingRad) * Math.sin(angularDistance) * Math.cos(lat1),
-            Math.cos(angularDistance) - Math.sin(lat1) * Math.sin(lat2)
-        );
-
-        // Convert radians back to degrees
-        return {
-            latitude: (lat2 * 180) / Math.PI,
-            longitude: (lon2 * 180) / Math.PI
-        };
-    }
-
 
     // Function to toggle layer visibility based on checkbox states
     function toggleLayerVisibility() {
