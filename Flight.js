@@ -126,7 +126,7 @@ function addUserLocationMarker(location, heading) {
     // Adjust heading for map rotation
     const adjustedHeading = (heading + view.rotation) % 360;
     // Create the polyline graphic
-    const polylineGraphic = createDirectionalPolyline(location, adjustedHeading);
+    const polylineGraphic = createDirectionalPolyline(location, heading);
     console.log(heading);
     console.log(adjustedHeading);
     // Add or update the polyline graphic on the map
