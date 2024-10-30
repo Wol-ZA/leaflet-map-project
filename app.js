@@ -103,7 +103,6 @@ function addUserLocationMarker(location, heading) {
         height: "32px"
     });
 
-    // If userGraphic exists, update its position; otherwise create a new one
     if (userGraphic) {
         userGraphic.geometry = userPoint;
     } else {
@@ -114,11 +113,10 @@ function addUserLocationMarker(location, heading) {
         graphicsLayer.add(userGraphic);
     }
 
-    // Calculate the endpoint 20 nautical miles away in the direction of the heading
-    const nauticalMilesToMeters = 20 * 1852; // 1 nautical mile = 1852 meters
-    const earthRadiusMeters = 6371000; // Earth's radius in meters
-
-    const headingRadians = heading * (Math.PI / 180); // Convert heading to radians
+    // Calculate the endpoint 20 nautical miles away in true direction of heading
+    const nauticalMilesToMeters = 20 * 1852;
+    const earthRadiusMeters = 6371000;
+    const headingRadians = heading * (Math.PI / 180);
 
     const endLatitude = location[1] + (nauticalMilesToMeters / earthRadiusMeters) * (180 / Math.PI) * Math.sin(headingRadians);
     const endLongitude = location[0] + (nauticalMilesToMeters / earthRadiusMeters) * (180 / Math.PI) * Math.cos(headingRadians) / Math.cos(location[1] * Math.PI / 180);
@@ -129,10 +127,10 @@ function addUserLocationMarker(location, heading) {
         latitude: endLatitude
     };
 
-    // Create or update the polyline graphic
+    // Define the polyline based on heading only, independent of map rotation
     const polyline = {
         type: "polyline",
-        paths: [[location[0], location[1]], [endpoint.longitude, endpoint.latitude]]
+        paths: [[location[0], location[1]], [endLongitude, endLatitude]]
     };
 
     const lineSymbol = {
@@ -148,10 +146,10 @@ function addUserLocationMarker(location, heading) {
         });
         graphicsLayer.add(userGraphic.polylineGraphic);
     } else {
-        userGraphic.polylineGraphic.geometry = polyline; // Update existing polyline
+        userGraphic.polylineGraphic.geometry = polyline;
     }
 
-    // Rotate the map based on heading, if available
+    // Rotate the map view based on heading
     if (typeof heading === "number") {
         view.rotation = 360 - heading;
     }
@@ -159,13 +157,13 @@ function addUserLocationMarker(location, heading) {
     // Center on user's location with zoom level or scale
     view.goTo({
         target: userPoint,
-        zoom: 15,
-        heading: heading
+        scale: 5000, // or adjust zoom level depending on your view's configuration
     }, {
         animate: true,
         duration: 1000
-    });
+    }).catch(error => console.error("Error in view.goTo:", error));
 }
+
 
     // Function to toggle layer visibility based on checkbox states
     function toggleLayerVisibility() {
