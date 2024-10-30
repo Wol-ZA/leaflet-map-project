@@ -123,13 +123,16 @@ function addUserLocationMarker(location, heading) {
         graphicsLayer.add(userGraphic);
     }
 
-    // Calculate the endpoint 20 nautical miles away in true direction of heading
+    // Adjust the heading by the map's current rotation
+    const adjustedHeading = (heading - view.rotation) % 360;
+    const adjustedHeadingRadians = adjustedHeading * (Math.PI / 180);
+
+    // Calculate the endpoint 20 nautical miles away in true direction of the adjusted heading
     const nauticalMilesToMeters = 20 * 1852;
     const earthRadiusMeters = 6371000;
-    const headingRadians = heading * (Math.PI / 180);
 
-    const endLatitude = location[1] + (nauticalMilesToMeters / earthRadiusMeters) * (180 / Math.PI) * Math.sin(headingRadians);
-    const endLongitude = location[0] + (nauticalMilesToMeters / earthRadiusMeters) * (180 / Math.PI) * Math.cos(headingRadians) / Math.cos(location[1] * Math.PI / 180);
+    const endLatitude = location[1] + (nauticalMilesToMeters / earthRadiusMeters) * (180 / Math.PI) * Math.sin(adjustedHeadingRadians);
+    const endLongitude = location[0] + (nauticalMilesToMeters / earthRadiusMeters) * (180 / Math.PI) * Math.cos(adjustedHeadingRadians) / Math.cos(location[1] * Math.PI / 180);
 
     const polyline = {
         type: "polyline",
@@ -167,6 +170,7 @@ function addUserLocationMarker(location, heading) {
         }).catch(error => console.error("Error in view.goTo:", error));
     }
 }
+
 
 
 
