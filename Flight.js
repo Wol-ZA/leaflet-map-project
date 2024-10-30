@@ -110,7 +110,7 @@ function addUserLocationMarker(location, heading) {
     const markerSymbol = new PictureMarkerSymbol({
         url: "plane_1.png",
         width: "32px",
-        height: "82px"
+        height: "204px"
     });
 
     if (userGraphic) {
