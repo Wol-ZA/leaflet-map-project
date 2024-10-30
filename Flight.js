@@ -110,7 +110,9 @@ function addUserLocationMarker(location, heading) {
     const markerSymbol = new PictureMarkerSymbol({
         url: "plane_1.png",
         width: "32px",
-        height: "204px"
+        height: "204px",
+        // Offset to place the location at the bottom of the image
+        yoffset: -102 // Half of the image height (204px) to position the point at the bottom
     });
 
     if (userGraphic) {
@@ -125,40 +127,6 @@ function addUserLocationMarker(location, heading) {
 
     // Adjust heading to account for map rotation
     const adjustedHeading = (heading + view.rotation) % 360;
-    const adjustedHeadingRadians = adjustedHeading * (Math.PI / 180);
-
-    // Convert nautical miles to meters and calculate endpoint
-    const nauticalMilesToMeters = 20 * 1852;
-    const earthRadiusMeters = 6371000;
-
-    // Calculate the offset in latitude and longitude based on adjusted heading
-    const deltaLat = (nauticalMilesToMeters / earthRadiusMeters) * (180 / Math.PI) * Math.cos(adjustedHeadingRadians);
-    const deltaLon = (nauticalMilesToMeters / earthRadiusMeters) * (180 / Math.PI) * Math.sin(adjustedHeadingRadians) / Math.cos(location[1] * Math.PI / 180);
-
-    // Determine the endpoint for the polyline
-    const endLatitude = location[1] + deltaLat;
-    const endLongitude = location[0] + deltaLon;
-
-    const polyline = {
-        type: "polyline",
-        paths: [[location[0], location[1]], [endLongitude, endLatitude]]
-    };
-
-    const lineSymbol = {
-        type: "simple-line",
-        color: [0, 0, 255, 0.5],
-        width: 2
-    };
-
-    if (!userGraphic.polylineGraphic) {
-        userGraphic.polylineGraphic = new Graphic({
-            geometry: polyline,
-            symbol: lineSymbol
-        });
-        graphicsLayer.add(userGraphic.polylineGraphic);
-    } else {
-        userGraphic.polylineGraphic.geometry = polyline;
-    }
 
     // Rotate the map view based on heading
     if (typeof heading === "number") {
