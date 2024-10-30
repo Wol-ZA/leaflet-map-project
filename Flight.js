@@ -89,7 +89,17 @@ require([
     let tracking = false; // Variable to track the status of tracking
     let watchId; // Variable to hold the watch position ID
 
-    // Function to add a marker at the user's current location
+let isUserInteracting = false;
+
+// Event listeners to detect user interaction on the map
+view.on("drag", () => isUserInteracting = true);
+view.on("mouse-wheel", () => isUserInteracting = true);
+view.on("click", () => isUserInteracting = true);
+view.on("pointer-move", () => isUserInteracting = true);
+
+// Reset interaction flag after a delay to allow map updates
+setInterval(() => isUserInteracting = false, 3000); // Adjust timing as needed
+
 function addUserLocationMarker(location, heading) {
     const userPoint = {
         type: "point",
@@ -121,13 +131,6 @@ function addUserLocationMarker(location, heading) {
     const endLatitude = location[1] + (nauticalMilesToMeters / earthRadiusMeters) * (180 / Math.PI) * Math.sin(headingRadians);
     const endLongitude = location[0] + (nauticalMilesToMeters / earthRadiusMeters) * (180 / Math.PI) * Math.cos(headingRadians) / Math.cos(location[1] * Math.PI / 180);
 
-    const endpoint = {
-        type: "point",
-        longitude: endLongitude,
-        latitude: endLatitude
-    };
-
-    // Define the polyline based on heading only, independent of map rotation
     const polyline = {
         type: "polyline",
         paths: [[location[0], location[1]], [endLongitude, endLatitude]]
@@ -154,14 +157,17 @@ function addUserLocationMarker(location, heading) {
         view.rotation = 360 - heading;
     }
 
-    // Center on user's location without zooming in
-    view.goTo({
-        target: userPoint
-    }, {
-        animate: true,
-        duration: 1000
-    }).catch(error => console.error("Error in view.goTo:", error));
+    // Only center on user's location if the user is not interacting with the map
+    if (!isUserInteracting) {
+        view.goTo({
+            target: userPoint
+        }, {
+            animate: true,
+            duration: 1000
+        }).catch(error => console.error("Error in view.goTo:", error));
+    }
 }
+
 
 
 
