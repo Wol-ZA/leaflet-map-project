@@ -110,9 +110,7 @@ function addUserLocationMarker(location, heading) {
     const markerSymbol = new PictureMarkerSymbol({
         url: "plane_1.png",
         width: "32px",
-        height: "204px",
-        // Offset to place the location at the bottom of the image
-        yoffset: 102 // Half of the image height (204px) to position the point at the bottom
+        height: "32px",
     });
 
     if (userGraphic) {
@@ -136,7 +134,7 @@ function addUserLocationMarker(location, heading) {
     // Only center on user's location if the user is not interacting with the map
     if (!isUserInteracting) {
         view.goTo({
-            target: userPoint
+            target: markerSymbol
         }, {
             animate: true,
             duration: 1000
