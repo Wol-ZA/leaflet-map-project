@@ -127,13 +127,14 @@ function addUserLocationMarker(location, heading) {
     const adjustedHeading = (heading + view.rotation) % 360;
 
     // Rotate the map view based on heading
-    if (typeof heading === "number") {
-        view.rotation = 360 - heading;
-    }
 
-    // Use view.center to smoothly follow the user's location without animations
-    if (!isUserInteracting) {
-        view.center = userPoint; // Directly set the center to the user’s location
+  if (!isUserInteracting) {
+        const adjustedHeading = (heading + view.rotation) % 360;
+        view.rotation = 360 - adjustedHeading;
+          if (typeof heading === "number") {
+        view.rotation = 360 - heading;
+        }// Rotate the map based on heading
+        view.center = userPoint;               // Center map on user location
     }
 }
 
