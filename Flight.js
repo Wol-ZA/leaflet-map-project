@@ -123,7 +123,7 @@ function addUserLocationMarker(location, heading) {
         graphicsLayer.add(userGraphic);
     }
 
-    // Adjust heading to account for map rotation
+    // Adjust heading for map rotation
     const adjustedHeading = (heading + view.rotation) % 360;
 
     // Rotate the map view based on heading
@@ -131,14 +131,9 @@ function addUserLocationMarker(location, heading) {
         view.rotation = 360 - heading;
     }
 
-    // Only center on user's location if the user is not interacting with the map
+    // Use view.center to smoothly follow the user's location without animations
     if (!isUserInteracting) {
-        view.goTo({
-            target: markerSymbol
-        }, {
-            animate: true,
-            duration: 1000
-        }).catch(error => console.error("Error in view.goTo:", error));
+        view.center = userPoint; // Directly set the center to the user’s location
     }
 }
 
