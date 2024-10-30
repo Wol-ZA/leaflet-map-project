@@ -156,9 +156,9 @@ function createDirectionalPolyline(userPoint, heading) {
     // Convert heading to radians
     const headingRadians = heading * (Math.PI / 180);
 
-    // Calculate the endpoint 20 nautical miles away in the direction of the heading
-    const endLatitude = userPoint[1] + (nauticalMilesToMeters / earthRadiusMeters) * (180 / Math.PI) * Math.sin(headingRadians);
-    const endLongitude = userPoint[0] + (nauticalMilesToMeters / earthRadiusMeters) * (180 / Math.PI) * Math.cos(headingRadians) / Math.cos(userPoint[1] * Math.PI / 180);
+    // Calculate the endpoint based on distance and heading
+    const endLatitude = userPoint[1] + (nauticalMilesToMeters / earthRadiusMeters) * (180 / Math.PI) * Math.cos(headingRadians);
+    const endLongitude = userPoint[0] + (nauticalMilesToMeters / earthRadiusMeters) * (180 / Math.PI) * Math.sin(headingRadians) / Math.cos(userPoint[1] * Math.PI / 180);
 
     // Create the polyline geometry
     const polylineGeometry = {
@@ -179,6 +179,7 @@ function createDirectionalPolyline(userPoint, heading) {
         symbol: lineSymbol
     });
 }
+
     
     // Function to toggle layer visibility based on checkbox states
     function toggleLayerVisibility() {
