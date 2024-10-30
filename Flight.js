@@ -237,24 +237,35 @@ window.StartTracking = function() {
 
 
     // Function to stop tracking
-    window.EndTracking = function() {
-        if (tracking) {
-            tracking = false; // Set tracking status to false
-            if (userGraphic) {
-                graphicsLayer.remove(userGraphic); // Remove the user graphic
-                userGraphic = null; // Clear the user graphic reference
+window.EndTracking = function() {
+    if (tracking) {
+        tracking = false; // Set tracking status to false
+        
+        // Remove the user graphic and the polyline graphic
+        if (userGraphic) {
+            if (userGraphic.polylineGraphic) {
+                graphicsLayer.remove(userGraphic.polylineGraphic); // Remove the polyline
+                userGraphic.polylineGraphic = null; // Clear the polyline reference
             }
-            navigator.geolocation.clearWatch(watchId); // Stop watching the position
-             view.container = null; // Remove current view
-            const mapView = new MapView({
-                container: "viewDiv",
-                map: map,
-                center: [22.4617, -33.9646],
-                zoom: 12
-            });
-            view = mapView; // Update the view variable
+            graphicsLayer.remove(userGraphic); // Remove the user marker
+            userGraphic = null; // Clear the user graphic reference
         }
+        
+        navigator.geolocation.clearWatch(watchId); // Stop watching the position
+        
+        // Reset the view without replacing the map container
+        view.container = null;
+        const mapView = new MapView({
+            container: "viewDiv",
+            map: map,
+            center: [22.4617, -33.9646],
+            zoom: 12
+        });
+        
+        view = mapView; // Update the view variable
     }
+};
+
 
 window.addMarkersAndDrawLine = function(data) {
     // Clear previous graphics
