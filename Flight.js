@@ -154,15 +154,15 @@ function addUserLocationMarker(location, heading) {
         view.rotation = 360 - heading;
     }
 
-    // Center on user's location with zoom level or scale
+    // Center on user's location without zooming in
     view.goTo({
-        target: userPoint,
-        scale: 5000, // or adjust zoom level depending on your view's configuration
+        target: userPoint
     }, {
         animate: true,
         duration: 1000
     }).catch(error => console.error("Error in view.goTo:", error));
 }
+
 
 
     // Function to toggle layer visibility based on checkbox states
