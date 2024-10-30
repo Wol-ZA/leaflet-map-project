@@ -123,16 +123,21 @@ function addUserLocationMarker(location, heading) {
         graphicsLayer.add(userGraphic);
     }
 
-    // Adjust the heading by the map's current rotation
-    const adjustedHeading = (heading - view.rotation) % 360;
+    // Adjust heading to account for map rotation
+    const adjustedHeading = (heading + view.rotation) % 360;
     const adjustedHeadingRadians = adjustedHeading * (Math.PI / 180);
 
-    // Calculate the endpoint 20 nautical miles away in true direction of the adjusted heading
+    // Convert nautical miles to meters and calculate endpoint
     const nauticalMilesToMeters = 20 * 1852;
     const earthRadiusMeters = 6371000;
 
-    const endLatitude = location[1] + (nauticalMilesToMeters / earthRadiusMeters) * (180 / Math.PI) * Math.sin(adjustedHeadingRadians);
-    const endLongitude = location[0] + (nauticalMilesToMeters / earthRadiusMeters) * (180 / Math.PI) * Math.cos(adjustedHeadingRadians) / Math.cos(location[1] * Math.PI / 180);
+    // Calculate the offset in latitude and longitude based on adjusted heading
+    const deltaLat = (nauticalMilesToMeters / earthRadiusMeters) * (180 / Math.PI) * Math.cos(adjustedHeadingRadians);
+    const deltaLon = (nauticalMilesToMeters / earthRadiusMeters) * (180 / Math.PI) * Math.sin(adjustedHeadingRadians) / Math.cos(location[1] * Math.PI / 180);
+
+    // Determine the endpoint for the polyline
+    const endLatitude = location[1] + deltaLat;
+    const endLongitude = location[0] + deltaLon;
 
     const polyline = {
         type: "polyline",
