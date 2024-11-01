@@ -77,5 +77,6 @@ require([
         graphicsLayer.add(lineGraphic);  // Add the polyline to the graphics layer
     };
     
-
+    // Ensure that the function is called after everything is set up
+    });
 });
