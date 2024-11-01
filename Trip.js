@@ -6,8 +6,9 @@ require([
     "esri/geometry/Point",
     "esri/geometry/Polyline",
     "esri/symbols/SimpleMarkerSymbol",
-    "esri/symbols/SimpleLineSymbol"
-], function(Map, SceneView, Graphic, GraphicsLayer, Point, Polyline, SimpleMarkerSymbol, SimpleLineSymbol) {
+    "esri/symbols/SimpleLineSymbol",
+    "esri/geometry/Extent"
+], function(Map, SceneView, Graphic, GraphicsLayer, Point, Polyline, SimpleMarkerSymbol, SimpleLineSymbol, Extent) {
     
     // Create a 3D map with a vector basemap
     const map = new Map({
@@ -75,6 +76,24 @@ require([
         });
         
         graphicsLayer.add(lineGraphic);  // Add the polyline to the graphics layer
+        
+        // Set camera focus to the first point
+        if (flightData.length > 0) {
+            const firstPoint = flightData[0];
+            view.goTo({
+                target: [firstPoint.longitude, firstPoint.latitude],
+                zoom: 10,  // Adjust zoom level as necessary
+                tilt: 75   // Maintain tilt if desired
+            });
+        }
+
+        // Optionally, set the view to encompass the entire route
+        const extent = graphicsLayer.fullExtent; // Get the full extent of the graphics layer
+        view.goTo(extent).catch((error) => {
+            if (error.name !== "AbortError") {
+                console.error("Error:", error);
+            }
+        });
     };
 
 });
