@@ -7,9 +7,8 @@ require([
     "esri/geometry/Polyline",
     "esri/symbols/SimpleMarkerSymbol",
     "esri/symbols/SimpleLineSymbol",
-    "esri/geometry/Extent",
-    "esri/symbols/TextSymbol"
-], function(Map, SceneView, Graphic, GraphicsLayer, Point, Polyline, SimpleMarkerSymbol, SimpleLineSymbol, Extent, TextSymbol) {
+    "esri/geometry/Extent"
+], function(Map, SceneView, Graphic, GraphicsLayer, Point, Polyline, SimpleMarkerSymbol, SimpleLineSymbol, Extent) {
     
     const map = new Map({
         basemap: "topo-vector",
@@ -29,7 +28,7 @@ require([
     map.add(graphicsLayer);
     
     window.loadFlightPath = function(flightData) {
-        const pathCoordinates = flightData.map((dataPoint, index) => {
+        const pathCoordinates = flightData.map((dataPoint) => {
             const point = new Point({
                 latitude: dataPoint.latitude,
                 longitude: dataPoint.longitude,
@@ -37,7 +36,7 @@ require([
             });
             
             const markerSymbol = new SimpleMarkerSymbol({
-                color: [0, 0, 255, 0.6], // Semi-transparent blue
+                color: [0, 0, 255, 0.6],
                 size: 8,
                 outline: { color: "white", width: 2 }
             });
@@ -48,20 +47,25 @@ require([
             });
             graphicsLayer.add(pointGraphic);
             
-            const labelSymbol = new TextSymbol({
-                text: `Alt: ${dataPoint.altitude}m`,
-                color: "black",
-                haloColor: "white",
-                haloSize: "1px",
-                yoffset: -12,
-                font: { size: 10 }
+            // Create a vertical line from each waypoint to the ground
+            const verticalLine = new Polyline({
+                paths: [
+                    [dataPoint.longitude, dataPoint.latitude, dataPoint.altitude],
+                    [dataPoint.longitude, dataPoint.latitude, 0]
+                ]
             });
             
-            const labelGraphic = new Graphic({
-                geometry: point,
-                symbol: labelSymbol
+            const verticalLineSymbol = new SimpleLineSymbol({
+                color: [0, 0, 0, 0.3], // Semi-transparent black
+                width: 1,
+                style: "dash"
             });
-            graphicsLayer.add(labelGraphic);
+            
+            const verticalLineGraphic = new Graphic({
+                geometry: verticalLine,
+                symbol: verticalLineSymbol
+            });
+            graphicsLayer.add(verticalLineGraphic);
             
             return [dataPoint.longitude, dataPoint.latitude, dataPoint.altitude];
         });
@@ -71,7 +75,7 @@ require([
         });
         
         const lineSymbol = new SimpleLineSymbol({
-            color: [255, 0, 0, 0.7], // Semi-transparent red
+            color: [255, 0, 0, 0.7],
             width: 3,
             style: "solid"
         });
