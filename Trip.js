@@ -7,16 +7,15 @@ require([
     "esri/geometry/Polyline",
     "esri/symbols/SimpleMarkerSymbol",
     "esri/symbols/SimpleLineSymbol",
-    "esri/geometry/Extent"
-], function(Map, SceneView, Graphic, GraphicsLayer, Point, Polyline, SimpleMarkerSymbol, SimpleLineSymbol, Extent) {
+    "esri/geometry/Extent",
+    "esri/symbols/TextSymbol"
+], function(Map, SceneView, Graphic, GraphicsLayer, Point, Polyline, SimpleMarkerSymbol, SimpleLineSymbol, Extent, TextSymbol) {
     
-    // Create a 3D map with a vector basemap
     const map = new Map({
         basemap: "topo-vector",
         ground: "world-elevation"
     });
     
-    // Create a SceneView
     const view = new SceneView({
         container: "viewDiv",
         map: map,
@@ -26,74 +25,81 @@ require([
         }
     });
     
-    // Create a GraphicsLayer to display points and path
     const graphicsLayer = new GraphicsLayer();
     map.add(graphicsLayer);
     
-    // Function to load flight data and draw markers and lines
     window.loadFlightPath = function(flightData) {
-        // Prepare the coordinates array for the polyline
-        const pathCoordinates = flightData.map((dataPoint) => {
+        const pathCoordinates = flightData.map((dataPoint, index) => {
             const point = new Point({
                 latitude: dataPoint.latitude,
                 longitude: dataPoint.longitude,
                 z: dataPoint.altitude
             });
             
-            // Add a marker for each point
             const markerSymbol = new SimpleMarkerSymbol({
-                color: "blue",
-                size: 5,
-                outline: { color: "white", width: 1 }
+                color: [0, 0, 255, 0.6], // Semi-transparent blue
+                size: 8,
+                outline: { color: "white", width: 2 }
             });
             
             const pointGraphic = new Graphic({
                 geometry: point,
                 symbol: markerSymbol
             });
-            
             graphicsLayer.add(pointGraphic);
             
-            // Return coordinates for polyline
+            const labelSymbol = new TextSymbol({
+                text: `Alt: ${dataPoint.altitude}m`,
+                color: "black",
+                haloColor: "white",
+                haloSize: "1px",
+                yoffset: -12,
+                font: { size: 10 }
+            });
+            
+            const labelGraphic = new Graphic({
+                geometry: point,
+                symbol: labelSymbol
+            });
+            graphicsLayer.add(labelGraphic);
+            
             return [dataPoint.longitude, dataPoint.latitude, dataPoint.altitude];
         });
         
-        // Create a polyline to connect the points
         const polyline = new Polyline({
             paths: [pathCoordinates]
         });
         
-        // Define a simple line symbol for the polyline
         const lineSymbol = new SimpleLineSymbol({
-            color: "red",
-            width: 2
+            color: [255, 0, 0, 0.7], // Semi-transparent red
+            width: 3,
+            style: "solid"
         });
         
-        // Create a Graphic for the polyline and add it to the map
         const lineGraphic = new Graphic({
             geometry: polyline,
             symbol: lineSymbol
         });
         
-        graphicsLayer.add(lineGraphic);  // Add the polyline to the graphics layer
+        graphicsLayer.add(lineGraphic);
         
-        // Set camera focus to the first point
         if (flightData.length > 0) {
             const firstPoint = flightData[0];
             view.goTo({
                 target: [firstPoint.longitude, firstPoint.latitude],
-                zoom: 10,  // Adjust zoom level as necessary
-                tilt: 75   // Maintain tilt if desired
+                zoom: 10,
+                tilt: 75
             });
         }
 
-        // Optionally, set the view to encompass the entire route
-        const extent = graphicsLayer.fullExtent; // Get the full extent of the graphics layer
-        view.goTo(extent).catch((error) => {
+        const extent = graphicsLayer.fullExtent;
+        view.goTo({
+            target: extent,
+            easing: "ease-in-out"
+        }).catch((error) => {
             if (error.name !== "AbortError") {
                 console.error("Error:", error);
             }
         });
     };
-
 });
