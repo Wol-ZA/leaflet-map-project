@@ -35,7 +35,8 @@ function createGeoJSONLayer(url, color) {
                 color: color,
                 outline: {
                     color: [color[0], color[1], color[2], 1],  // Same color, but with full opacity
-                    width: 3
+                    width: 2, 
+                    style: "solid"
                 }
             }
         },
