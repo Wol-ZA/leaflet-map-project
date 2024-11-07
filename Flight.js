@@ -40,8 +40,6 @@ function createGeoJSONLayer(url, color) {
                 }
             }
         },
-        // Remove or set layer opacity to 1 to prevent affecting the outline
-        opacity: 1
     });
 }
 
