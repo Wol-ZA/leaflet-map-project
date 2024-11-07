@@ -34,15 +34,17 @@ function createGeoJSONLayer(url, color) {
                 type: "simple-fill",
                 color: color,
                 outline: {
-                    color: [color[0], color[1], color[2], 1],  // Same color, but with full opacity
-                    width: 2, 
+                    color: [color[0], color[1], color[2], 1],  // Full opacity for high visibility
+                    width: 2,  // Increase width for better visibility
                     style: "solid"
                 }
             }
         },
-        opacity: 0.15
+        opacity: 0.15  // Adjust polygon fill opacity separately
     });
 }
+
+
 
     // Define layers
     const accfisLayer = createGeoJSONLayer("ACCFIS.geojson", [255, 0, 0, 0.45]);
