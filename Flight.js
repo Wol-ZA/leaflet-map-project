@@ -25,23 +25,23 @@ require([
     });
 
     // Function to create the GeoJSONLayer with specified color
-    function createGeoJSONLayer(url, color) {
-        return new GeoJSONLayer({
-            url: url,
-            renderer: {
-                type: "simple",
-                symbol: {
-                    type: "simple-fill",
-                    color: color,
-                    outline: {
-                        color: [255, 255, 255, 0.5],
-                        width: 1
-                    }
+function createGeoJSONLayer(url, color) {
+    return new GeoJSONLayer({
+        url: url,
+        renderer: {
+            type: "simple",
+            symbol: {
+                type: "simple-fill",
+                color: color,
+                outline: {
+                    color: [color[0], color[1], color[2], 1],  // Same color, but with full opacity
+                    width: 1
                 }
-            },
-            opacity: 0.15
-        });
-    }
+            }
+        },
+        opacity: 0.15
+    });
+}
 
     // Define layers
     const accfisLayer = createGeoJSONLayer("ACCFIS.geojson", [255, 0, 0, 0.45]);
