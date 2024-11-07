@@ -32,14 +32,15 @@ function createGeoJSONLayer(url, color) {
             type: "simple",
             symbol: {
                 type: "simple-fill",
-                color: color, // e.g., [255, 0, 0, 0.45] for semi-transparent fill
+                color: color,
                 outline: {
-                    color: [color[0], color[1], color[2], 1], // Same RGB, full opacity
-                    width: 1,
-                    style: "solid" // Ensures a solid line
+                    color: [color[0], color[1], color[2], 1],  // Full opacity for high visibility
+                    width: 2,  // Increase width for better visibility
+                    style: "solid"
                 }
             }
         },
+        opacity: 0.15  // Adjust polygon fill opacity separately
     });
 }
 
