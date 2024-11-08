@@ -54,17 +54,7 @@ function createGeoJSONLayer(url, colorDecimal, alpha) {
     });
 }
 
-// Define layers with decimal color values
-const accfisLayer = createGeoJSONLayer("ACCFIS.geojson", 16711680, 0.45);  // Red
-const atzCtrLayer = createGeoJSONLayer("ATZ_CTR.geojson", 65280, 0.45);     // Green
-const ctaLayer = createGeoJSONLayer("CTA.geojson", 255, 0.45);              // Blue
-const tmaLayer = createGeoJSONLayer("TMA.geojson", 16776960, 0.45);         // Yellow
-const fadFapFarLayer = createGeoJSONLayer("FAD_FAP_FAR.geojson", 16711935, 0.45);
-
-    // Add polygon layers to the map
-    map.addMany([accfisLayer, atzCtrLayer, ctaLayer, tmaLayer, fadFapFarLayer]);
-
-    // Function to create a GeoJSONLayer with a specific icon for points
+ // Function to create a GeoJSONLayer with a specific icon for points
     function createIconGeoJSONLayer(url, iconUrl) {
         return new GeoJSONLayer({
             url: url,
