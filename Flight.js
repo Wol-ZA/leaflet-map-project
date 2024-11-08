@@ -11,8 +11,7 @@ require([
 
     // Create the map
     const map = new Map({
-        basemap: "topo-vector",
-        ground: "world-elevation"
+        basemap: "topo-vector"
     });
 
     // Create the MapView centered on George, South Africa
@@ -24,34 +23,43 @@ require([
         ui: { components: [] }
     });
 
-    // Function to create the GeoJSONLayer with specified color
-function createGeoJSONLayer(url, color) {
+function decimalToRGBA(colorDecimal, alpha) {
+    // Convert decimal to hexadecimal and pad with leading zeros if necessary
+    const hex = colorDecimal.toString(16).padStart(6, "0");
+
+    // Extract the red, green, and blue components
+    const r = parseInt(hex.slice(0, 2), 16);
+    const g = parseInt(hex.slice(2, 4), 16);
+    const b = parseInt(hex.slice(4, 6), 16);
+
+    return [r, g, b, alpha];
+}
+
+function createGeoJSONLayer(url, colorDecimal, alpha) {
     return new GeoJSONLayer({
         url: url,
         renderer: {
             type: "simple",
             symbol: {
                 type: "simple-fill",
-                color: color,
+                color: decimalToRGBA(colorDecimal, alpha),  // Convert decimal to RGBA
                 outline: {
-                    color: [color[0], color[1], color[2], 1],  // Full opacity for high visibility
-                    width: 2,  // Increase width for better visibility
+                    color: decimalToRGBA(colorDecimal, 1),  // Full opacity for outline
+                    width: 2,
                     style: "solid"
                 }
             }
         },
-        opacity: 0.15  // Adjust polygon fill opacity separately
+        opacity: 0.15
     });
 }
 
-
-
-    // Define layers
-    const accfisLayer = createGeoJSONLayer("ACCFIS.geojson", [255, 0, 0, 0.45]);
-    const atzCtrLayer = createGeoJSONLayer("ATZ_CTR.geojson", [0, 255, 0, 0.45]);
-    const ctaLayer = createGeoJSONLayer("CTA.geojson", [0, 0, 255, 0.45]);
-    const tmaLayer = createGeoJSONLayer("TMA.geojson", [255, 255, 0, 0.45]);
-    const fadFapFarLayer = createGeoJSONLayer("FAD_FAP_FAR.geojson", [255, 0, 255, 0.45]);
+// Define layers with decimal color values
+const accfisLayer = createGeoJSONLayer("ACCFIS.geojson", 16711680, 0.45);  // Red
+const atzCtrLayer = createGeoJSONLayer("ATZ_CTR.geojson", 65280, 0.45);     // Green
+const ctaLayer = createGeoJSONLayer("CTA.geojson", 255, 0.45);              // Blue
+const tmaLayer = createGeoJSONLayer("TMA.geojson", 16776960, 0.45);         // Yellow
+const fadFapFarLayer = createGeoJSONLayer("FAD_FAP_FAR.geojson", 16711935, 0.45);
 
     // Add polygon layers to the map
     map.addMany([accfisLayer, atzCtrLayer, ctaLayer, tmaLayer, fadFapFarLayer]);
