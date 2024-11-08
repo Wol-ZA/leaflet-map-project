@@ -10,9 +10,9 @@ require([
 ], function(Map, MapView, SceneView, GeoJSONLayer, Graphic, Point, PictureMarkerSymbol, GraphicsLayer) {
 
     // Create the map
-    const map = new Map({
-        basemap: "topo-vector"
-    });
+ window.map = new Map({
+    basemap: "topo-vector"
+});
 
     // Create the MapView centered on George, South Africa
     const view = new MapView({
