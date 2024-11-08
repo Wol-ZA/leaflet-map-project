@@ -35,7 +35,7 @@ function decimalToRGBA(colorDecimal, alpha) {
     return [r, g, b, alpha];
 }
 
-function createGeoJSONLayer(url, colorDecimal, alpha) {
+window.createGeoJSONLayer = function(url, colorDecimal, alpha) {
     return new GeoJSONLayer({
         url: url,
         renderer: {
