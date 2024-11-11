@@ -364,6 +364,10 @@ window.addMarkersAndDrawLine = function(data) {
                 if (activeMarkerIndex !== -1) {
                     console.log("Starting to drag marker at index:", activeMarkerIndex);
                     isDraggingMarker = true;
+
+                    // Disable map panning while dragging
+                    view.navigation.disable();
+
                     view.closePopup();  // Close the popup properly using view.closePopup
                     event.stopPropagation(); // Prevent map pan on drag
                 }
@@ -400,9 +404,13 @@ window.addMarkersAndDrawLine = function(data) {
             console.log("Drag ended.");
             isDraggingMarker = false;
             activeMarkerIndex = null; // Clear active marker reference
+
+            // Re-enable map panning after dragging ends
+            view.navigation.enable();
         }
     });
 };
+
 
 
 
