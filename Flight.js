@@ -278,7 +278,7 @@ window.addMarkersAndDrawLine = function(data) {
     const polylineCoordinates = [];
 
     data.forEach((point, index) => {
-        const { latitude, longitude, name, description, elevation } = point;
+        const { latitude, longitude, name, description } = point;
 
         // Add to polyline coordinates
         polylineCoordinates.push([longitude, latitude]);
@@ -308,7 +308,7 @@ window.addMarkersAndDrawLine = function(data) {
             height: "36px"
         };
 
-        // Create and add marker graphic with custom styled popup
+        // Create and add marker graphic with popupTemplate including a Move button
         const markerGraphic = new Graphic({
             geometry: markerPoint,
             symbol: markerSymbol,
@@ -317,7 +317,15 @@ window.addMarkersAndDrawLine = function(data) {
                 content: `
                     <div style="font-family: 'Arial', sans-serif; color: #333; font-size: 14px;">
                         <p><strong>Description:</strong> ${description}</p>
-                        <p><strong>Altitude:</strong> ${elevation} ft</p>
+                        <button id="moveButton" style="
+                            background-color: #007bff;
+                            color: #fff;
+                            border: none;
+                            padding: 8px 12px;
+                            font-size: 14px;
+                            border-radius: 4px;
+                            cursor: pointer;
+                        ">Move</button>
                     </div>
                     <style>
                         .esri-popup__main-container {
@@ -341,7 +349,16 @@ window.addMarkersAndDrawLine = function(data) {
                 `
             }
         });
+
         graphicsLayer.add(markerGraphic);
+
+        // Add event listener to handle the "Move" button click when the popup opens
+        view.popup.on("trigger-action", (event) => {
+            if (event.action.id === "moveButton") {
+                // Call a function to handle marker movement
+                handleMoveMarker(markerGraphic);
+            }
+        });
     });
 
     // Define polyline geometry and symbol
@@ -363,6 +380,13 @@ window.addMarkersAndDrawLine = function(data) {
     });
     graphicsLayer.add(polylineGraphic);
 };
+
+// Function to handle the "Move" button action
+function handleMoveMarker(markerGraphic) {
+    // Code to enable dragging or repositioning of the marker goes here
+    console.log("Move button clicked for marker:", markerGraphic);
+    // Example: You could enable marker dragging or open a modal to change coordinates
+}
 
 
 
