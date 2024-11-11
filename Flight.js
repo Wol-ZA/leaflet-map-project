@@ -362,6 +362,7 @@ window.addMarkersAndDrawLine = function(data) {
 
                 // Only start dragging if a marker is clicked
                 if (activeMarkerIndex !== -1) {
+                    console.log("Starting to drag marker at index:", activeMarkerIndex);
                     isDraggingMarker = true;
                     view.closePopup();  // Close the popup properly using view.closePopup
                     event.stopPropagation(); // Prevent map pan on drag
@@ -375,6 +376,7 @@ window.addMarkersAndDrawLine = function(data) {
         if (isDraggingMarker && activeMarkerIndex !== null) {
             const mapPoint = view.toMap({ x: event.x, y: event.y });
             if (mapPoint) {
+                console.log("Moving marker to:", mapPoint); // Debugging line
                 markerGraphics[activeMarkerIndex].geometry = mapPoint;
 
                 // Update the polyline coordinates
@@ -388,11 +390,13 @@ window.addMarkersAndDrawLine = function(data) {
     // End drag operation on pointer-up
     view.on("pointer-up", () => {
         if (isDraggingMarker) {
+            console.log("Drag ended.");
             isDraggingMarker = false;
             activeMarkerIndex = null; // Clear active marker reference
         }
     });
 };
+
 
 
 
