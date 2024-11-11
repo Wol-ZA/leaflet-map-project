@@ -315,7 +315,7 @@ window.addMarkersAndDrawLine = function(data) {
             symbol: markerSymbol,
             popupTemplate: {
                 title: name,
-                content: description + "<br><button id='moveButton'>Move</button>", // Add a "Move" button in the popup
+                content: "<div>" + description + "</div><button id='moveButton'>Move</button>", // Ensure button is clickable
             }
         });
         graphicsLayer.add(markerGraphic);
@@ -414,6 +414,7 @@ window.addMarkersAndDrawLine = function(data) {
         }
     });
 };
+
 
 
 
