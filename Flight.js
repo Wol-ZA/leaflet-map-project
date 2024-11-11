@@ -318,6 +318,31 @@ window.addMarkersAndDrawLine = function(data) {
             }
         });
         graphicsLayer.add(markerGraphic);
+
+        // Add drag functionality
+        let isDragging = false;
+
+        markerGraphic.on("pointer-down", (event) => {
+            isDragging = true;
+            view.popup.close();
+            event.stopPropagation(); // Prevent map pan on drag
+        });
+
+        view.on("pointer-move", (event) => {
+            if (!isDragging) return;
+            
+            // Convert screen point to map point
+            const mapPoint = view.toMap({ x: event.x, y: event.y });
+            markerGraphic.geometry = mapPoint;
+
+            // Update the polyline coordinates
+            polylineCoordinates[index] = [mapPoint.longitude, mapPoint.latitude];
+            updatePolyline();
+        });
+
+        view.on("pointer-up", () => {
+            isDragging = false;
+        });
     });
 
     // Define polyline geometry and symbol
@@ -338,7 +363,16 @@ window.addMarkersAndDrawLine = function(data) {
         symbol: lineSymbol
     });
     graphicsLayer.add(polylineGraphic);
+
+    // Update polyline whenever marker positions change
+    function updatePolyline() {
+        polylineGraphic.geometry = {
+            type: "polyline",
+            paths: polylineCoordinates
+        };
+    }
 };
+
 
 
 window.removeMarkersAndLines = function() {
