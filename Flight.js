@@ -376,10 +376,11 @@ window.addMarkersAndDrawLine = function(data) {
                 updatePolyline();
             }
         } else if (event.action === "end") {
-            activeMarkerIndex = null;
+            activeMarkerIndex = null; // Reset active marker after drag ends
         }
     });
 };
+
 
 
 
