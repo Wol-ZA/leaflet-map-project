@@ -377,7 +377,14 @@ window.addMarkersAndDrawLine = function(data) {
             const mapPoint = view.toMap({ x: event.x, y: event.y });
             if (mapPoint) {
                 console.log("Moving marker to:", mapPoint); // Debugging line
+                // Remove the old marker and re-add the updated one
+                graphicsLayer.remove(markerGraphics[activeMarkerIndex]);
+
+                // Update marker geometry
                 markerGraphics[activeMarkerIndex].geometry = mapPoint;
+
+                // Re-add the marker
+                graphicsLayer.add(markerGraphics[activeMarkerIndex]);
 
                 // Update the polyline coordinates
                 polylineCoordinates[activeMarkerIndex] = [mapPoint.longitude, mapPoint.latitude];
@@ -396,6 +403,7 @@ window.addMarkersAndDrawLine = function(data) {
         }
     });
 };
+
 
 
 
