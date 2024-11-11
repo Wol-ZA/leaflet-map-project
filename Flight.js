@@ -354,19 +354,20 @@ window.addMarkersAndDrawLine = function(data) {
 
     view.on("drag", (event) => {
         if (event.action === "start") {
+            // Only detect if dragging a marker, prevent map movement if a marker is being dragged
             view.hitTest(event).then((response) => {
                 if (response.results.length) {
                     const graphic = response.results[0].graphic;
                     activeMarkerIndex = markerGraphics.indexOf(graphic);
                     if (activeMarkerIndex !== -1) {
-                        console.log("Dragging started on marker:", activeMarkerIndex);
-                        view.popup.close();
-                        event.stopPropagation(); // Prevent map pan on drag
+                        // Prevent map from moving while dragging a marker
+                        view.popup.close();  // Close the popup to avoid interference
+                        event.stopPropagation(); // Prevent map pan
                     }
                 }
             });
         } else if (event.action === "update" && activeMarkerIndex !== null) {
-            // Convert screen point to map point
+            // If dragging a marker, update its position
             const mapPoint = view.toMap({ x: event.x, y: event.y });
             if (mapPoint) {
                 markerGraphics[activeMarkerIndex].geometry = mapPoint;
@@ -374,14 +375,22 @@ window.addMarkersAndDrawLine = function(data) {
                 // Update the polyline coordinates
                 polylineCoordinates[activeMarkerIndex] = [mapPoint.longitude, mapPoint.latitude];
                 updatePolyline();
-                console.log("Dragging marker at index", activeMarkerIndex, "to", mapPoint);
             }
         } else if (event.action === "end") {
-            console.log("Dragging ended on marker:", activeMarkerIndex);
-            activeMarkerIndex = null; // Reset active marker after drag ends
+            // Reset when dragging ends
+            activeMarkerIndex = null; // End dragging
+        }
+    });
+
+    // Allow map to be dragged when no marker is selected
+    view.on("drag", (event) => {
+        if (activeMarkerIndex === null) {
+            // Allow map drag only if no marker is being dragged
+            return; // Do not stop map movement
         }
     });
 };
+
 
 
 
