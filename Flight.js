@@ -365,11 +365,16 @@ window.addMarkersAndDrawLine = function(data) {
                     console.log("Starting to drag marker at index:", activeMarkerIndex);
                     isDraggingMarker = true;
 
-                    // Disable map interaction while dragging
-                    view.constraints = { rotationEnabled: true, zoomEnabled: true, panEnabled: false };
+                    // Disable map panning during drag
+                    view.constraints = {
+                        rotationEnabled: true,
+                        zoomEnabled: true,
+                        panEnabled: false
+                    };
 
                     view.closePopup();  // Close the popup properly using view.closePopup
                     event.stopPropagation(); // Prevent map pan on drag
+                    view.focus(); // Ensure the view doesn't move when dragging
                 }
             }
         });
