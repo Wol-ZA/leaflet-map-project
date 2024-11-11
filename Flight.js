@@ -341,7 +341,7 @@ window.addMarkersAndDrawLine = function(data) {
     });
     graphicsLayer.add(polylineGraphic);
 
-    // Update polyline whenever marker positions change
+    // Function to update polyline whenever marker positions change
     function updatePolyline() {
         polylineGraphic.geometry = {
             type: "polyline",
@@ -383,6 +383,7 @@ window.addMarkersAndDrawLine = function(data) {
         activeMarkerIndex = null;
     });
 };
+
 
 
 
