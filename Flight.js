@@ -363,7 +363,7 @@ window.addMarkersAndDrawLine = function(data) {
                 // Only start dragging if a marker is clicked
                 if (activeMarkerIndex !== -1) {
                     isDraggingMarker = true;
-                    view.popup.close();  // Close the popup to avoid interference
+                    view.closePopup();  // Close the popup properly using view.closePopup
                     event.stopPropagation(); // Prevent map pan on drag
                 }
             }
