@@ -276,7 +276,6 @@ window.addMarkersAndDrawLine = function(data) {
 
     // Array to hold coordinates for the polyline
     const polylineCoordinates = [];
-    const markerGraphics = [];
 
     data.forEach((point, index) => {
         const { latitude, longitude, name, description } = point;
@@ -315,11 +314,10 @@ window.addMarkersAndDrawLine = function(data) {
             symbol: markerSymbol,
             popupTemplate: {
                 title: name,
-                content: "<div>" + description + "</div><button id='moveButton' class='esri-widget esri-button'>Move</button>", // Button styled as an ArcGIS widget
+                content: description
             }
         });
         graphicsLayer.add(markerGraphic);
-        markerGraphics.push(markerGraphic);
     });
 
     // Define polyline geometry and symbol
@@ -340,81 +338,6 @@ window.addMarkersAndDrawLine = function(data) {
         symbol: lineSymbol
     });
     graphicsLayer.add(polylineGraphic);
-
-    // Update polyline whenever marker positions change
-    function updatePolyline() {
-        polylineGraphic.geometry = {
-            type: "polyline",
-            paths: polylineCoordinates
-        };
-    }
-
-    // Variables for dragging functionality
-    let activeMarkerIndex = null;
-    let isDraggingMarker = false;
-
-    // Handle marker click to show the popup and enable Move button functionality
-    view.on("popup-trigger", (event) => {
-        view.hitTest(event.screenPoint).then((response) => {
-            if (response.results.length) {
-                const graphic = response.results[0].graphic;
-                const moveButton = document.getElementById('moveButton');
-                
-                // Ensure the button is clickable
-                if (moveButton) {
-                    moveButton.addEventListener('click', () => {
-                        console.log("Move button clicked - enabling drag for marker.");
-                        isDraggingMarker = true;
-                        activeMarkerIndex = markerGraphics.indexOf(graphic); // Set active marker
-
-                        // Disable map panning while dragging
-                        view.constraints = {
-                            rotationEnabled: true,
-                            zoomEnabled: true,
-                            panEnabled: false
-                        };
-
-                        view.closePopup();  // Close the popup once the move button is clicked
-                    });
-                }
-            }
-        });
-    });
-
-    // Move the marker on pointer-move if dragging is active
-    view.on("pointer-move", (event) => {
-        if (isDraggingMarker && activeMarkerIndex !== null) {
-            const mapPoint = view.toMap({ x: event.x, y: event.y });
-            if (mapPoint) {
-                console.log("Moving marker to:", mapPoint); // Debugging line
-                // Update marker geometry
-                const updatedGraphic = markerGraphics[activeMarkerIndex];
-                updatedGraphic.geometry = mapPoint;
-
-                // Update the polyline coordinates
-                polylineCoordinates[activeMarkerIndex] = [mapPoint.longitude, mapPoint.latitude];
-                updatePolyline();
-
-                // Refresh the map
-                graphicsLayer.remove(updatedGraphic);
-                graphicsLayer.add(updatedGraphic);
-
-                event.stopPropagation(); // Prevent map panning while dragging
-            }
-        }
-    });
-
-    // End drag operation on pointer-up
-    view.on("pointer-up", () => {
-        if (isDraggingMarker) {
-            console.log("Drag ended.");
-            isDraggingMarker = false;
-            activeMarkerIndex = null; // Clear active marker reference
-
-            // Re-enable map interaction after dragging ends
-            view.constraints = { rotationEnabled: true, zoomEnabled: true, panEnabled: true };
-        }
-    });
 };
 
 
