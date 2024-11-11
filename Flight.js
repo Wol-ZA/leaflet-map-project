@@ -349,16 +349,22 @@ window.addMarkersAndDrawLine = function(data) {
                 `
             }
         });
-
         graphicsLayer.add(markerGraphic);
+    });
 
-        // Add event listener to handle the "Move" button click when the popup opens
-        view.popup.on("trigger-action", (event) => {
-            if (event.action.id === "moveButton") {
-                // Call a function to handle marker movement
-                handleMoveMarker(markerGraphic);
+    // Watch for popup visibility and add button click event when it opens
+    view.popup.watch("visible", function(isVisible) {
+        if (isVisible) {
+            // Add event listener to the "Move" button once the popup is visible
+            const moveButton = document.getElementById("moveButton");
+            if (moveButton) {
+                moveButton.addEventListener("click", () => {
+                    // Handle the marker movement here
+                    console.log("Move button clicked");
+                    handleMoveMarker(view.popup.selectedFeature);
+                });
             }
-        });
+        }
     });
 
     // Define polyline geometry and symbol
@@ -384,7 +390,7 @@ window.addMarkersAndDrawLine = function(data) {
 // Function to handle the "Move" button action
 function handleMoveMarker(markerGraphic) {
     // Code to enable dragging or repositioning of the marker goes here
-    console.log("Move button clicked for marker:", markerGraphic);
+    console.log("Move button action for marker:", markerGraphic);
     // Example: You could enable marker dragging or open a modal to change coordinates
 }
 
