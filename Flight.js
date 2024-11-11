@@ -308,63 +308,16 @@ window.addMarkersAndDrawLine = function(data) {
             height: "36px"
         };
 
-        // Create and add marker graphic with popupTemplate including a Move button
+        // Create and add marker graphic with popupTemplate directly in Graphic
         const markerGraphic = new Graphic({
             geometry: markerPoint,
             symbol: markerSymbol,
             popupTemplate: {
-                title: `<strong>${name}</strong>`,
-                content: `
-                    <div style="font-family: 'Arial', sans-serif; color: #333; font-size: 14px;">
-                        <p><strong>Description:</strong> ${description}</p>
-                        <button id="moveButton" style="
-                            background-color: #007bff;
-                            color: #fff;
-                            border: none;
-                            padding: 8px 12px;
-                            font-size: 14px;
-                            border-radius: 4px;
-                            cursor: pointer;
-                        ">Move</button>
-                    </div>
-                    <style>
-                        .esri-popup__main-container {
-                            border-radius: 8px;
-                            background-color: #f8f9fa;
-                            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-                        }
-                        .esri-popup__title {
-                            font-size: 16px;
-                            font-weight: bold;
-                            color: #0056b3;
-                        }
-                        .esri-popup__content {
-                            padding: 10px;
-                            color: #555;
-                        }
-                        .esri-popup__footer {
-                            display: none;
-                        }
-                    </style>
-                `
+                title: name,
+                content: description
             }
         });
         graphicsLayer.add(markerGraphic);
-    });
-
-    // Watch for popup visibility and add button click event when it opens
-    view.popup.watch("visible", function(isVisible) {
-        if (isVisible) {
-            // Add event listener to the "Move" button once the popup is visible
-            const moveButton = document.getElementById("moveButton");
-            if (moveButton) {
-                moveButton.addEventListener("click", () => {
-                    // Handle the marker movement here
-                    console.log("Move button clicked");
-                    handleMoveMarker(view.popup.selectedFeature);
-                });
-            }
-        }
     });
 
     // Define polyline geometry and symbol
@@ -386,15 +339,6 @@ window.addMarkersAndDrawLine = function(data) {
     });
     graphicsLayer.add(polylineGraphic);
 };
-
-// Function to handle the "Move" button action
-function handleMoveMarker(markerGraphic) {
-    // Code to enable dragging or repositioning of the marker goes here
-    console.log("Move button action for marker:", markerGraphic);
-    // Example: You could enable marker dragging or open a modal to change coordinates
-}
-
-
 
 
 
