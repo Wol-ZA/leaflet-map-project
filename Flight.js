@@ -315,7 +315,7 @@ window.addMarkersAndDrawLine = function(data) {
             symbol: markerSymbol,
             popupTemplate: {
                 title: name,
-                content: "<div>" + description + "</div><button id='moveButton'>Move</button>", // Ensure button is clickable
+                content: "<div>" + description + "</div><button id='moveButton'>Move</button>", // HTML button here
             }
         });
         graphicsLayer.add(markerGraphic);
@@ -360,10 +360,12 @@ window.addMarkersAndDrawLine = function(data) {
                 const graphic = response.results[0].graphic;
                 const moveButton = document.getElementById('moveButton');
 
+                // Ensure the button is clickable
                 if (moveButton) {
                     moveButton.addEventListener('click', () => {
                         console.log("Move button clicked - enabling drag for marker.");
                         isDraggingMarker = true;
+                        activeMarkerIndex = markerGraphics.indexOf(graphic); // Set active marker
 
                         // Disable map panning while dragging
                         view.constraints = {
