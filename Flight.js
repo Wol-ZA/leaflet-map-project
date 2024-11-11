@@ -276,6 +276,7 @@ window.addMarkersAndDrawLine = function(data) {
 
     // Array to hold coordinates for the polyline
     const polylineCoordinates = [];
+    const markerGraphics = [];
 
     data.forEach((point, index) => {
         const { latitude, longitude, name, description } = point;
@@ -318,31 +319,7 @@ window.addMarkersAndDrawLine = function(data) {
             }
         });
         graphicsLayer.add(markerGraphic);
-
-        // Add drag functionality
-        let isDragging = false;
-
-        markerGraphic.on("pointer-down", (event) => {
-            isDragging = true;
-            view.popup.close();
-            event.stopPropagation(); // Prevent map pan on drag
-        });
-
-        view.on("pointer-move", (event) => {
-            if (!isDragging) return;
-            
-            // Convert screen point to map point
-            const mapPoint = view.toMap({ x: event.x, y: event.y });
-            markerGraphic.geometry = mapPoint;
-
-            // Update the polyline coordinates
-            polylineCoordinates[index] = [mapPoint.longitude, mapPoint.latitude];
-            updatePolyline();
-        });
-
-        view.on("pointer-up", () => {
-            isDragging = false;
-        });
+        markerGraphics.push(markerGraphic);
     });
 
     // Define polyline geometry and symbol
@@ -371,7 +348,42 @@ window.addMarkersAndDrawLine = function(data) {
             paths: polylineCoordinates
         };
     }
+
+    // Drag functionality
+    let activeMarkerIndex = null;
+
+    view.on("pointer-down", (event) => {
+        view.hitTest(event).then((response) => {
+            if (response.results.length) {
+                const graphic = response.results[0].graphic;
+                activeMarkerIndex = markerGraphics.indexOf(graphic);
+                if (activeMarkerIndex !== -1) {
+                    view.popup.close();
+                    event.stopPropagation(); // Prevent map pan on drag
+                }
+            }
+        });
+    });
+
+    view.on("pointer-move", (event) => {
+        if (activeMarkerIndex === null) return;
+
+        // Convert screen point to map point
+        const mapPoint = view.toMap({ x: event.x, y: event.y });
+        if (mapPoint) {
+            markerGraphics[activeMarkerIndex].geometry = mapPoint;
+
+            // Update the polyline coordinates
+            polylineCoordinates[activeMarkerIndex] = [mapPoint.longitude, mapPoint.latitude];
+            updatePolyline();
+        }
+    });
+
+    view.on("pointer-up", () => {
+        activeMarkerIndex = null;
+    });
 };
+
 
 
 
