@@ -278,7 +278,7 @@ window.addMarkersAndDrawLine = function(data) {
     const polylineCoordinates = [];
 
     data.forEach((point, index) => {
-        const { latitude, longitude, name, description } = point;
+        const { latitude, longitude, name, description, elevation } = point;
 
         // Add to polyline coordinates
         polylineCoordinates.push([longitude, latitude]);
@@ -308,13 +308,37 @@ window.addMarkersAndDrawLine = function(data) {
             height: "36px"
         };
 
-        // Create and add marker graphic with popupTemplate directly in Graphic
+        // Create and add marker graphic with custom styled popup
         const markerGraphic = new Graphic({
             geometry: markerPoint,
             symbol: markerSymbol,
             popupTemplate: {
-                title: name,
-                content: description
+                title: `<strong>${name}</strong>`,
+                content: `
+                    <div style="font-family: 'Arial', sans-serif; color: #333; font-size: 14px;">
+                        <p><strong>Description:</strong> ${description}</p>
+                        <p><strong>Altitude:</strong> ${elevation} ft</p>
+                    </div>
+                    <style>
+                        .esri-popup__main-container {
+                            border-radius: 8px;
+                            background-color: #f8f9fa;
+                            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+                        }
+                        .esri-popup__title {
+                            font-size: 16px;
+                            font-weight: bold;
+                            color: #0056b3;
+                        }
+                        .esri-popup__content {
+                            padding: 10px;
+                            color: #555;
+                        }
+                        .esri-popup__footer {
+                            display: none;
+                        }
+                    </style>
+                `
             }
         });
         graphicsLayer.add(markerGraphic);
@@ -339,10 +363,6 @@ window.addMarkersAndDrawLine = function(data) {
     });
     graphicsLayer.add(polylineGraphic);
 };
-
-
-
-
 
 
 
