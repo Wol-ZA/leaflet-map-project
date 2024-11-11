@@ -315,7 +315,7 @@ window.addMarkersAndDrawLine = function(data) {
             symbol: markerSymbol,
             popupTemplate: {
                 title: name,
-                content: description
+                content: description + "<br><button id='moveButton'>Move</button>", // Add a "Move" button in the popup
             }
         });
         graphicsLayer.add(markerGraphic);
@@ -353,28 +353,27 @@ window.addMarkersAndDrawLine = function(data) {
     let activeMarkerIndex = null;
     let isDraggingMarker = false;
 
-    // Disable map panning during a drag
-    view.on("pointer-down", (event) => {
-        view.hitTest(event).then((response) => {
+    // Handle marker click to show the popup
+    view.on("popup-trigger", (event) => {
+        view.hitTest(event.screenPoint).then((response) => {
             if (response.results.length) {
                 const graphic = response.results[0].graphic;
-                activeMarkerIndex = markerGraphics.indexOf(graphic);
+                const moveButton = document.getElementById('moveButton');
 
-                // Only start dragging if a marker is clicked
-                if (activeMarkerIndex !== -1) {
-                    console.log("Starting to drag marker at index:", activeMarkerIndex);
-                    isDraggingMarker = true;
+                if (moveButton) {
+                    moveButton.addEventListener('click', () => {
+                        console.log("Move button clicked - enabling drag for marker.");
+                        isDraggingMarker = true;
 
-                    // Disable map panning during drag
-                    view.constraints = {
-                        rotationEnabled: true,
-                        zoomEnabled: true,
-                        panEnabled: false
-                    };
+                        // Disable map panning while dragging
+                        view.constraints = {
+                            rotationEnabled: true,
+                            zoomEnabled: true,
+                            panEnabled: false
+                        };
 
-                    view.closePopup();  // Close the popup properly using view.closePopup
-                    event.stopPropagation(); // Prevent map pan on drag
-                    view.focus(); // Ensure the view doesn't move when dragging
+                        view.closePopup();  // Close the popup once the move button is clicked
+                    });
                 }
             }
         });
@@ -415,6 +414,7 @@ window.addMarkersAndDrawLine = function(data) {
         }
     });
 };
+
 
 
 
