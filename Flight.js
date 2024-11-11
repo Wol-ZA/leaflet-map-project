@@ -387,8 +387,10 @@ window.addMarkersAndDrawLine = function(data) {
 
     // End drag operation on pointer-up
     view.on("pointer-up", () => {
-        isDraggingMarker = false;
-        activeMarkerIndex = null; // Clear active marker reference
+        if (isDraggingMarker) {
+            isDraggingMarker = false;
+            activeMarkerIndex = null; // Clear active marker reference
+        }
     });
 };
 
