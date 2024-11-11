@@ -404,7 +404,6 @@ window.addMarkersAndDrawLine = function(data) {
             }
         }
     });
-};
 
     // End drag operation on pointer-up
     view.on("pointer-up", () => {
@@ -418,21 +417,6 @@ window.addMarkersAndDrawLine = function(data) {
         }
     });
 };
-
-
-    // End drag operation on pointer-up
-    view.on("pointer-up", () => {
-        if (isDraggingMarker) {
-            console.log("Drag ended.");
-            isDraggingMarker = false;
-            activeMarkerIndex = null; // Clear active marker reference
-
-            // Re-enable map interaction after dragging ends
-            view.constraints = { rotationEnabled: true, zoomEnabled: true, panEnabled: true };
-        }
-    });
-};
-
 
 
 
