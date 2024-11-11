@@ -404,6 +404,7 @@ window.addMarkersAndDrawLine = function(data) {
             }
         }
     });
+};
 
     // End drag operation on pointer-up
     view.on("pointer-up", () => {
