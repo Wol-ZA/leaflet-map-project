@@ -349,43 +349,35 @@ window.addMarkersAndDrawLine = function(data) {
         };
     }
 
-    // Drag functionality with improved map movement prevention
+    // Drag functionality with map panning prevention during drag
     let activeMarkerIndex = null;
 
-    view.on("pointer-down", (event) => {
-        view.hitTest(event).then((response) => {
-            if (response.results.length) {
-                const graphic = response.results[0].graphic;
-                activeMarkerIndex = markerGraphics.indexOf(graphic);
-                if (activeMarkerIndex !== -1) {
-                    // Close any open popup
-                    view.closePopup();
-                    // Prevent the map from panning during drag
-                    view.navigation.disable();
-                    event.stopPropagation(); // Prevent map pan on drag
+    view.on("drag", (event) => {
+        if (event.action === "start") {
+            view.hitTest(event).then((response) => {
+                if (response.results.length) {
+                    const graphic = response.results[0].graphic;
+                    activeMarkerIndex = markerGraphics.indexOf(graphic);
+                    if (activeMarkerIndex !== -1) {
+                        // Close any open popup
+                        view.closePopup();
+                        event.stopPropagation(); // Prevent map pan on drag
+                    }
                 }
+            });
+        } else if (event.action === "update" && activeMarkerIndex !== null) {
+            // Convert screen point to map point
+            const mapPoint = view.toMap({ x: event.x, y: event.y });
+            if (mapPoint) {
+                markerGraphics[activeMarkerIndex].geometry = mapPoint;
+
+                // Update the polyline coordinates
+                polylineCoordinates[activeMarkerIndex] = [mapPoint.longitude, mapPoint.latitude];
+                updatePolyline();
             }
-        });
-    });
-
-    view.on("pointer-move", (event) => {
-        if (activeMarkerIndex === null) return;
-
-        // Convert screen point to map point
-        const mapPoint = view.toMap({ x: event.x, y: event.y });
-        if (mapPoint) {
-            markerGraphics[activeMarkerIndex].geometry = mapPoint;
-
-            // Update the polyline coordinates
-            polylineCoordinates[activeMarkerIndex] = [mapPoint.longitude, mapPoint.latitude];
-            updatePolyline();
+        } else if (event.action === "end") {
+            activeMarkerIndex = null;
         }
-    });
-
-    view.on("pointer-up", () => {
-        activeMarkerIndex = null;
-        // Re-enable map navigation after drag
-        view.navigation.enable();
     });
 };
 
