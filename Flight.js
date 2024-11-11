@@ -349,16 +349,18 @@ window.addMarkersAndDrawLine = function(data) {
         };
     }
 
-    // Drag functionality with map panning prevention during drag
+    // Variables for dragging functionality
     let activeMarkerIndex = null;
     let isDraggingMarker = false;
 
+    // Disable map panning during a drag
     view.on("pointer-down", (event) => {
         view.hitTest(event).then((response) => {
             if (response.results.length) {
                 const graphic = response.results[0].graphic;
                 activeMarkerIndex = markerGraphics.indexOf(graphic);
 
+                // Only start dragging if a marker is clicked
                 if (activeMarkerIndex !== -1) {
                     isDraggingMarker = true;
                     view.popup.close();  // Close the popup to avoid interference
@@ -368,9 +370,9 @@ window.addMarkersAndDrawLine = function(data) {
         });
     });
 
+    // Move the marker on pointer-move if dragging is active
     view.on("pointer-move", (event) => {
         if (isDraggingMarker && activeMarkerIndex !== null) {
-            // Convert screen point to map point
             const mapPoint = view.toMap({ x: event.x, y: event.y });
             if (mapPoint) {
                 markerGraphics[activeMarkerIndex].geometry = mapPoint;
@@ -383,11 +385,13 @@ window.addMarkersAndDrawLine = function(data) {
         }
     });
 
+    // End drag operation on pointer-up
     view.on("pointer-up", () => {
         isDraggingMarker = false;
-        activeMarkerIndex = null; // Reset dragging status
+        activeMarkerIndex = null; // Clear active marker reference
     });
 };
+
 
 
 
