@@ -351,23 +351,26 @@ window.addMarkersAndDrawLine = function(data) {
 
     // Drag functionality with map panning prevention during drag
     let activeMarkerIndex = null;
+    let isDraggingMarker = false;
 
-    view.on("drag", (event) => {
-        if (event.action === "start") {
-            // Only detect if dragging a marker, prevent map movement if a marker is being dragged
-            view.hitTest(event).then((response) => {
-                if (response.results.length) {
-                    const graphic = response.results[0].graphic;
-                    activeMarkerIndex = markerGraphics.indexOf(graphic);
-                    if (activeMarkerIndex !== -1) {
-                        // Prevent map from moving while dragging a marker
-                        view.popup.close();  // Close the popup to avoid interference
-                        event.stopPropagation(); // Prevent map pan
-                    }
+    view.on("pointer-down", (event) => {
+        view.hitTest(event).then((response) => {
+            if (response.results.length) {
+                const graphic = response.results[0].graphic;
+                activeMarkerIndex = markerGraphics.indexOf(graphic);
+
+                if (activeMarkerIndex !== -1) {
+                    isDraggingMarker = true;
+                    view.popup.close();  // Close the popup to avoid interference
+                    event.stopPropagation(); // Prevent map pan on drag
                 }
-            });
-        } else if (event.action === "update" && activeMarkerIndex !== null) {
-            // If dragging a marker, update its position
+            }
+        });
+    });
+
+    view.on("pointer-move", (event) => {
+        if (isDraggingMarker && activeMarkerIndex !== null) {
+            // Convert screen point to map point
             const mapPoint = view.toMap({ x: event.x, y: event.y });
             if (mapPoint) {
                 markerGraphics[activeMarkerIndex].geometry = mapPoint;
@@ -376,18 +379,13 @@ window.addMarkersAndDrawLine = function(data) {
                 polylineCoordinates[activeMarkerIndex] = [mapPoint.longitude, mapPoint.latitude];
                 updatePolyline();
             }
-        } else if (event.action === "end") {
-            // Reset when dragging ends
-            activeMarkerIndex = null; // End dragging
+            event.stopPropagation(); // Prevent map panning while dragging
         }
     });
 
-    // Allow map to be dragged when no marker is selected
-    view.on("drag", (event) => {
-        if (activeMarkerIndex === null) {
-            // Allow map drag only if no marker is being dragged
-            return; // Do not stop map movement
-        }
+    view.on("pointer-up", () => {
+        isDraggingMarker = false;
+        activeMarkerIndex = null; // Reset dragging status
     });
 };
 
