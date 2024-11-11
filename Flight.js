@@ -359,8 +359,8 @@ window.addMarkersAndDrawLine = function(data) {
                     const graphic = response.results[0].graphic;
                     activeMarkerIndex = markerGraphics.indexOf(graphic);
                     if (activeMarkerIndex !== -1) {
-                        // Close any open popup
-                        view.closePopup();
+                        console.log("Dragging started on marker:", activeMarkerIndex);
+                        view.popup.close();
                         event.stopPropagation(); // Prevent map pan on drag
                     }
                 }
@@ -374,12 +374,15 @@ window.addMarkersAndDrawLine = function(data) {
                 // Update the polyline coordinates
                 polylineCoordinates[activeMarkerIndex] = [mapPoint.longitude, mapPoint.latitude];
                 updatePolyline();
+                console.log("Dragging marker at index", activeMarkerIndex, "to", mapPoint);
             }
         } else if (event.action === "end") {
+            console.log("Dragging ended on marker:", activeMarkerIndex);
             activeMarkerIndex = null; // Reset active marker after drag ends
         }
     });
 };
+
 
 
 
