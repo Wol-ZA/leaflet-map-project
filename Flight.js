@@ -353,16 +353,15 @@ window.addMarkersAndDrawLine = function(data) {
     let activeMarkerIndex = null;
     let isDraggingMarker = false;
 
-    // Handle marker click to show the popup
+    // Handle marker click to show the popup and enable Move button functionality
     view.on("popup-trigger", (event) => {
         view.hitTest(event.screenPoint).then((response) => {
             if (response.results.length) {
                 const graphic = response.results[0].graphic;
                 const moveButton = document.getElementById('moveButton');
-
+                
                 // Ensure the button is clickable
                 if (moveButton) {
-                    // Listen for move button click and enable marker dragging
                     moveButton.addEventListener('click', () => {
                         console.log("Move button clicked - enabling drag for marker.");
                         isDraggingMarker = true;
