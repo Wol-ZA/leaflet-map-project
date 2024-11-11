@@ -341,7 +341,7 @@ window.addMarkersAndDrawLine = function(data) {
     });
     graphicsLayer.add(polylineGraphic);
 
-    // Function to update polyline whenever marker positions change
+    // Update polyline whenever marker positions change
     function updatePolyline() {
         polylineGraphic.geometry = {
             type: "polyline",
@@ -349,7 +349,7 @@ window.addMarkersAndDrawLine = function(data) {
         };
     }
 
-    // Drag functionality
+    // Drag functionality with improved map movement prevention
     let activeMarkerIndex = null;
 
     view.on("pointer-down", (event) => {
@@ -358,7 +358,10 @@ window.addMarkersAndDrawLine = function(data) {
                 const graphic = response.results[0].graphic;
                 activeMarkerIndex = markerGraphics.indexOf(graphic);
                 if (activeMarkerIndex !== -1) {
-                    view.popup.close();
+                    // Close any open popup
+                    view.closePopup();
+                    // Prevent the map from panning during drag
+                    view.navigation.disable();
                     event.stopPropagation(); // Prevent map pan on drag
                 }
             }
@@ -381,6 +384,8 @@ window.addMarkersAndDrawLine = function(data) {
 
     view.on("pointer-up", () => {
         activeMarkerIndex = null;
+        // Re-enable map navigation after drag
+        view.navigation.enable();
     });
 };
 
