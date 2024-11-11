@@ -315,7 +315,7 @@ window.addMarkersAndDrawLine = function(data) {
             symbol: markerSymbol,
             popupTemplate: {
                 title: name,
-                content: "<div>" + description + "</div><button id='moveButton'>Move</button>", // HTML button here
+                content: "<div>" + description + "</div><button id='moveButton' class='esri-widget esri-button'>Move</button>", // Button styled as an ArcGIS widget
             }
         });
         graphicsLayer.add(markerGraphic);
@@ -362,6 +362,7 @@ window.addMarkersAndDrawLine = function(data) {
 
                 // Ensure the button is clickable
                 if (moveButton) {
+                    // Listen for move button click and enable marker dragging
                     moveButton.addEventListener('click', () => {
                         console.log("Move button clicked - enabling drag for marker.");
                         isDraggingMarker = true;
