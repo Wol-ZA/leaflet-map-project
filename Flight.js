@@ -281,22 +281,6 @@ window.addMarkersAndDrawLine = function (data) {
     // Array to store marker graphics for updating positions dynamically
     const markerGraphics = [];
 
-    // Create the polyline graphic
-    const polylineGraphic = new Graphic({
-        geometry: {
-            type: "polyline",
-            paths: polylineCoordinates
-        },
-        symbol: {
-            type: "simple-line",
-            color: [0, 0, 255, 0.5], // Semi-transparent blue
-            width: 2
-        }
-    });
-
-    // Add the polyline graphic to the graphics layer
-    graphicsLayer.add(polylineGraphic);
-
     // Create markers and add them to the map
     data.forEach((point, index) => {
         const { latitude, longitude, name, description } = point;
@@ -304,7 +288,7 @@ window.addMarkersAndDrawLine = function (data) {
         // Add to polyline coordinates
         polylineCoordinates.push([longitude, latitude]);
 
-        // Define the point geometry
+        // Define the point geometry for markers
         const markerPoint = {
             type: "point",
             longitude: longitude,
@@ -342,6 +326,22 @@ window.addMarkersAndDrawLine = function (data) {
         graphicsLayer.add(markerGraphic);
         markerGraphics.push(markerGraphic);
     });
+
+    // Create the polyline graphic with the coordinates
+    const polylineGraphic = new Graphic({
+        geometry: {
+            type: "polyline",
+            paths: polylineCoordinates
+        },
+        symbol: {
+            type: "simple-line",
+            color: [0, 0, 255, 0.5], // Semi-transparent blue
+            width: 2
+        }
+    });
+
+    // Add the polyline graphic to the graphics layer
+    graphicsLayer.add(polylineGraphic);
 
     // Add drag functionality
     let isDraggingMarker = false;
@@ -420,13 +420,13 @@ window.addMarkersAndDrawLine = function (data) {
             latitude: startMarker.latitude
         });
 
+        // Zoom to the extent including all markers
         view.goTo({
             center: startPoint,  // Pan to the first marker's coordinates
             scale: 80000         // Adjust the zoom level if needed
         });
     });
 };
-
 
 
 
