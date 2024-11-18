@@ -275,7 +275,7 @@ window.EndTracking = function() {
 window.addMarkersAndDrawLine = function (data) {
     // Clear previous graphics
     const draggableGraphicsLayer = new GraphicsLayer({
-        zIndex: 10  // Higher zIndex to ensure it stays on top
+        zIndex: 10
     });
     map.add(draggableGraphicsLayer);
     graphicsLayer.removeAll();
@@ -334,7 +334,7 @@ window.addMarkersAndDrawLine = function (data) {
         const circleRadius = 20 * 1.852; // 20 nautical miles in kilometers
         const circleGeometry = {
             type: "circle",
-            center: markerPoint,
+            center: markerPoint,  // Ensure this is a valid point
             radius: circleRadius * 1000 // Convert km to meters
         };
 
@@ -363,7 +363,7 @@ window.addMarkersAndDrawLine = function (data) {
         },
         symbol: {
             type: "simple-line",
-            color: [0, 0, 255, 0.5], // Semi-transparent blue
+            color: [0, 0, 255, 0.5],
             width: 2
         }
     });
@@ -412,10 +412,16 @@ window.addMarkersAndDrawLine = function (data) {
             });
 
             if (circleGraphic) {
-                // Update the existing circle's position (instead of adding new one)
-                circleGraphic.geometry.center = mapPoint;
+                // Update the existing circle's position
+                const newCircleGeometry = {
+                    type: "circle",
+                    center: mapPoint,
+                    radius: 20 * 1.852 * 1000 // 20 NM in meters
+                };
+
+                circleGraphic.setGeometry(newCircleGeometry); // Properly set the geometry
             } else {
-                // If no circle graphic exists (in case of drag start), add one
+                // If no circle graphic exists, add one
                 const newCircleGeometry = {
                     type: "circle",
                     center: mapPoint,
@@ -478,6 +484,7 @@ window.addMarkersAndDrawLine = function (data) {
         });
     });
 };
+
 
 
 
