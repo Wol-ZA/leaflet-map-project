@@ -467,4 +467,4 @@ window.removeMarkersAndLines = function() {
     
     // Initial layer visibility toggle
     toggleLayerVisibility();
-});
+};
