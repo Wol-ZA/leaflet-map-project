@@ -486,10 +486,7 @@ window.addMarkersAndDrawLine = function (data) {
              if (view.popup && view.popup.visible) {
         // Popup is already open, so we don't need to close it
         // We could choose to update it if necessary, for example with a final list of points.
-        view.popup.update({
-            title: "Points of Interest",
-            content: "The marker has been released. Points of interest were calculated while dragging."
-        });
+        
     }
         }
     });
