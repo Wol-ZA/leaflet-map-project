@@ -488,48 +488,7 @@ window.addMarkersAndDrawLine = function (data) {
         // We could choose to update it if necessary, for example with a final list of points.
         
     }
-            const pointsWithinRadius = [];
-    const layers = [
-        { layer: sacaaLayer, icon: "sacaa.png" },
-        { layer: aerodromeAipLayer, icon: "aip.png" },
-        { layer: aerodromeAicLayer, icon: "aic.png" },
-        { layer: unlicensedLayer, icon: "unlicensed.png" },
-        { layer: atnsLayer, icon: "atns.png" },
-        { layer: militaryLayer, icon: "military.png" },
-        { layer: helistopsLayer, icon: "helistops.png" }
-    ];
-
-    layers.forEach((layerObj) => {
-        layerObj.layer.queryFeatures({
-            geometry: activeCircleGraphic.geometry,
-            spatialRelationship: "intersects",
-            returnGeometry: false,
-            outFields: ["*"]
-        }).then((result) => {
-            result.features.forEach((feature) => {
-                pointsWithinRadius.push({
-                    name: feature.attributes.name || "Unknown",
-                    description: feature.attributes.description || "No description available",
-                    icon: layerObj.icon // Icon associated with the layer
-                });
-            });
-
-            // Update the popup content dynamically, keeping it open
-            if (pointsWithinRadius.length) {
-                const content = pointsWithinRadius
-                    .map(
-                        (point) =>
-                            `<b>${point.name}</b>: ${point.description}<br>
-                            <img src="${point.icon}" alt="${point.name}" style="width: 24px; height: 24px;"/>`
-                    )
-                    .join("<br>");
-
-                view.popup.content = content;
-            } else {
-                view.popup.content = "No points of interest within the radius.";
-            }
-        });
-    });
+       
         }
     });
 };
