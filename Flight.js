@@ -392,18 +392,13 @@ window.addMarkersAndDrawLine = function (data) {
         }
     });
 
-    // Ensure the layer is refreshed to display graphics immediately
-    view.whenLayerView(graphicsLayer).then((layerView) => {
-        if (layerView.refresh) {
-            layerView.refresh(); // Explicitly refresh the layer view if the method exists
-        } else {
-            // Trigger a redraw if refresh is unavailable
-            graphicsLayer.visible = false;
-            setTimeout(() => {
-                graphicsLayer.visible = true;
-            }, 0);
-        }
-    });
+    // Manually set a small zoom to force a re-render and update the map
+    setTimeout(() => {
+        view.goTo(view.center).then(() => {
+            // Ensure the map refreshes the layer rendering
+            view.invalidateRender();
+        });
+    }, 0); // Small delay to ensure the graphics have been added before forcing update
 };
 
 
