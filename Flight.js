@@ -1,6 +1,6 @@
 require([
-    "esri/Map",
     "esri/geometry/Extent",
+    "esri/Map",
     "esri/views/MapView",
     "esri/views/SceneView", // Import SceneView for 3D view
     "esri/layers/GeoJSONLayer",
