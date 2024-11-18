@@ -277,6 +277,7 @@ window.addMarkersAndDrawLine = function (data) {
     const draggableGraphicsLayer = new GraphicsLayer({
     zIndex: 10  // Higher zIndex to ensure it stays on top
 });
+map.add(draggableGraphicsLayer);
     graphicsLayer .removeAll();
 
     // Array to hold coordinates for the polyline
@@ -327,7 +328,7 @@ window.addMarkersAndDrawLine = function (data) {
             }
         });
 
-        graphicsLayer.add(markerGraphic);
+        draggableGraphicsLayer.add(markerGraphic);
         markerGraphics.push(markerGraphic);
     });
 
@@ -345,7 +346,7 @@ window.addMarkersAndDrawLine = function (data) {
     });
 
     // Add the polyline graphic to the graphics layer
-    graphicsLayer.add(polylineGraphic);
+    draggableGraphicsLayer.add(polylineGraphic);
 
     // Add drag functionality
     let isDraggingMarker = false;
