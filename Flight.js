@@ -273,6 +273,7 @@ window.EndTracking = function() {
 
 
     
+// Add markers and handle drag events
 window.addMarkersAndDrawLine = function (data) {
     // Clear previous graphics
     const draggableGraphicsLayer = new GraphicsLayer({
@@ -286,6 +287,9 @@ window.addMarkersAndDrawLine = function (data) {
 
     // Array to store marker graphics for updating positions dynamically
     const markerGraphics = [];
+
+    // Circle graphic holder
+    let activeCircleGraphic = null;
 
     // Create markers and add them to the map
     data.forEach((point, index) => {
@@ -332,29 +336,6 @@ window.addMarkersAndDrawLine = function (data) {
         // Add the marker graphic
         draggableGraphicsLayer.add(markerGraphic);
         markerGraphics.push(markerGraphic);
-
-        // Add a circle with a radius of 20 nautical miles
-        const circleGeometry = new Circle({
-            center: markerPoint,
-            radius: 37040, // 20 nautical miles in meters
-            geodesic: true // Ensures the radius is accurate on a globe
-        });
-
-        const circleSymbol = {
-            type: "simple-fill",
-            color: [255, 0, 0, 0.2], // Semi-transparent red
-            outline: {
-                color: [255, 0, 0, 0.8], // Red outline
-                width: 1
-            }
-        };
-
-        const circleGraphic = new Graphic({
-            geometry: circleGeometry,
-            symbol: circleSymbol
-        });
-
-        draggableGraphicsLayer.add(circleGraphic);
     });
 
     // Create the polyline graphic with the coordinates
@@ -393,6 +374,29 @@ window.addMarkersAndDrawLine = function (data) {
                         view.draggedGraphic = graphic;
                         isDraggingMarker = true;
 
+                        // Create and add the circle graphic dynamically
+                        const circleGeometry = new Circle({
+                            center: mapPoint,
+                            radius: 37040, // 20 nautical miles in meters
+                            geodesic: true
+                        });
+
+                        const circleSymbol = {
+                            type: "simple-fill",
+                            color: [255, 0, 0, 0.2], // Semi-transparent red
+                            outline: {
+                                color: [255, 0, 0, 0.8], // Red outline
+                                width: 1
+                            }
+                        };
+
+                        activeCircleGraphic = new Graphic({
+                            geometry: circleGeometry,
+                            symbol: circleSymbol
+                        });
+
+                        draggableGraphicsLayer.add(activeCircleGraphic);
+
                         // Prevent map panning while dragging a marker
                         event.stopPropagation();
                     }
@@ -414,14 +418,8 @@ window.addMarkersAndDrawLine = function (data) {
                 };
 
                 // Update the circle geometry
-                const circleGraphic = draggableGraphicsLayer.graphics.items.find(
-                    (g) =>
-                        g.geometry.type === "polygon" &&
-                        g.geometry.extent.contains(view.draggedGraphic.geometry)
-                );
-
-                if (circleGraphic) {
-                    circleGraphic.geometry = new Circle({
+                if (activeCircleGraphic) {
+                    activeCircleGraphic.geometry = new Circle({
                         center: mapPoint,
                         radius: 37040,
                         geodesic: true
@@ -435,6 +433,12 @@ window.addMarkersAndDrawLine = function (data) {
             // End marker dragging
             isDraggingMarker = false;
             view.draggedGraphic = null;
+
+            // Remove the active circle
+            if (activeCircleGraphic) {
+                draggableGraphicsLayer.remove(activeCircleGraphic);
+                activeCircleGraphic = null;
+            }
         }
     });
 
@@ -472,6 +476,7 @@ window.addMarkersAndDrawLine = function (data) {
         });
     });
 };
+
 
 
 window.removeMarkersAndLines = function() {
