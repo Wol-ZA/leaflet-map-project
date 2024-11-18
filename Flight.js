@@ -392,22 +392,16 @@ window.addMarkersAndDrawLine = function (data) {
         }
     });
 
-    // Manually trigger a refresh of the map view to ensure the graphics appear immediately
-    view.when(() => {
-        // We adjust the view slightly (e.g., zoom out and back in) to trigger a refresh
-        const center = view.center;
-        const scale = view.scale;
-        
-        // Adjust the scale slightly and reset to force a re-render
-        view.goTo({
-            center: center,
-            scale: scale + 0.1 // Slight zoom in to trigger re-render
-        }).then(() => {
-            view.goTo({
-                center: center,
-                scale: scale // Reset to original scale
-            });
-        });
+    // Pan the map to the first marker (start marker)
+    const startMarker = data[0];  // First marker in the data
+    const startPoint = new Point({
+        longitude: startMarker.longitude,
+        latitude: startMarker.latitude
+    });
+
+    view.goTo({
+        center: startPoint,  // Pan to the first marker's coordinates
+        scale: 80000         // Adjust the zoom level if needed
     });
 };
 
