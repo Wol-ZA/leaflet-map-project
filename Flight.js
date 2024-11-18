@@ -426,36 +426,39 @@ window.addMarkersAndDrawLine = function (data) {
                 helistopsLayer
             ];
 
-            layers.forEach((layer) => {
-                layer.queryFeatures({
-                    geometry: activeCircleGraphic.geometry,
-                    spatialRelationship: "intersects",
-                    returnGeometry: false,
-                    outFields: ["*"]
-                }).then((result) => {
-                    result.features.forEach((feature) => {
-                        pointsWithinRadius.push(feature.attributes);
-                    });
-
-                    // Update the popup dynamically
-                    if (pointsWithinRadius.length) {
-                        const content = pointsWithinRadius
-                            .map(
-                                (point) =>
-                                    `<b>${point.properties.Name || "Unknown"}</b>: ${point.properties.Description || "No description available"}`
-                            )
-                            .join("<br>");
-
-                        view.popup.open({
-                            title: "Points of Interest",
-                            content: content,
-                            location: mapPoint
-                        });
-                    } else {
-                        view.popup.close();
-                    }
-                });
+           layers.forEach((layer) => {
+    layer.queryFeatures({
+        geometry: activeCircleGraphic.geometry,
+        spatialRelationship: "intersects",
+        returnGeometry: false,
+        outFields: ["*"]
+    }).then((result) => {
+        result.features.forEach((feature) => {
+            pointsWithinRadius.push({
+                name: feature.attributes.name || "Unknown",
+                description: feature.attributes.description || "No description available"
             });
+        });
+
+        // Update the popup dynamically
+        if (pointsWithinRadius.length) {
+            const content = pointsWithinRadius
+                .map(
+                    (point) =>
+                        `<b>${point.name}</b>: ${point.description}`
+                )
+                .join("<br>");
+
+            view.popup.open({
+                title: "Points of Interest",
+                content: content,
+                location: mapPoint
+            });
+        } else {
+            view.popup.close();
+        }
+    });
+});
 
             // Prevent map panning while updating the marker position
             event.stopPropagation();
