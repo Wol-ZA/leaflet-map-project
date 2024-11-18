@@ -392,12 +392,20 @@ window.addMarkersAndDrawLine = function (data) {
         }
     });
 
-    // Force re-rendering to ensure immediate visibility
-    graphicsLayer.visible = false; // Temporarily hide the graphics layer
-    setTimeout(() => {
-        graphicsLayer.visible = true; // Make the graphics layer visible again
-    }, 0);
+    // Ensure the layer is refreshed to display graphics immediately
+    view.whenLayerView(graphicsLayer).then((layerView) => {
+        if (layerView.refresh) {
+            layerView.refresh(); // Explicitly refresh the layer view if the method exists
+        } else {
+            // Trigger a redraw if refresh is unavailable
+            graphicsLayer.visible = false;
+            setTimeout(() => {
+                graphicsLayer.visible = true;
+            }, 0);
+        }
+    });
 };
+
 
 
 
