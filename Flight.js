@@ -373,8 +373,6 @@ window.addMarkersAndDrawLine = function (data) {
     // Add the polyline graphic to the graphics layer
     draggableGraphicsLayer.add(polylineGraphic);
 
-    // Add drag functionality
-    let isDraggingMarker = false;
 
   // Add drag functionality
 let isDraggingMarker = false;
