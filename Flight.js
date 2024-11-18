@@ -1,5 +1,6 @@
 require([
     "esri/Map",
+    "esri/geometry/Extent",
     "esri/views/MapView",
     "esri/views/SceneView", // Import SceneView for 3D view
     "esri/layers/GeoJSONLayer",
@@ -7,7 +8,7 @@ require([
     "esri/geometry/Point",
     "esri/symbols/PictureMarkerSymbol",
     "esri/layers/GraphicsLayer"
-], function(Map, MapView, SceneView, GeoJSONLayer, Graphic, Point, PictureMarkerSymbol, GraphicsLayer) {
+], function(Extent, Map, MapView, SceneView, GeoJSONLayer, Graphic, Point, PictureMarkerSymbol, GraphicsLayer) {
 
     // Create the map
  window.map = new Map({
