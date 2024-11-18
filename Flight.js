@@ -342,10 +342,11 @@ window.addMarkersAndDrawLine = function (data) {
 
     graphicsLayer.add(polylineGraphic);
 
-    // Force the map view to recognize changes
-    view.whenLayerView(graphicsLayer).then((layerView) => {
-        layerView.refresh();
-    });
+    // Trigger a re-render by temporarily toggling layer visibility
+    graphicsLayer.visible = false;
+    setTimeout(() => {
+        graphicsLayer.visible = true;
+    }, 0);
 };
 
 
