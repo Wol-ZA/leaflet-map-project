@@ -419,7 +419,10 @@ window.addMarkersAndDrawLine = function (data) {
                     radius: 20 * 1.852 * 1000 // 20 NM in meters
                 };
 
-                circleGraphic.setGeometry(newCircleGeometry); // Properly set the geometry
+                console.log("Updating circle geometry:", newCircleGeometry);
+
+                // Set the updated geometry for the circle graphic
+                circleGraphic.setGeometry(newCircleGeometry); 
             } else {
                 // If no circle graphic exists, add one
                 const newCircleGeometry = {
@@ -484,7 +487,6 @@ window.addMarkersAndDrawLine = function (data) {
         });
     });
 };
-
 
 
 
