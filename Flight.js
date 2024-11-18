@@ -392,16 +392,37 @@ window.addMarkersAndDrawLine = function (data) {
         }
     });
 
-    // Pan the map to the first marker (start marker)
-    const startMarker = data[0];  // First marker in the data
-    const startPoint = new Point({
-        longitude: startMarker.longitude,
-        latitude: startMarker.latitude
+    // Calculate the extent (bounding box) that includes all the markers
+    const markerExtent = new Extent({
+        xmin: Math.min(...data.map((point) => point.longitude)),
+        ymin: Math.min(...data.map((point) => point.latitude)),
+        xmax: Math.max(...data.map((point) => point.longitude)),
+        ymax: Math.max(...data.map((point) => point.latitude)),
+        spatialReference: { wkid: 4326 }
     });
 
+    // Add a small buffer around the extent
+    const buffer = 0.1; // Adjust the buffer if needed
+    markerExtent.xmin -= buffer;
+    markerExtent.ymin -= buffer;
+    markerExtent.xmax += buffer;
+    markerExtent.ymax += buffer;
+
+    // Pan and zoom to the extent of the markers
     view.goTo({
-        center: startPoint,  // Pan to the first marker's coordinates
-        scale: 80000         // Adjust the zoom level if needed
+        extent: markerExtent
+    }).then(() => {
+        // Optionally, center on the first marker after zooming
+        const startMarker = data[0];  // First marker in the data
+        const startPoint = new Point({
+            longitude: startMarker.longitude,
+            latitude: startMarker.latitude
+        });
+
+        view.goTo({
+            center: startPoint,  // Pan to the first marker's coordinates
+            scale: 80000         // Adjust the zoom level if needed
+        });
     });
 };
 
