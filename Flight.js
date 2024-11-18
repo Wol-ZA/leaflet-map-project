@@ -354,18 +354,6 @@ window.addMarkersAndDrawLine = function (data) {
     // Add the polyline graphic to the graphics layer
     draggableGraphicsLayer.add(polylineGraphic);
 
-    // Layers for Points of Interest (POI)
-    const sacaaLayer = createIconGeoJSONLayer("SACAA.geojson", "sacaa.png");
-    const aerodromeAipLayer = createIconGeoJSONLayer("Aerodrome_AIP.geojson", "aip.png");
-    const aerodromeAicLayer = createIconGeoJSONLayer("Aerodrome_AIC.geojson", "aic.png");
-    const unlicensedLayer = createIconGeoJSONLayer("Un-Licensed.geojson", "unlicensed.png");
-    const atnsLayer = createIconGeoJSONLayer("ATNS.geojson", "atns.png");
-    const militaryLayer = createIconGeoJSONLayer("Military.geojson", "military.png");
-    const helistopsLayer = createIconGeoJSONLayer("helistops.geojson", "helistops.png");
-
-    // Add point layers to the map
-    map.addMany([sacaaLayer, aerodromeAipLayer, aerodromeAicLayer, unlicensedLayer, atnsLayer, militaryLayer, helistopsLayer]);
-
     // Add drag functionality
     let isDraggingMarker = false;
 
@@ -454,7 +442,7 @@ window.addMarkersAndDrawLine = function (data) {
                         const content = pointsWithinRadius
                             .map(
                                 (point) =>
-                                    `<b>${point.Name || "Unknown"}</b>: ${point.Description || "No description available"}`
+                                    `<b>${point.properties.Name || "Unknown"}</b>: ${point.properties.Description || "No description available"}`
                             )
                             .join("<br>");
 
