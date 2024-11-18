@@ -347,6 +347,9 @@ window.addMarkersAndDrawLine = function (data) {
     view.on("drag", (event) => {
         const { x, y, action } = event;
 
+        // Stop map panning when interacting with a marker
+        event.stopPropagation();
+
         // Get the map point from the screen point
         const mapPoint = view.toMap({ x, y });
 
