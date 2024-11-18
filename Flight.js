@@ -405,9 +405,38 @@ window.addMarkersAndDrawLine = function (data) {
             }
 
             // Update the radius circle around the dragged marker
-            const circleGraphic = draggableGraphicsLayer.graphics.find(g => g.geometry.type === "circle" && g.geometry.center.longitude === mapPoint.longitude && g.geometry.center.latitude === mapPoint.latitude);
+            const circleGraphic = draggableGraphicsLayer.graphics.find(g => {
+                return g.geometry.type === "circle" && 
+                    g.geometry.center.longitude === mapPoint.longitude && 
+                    g.geometry.center.latitude === mapPoint.latitude;
+            });
+
             if (circleGraphic) {
+                // Update the existing circle's position (instead of adding new one)
                 circleGraphic.geometry.center = mapPoint;
+            } else {
+                // If no circle graphic exists (in case of drag start), add one
+                const newCircleGeometry = {
+                    type: "circle",
+                    center: mapPoint,
+                    radius: 20 * 1.852 * 1000 // 20 NM in meters
+                };
+
+                const newCircleSymbol = {
+                    type: "simple-fill",
+                    color: [255, 0, 0, 0.2], // Semi-transparent red
+                    outline: {
+                        color: [255, 0, 0], // Red outline
+                        width: 2
+                    }
+                };
+
+                const newCircleGraphic = new Graphic({
+                    geometry: newCircleGeometry,
+                    symbol: newCircleSymbol
+                });
+
+                draggableGraphicsLayer.add(newCircleGraphic);
             }
 
             event.stopPropagation();
@@ -416,6 +445,39 @@ window.addMarkersAndDrawLine = function (data) {
             view.draggedGraphic = null;
         }
     });
+
+    // Calculate the extent (bounding box) that includes all the markers
+    const markerExtent = new Extent({
+        xmin: Math.min(...data.map((point) => point.longitude)),
+        ymin: Math.min(...data.map((point) => point.latitude)),
+        xmax: Math.max(...data.map((point) => point.longitude)),
+        ymax: Math.max(...data.map((point) => point.latitude)),
+        spatialReference: { wkid: 4326 }
+    });
+
+    // Add a small buffer around the extent
+    const buffer = 0.1;
+    markerExtent.xmin -= buffer;
+    markerExtent.ymin -= buffer;
+    markerExtent.xmax += buffer;
+    markerExtent.ymax += buffer;
+
+    // Pan and zoom to the extent of the markers
+    view.goTo({
+        extent: markerExtent
+    }).then(() => {
+        const startMarker = data[0];
+        const startPoint = new Point({
+            longitude: startMarker.longitude,
+            latitude: startMarker.latitude
+        });
+
+        view.goTo({
+            center: startPoint,
+            scale: 80000
+        });
+    });
+};
 
     // Calculate the extent (bounding box) that includes all the markers
     const markerExtent = new Extent({
