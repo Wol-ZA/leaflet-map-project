@@ -354,128 +354,139 @@ window.addMarkersAndDrawLine = function (data) {
     // Add the polyline graphic to the graphics layer
     draggableGraphicsLayer.add(polylineGraphic);
 
+    // Layers for Points of Interest (POI)
+    const sacaaLayer = createIconGeoJSONLayer("SACAA.geojson", "sacaa.png");
+    const aerodromeAipLayer = createIconGeoJSONLayer("Aerodrome_AIP.geojson", "aip.png");
+    const aerodromeAicLayer = createIconGeoJSONLayer("Aerodrome_AIC.geojson", "aic.png");
+    const unlicensedLayer = createIconGeoJSONLayer("Un-Licensed.geojson", "unlicensed.png");
+    const atnsLayer = createIconGeoJSONLayer("ATNS.geojson", "atns.png");
+    const militaryLayer = createIconGeoJSONLayer("Military.geojson", "military.png");
+    const helistopsLayer = createIconGeoJSONLayer("helistops.geojson", "helistops.png");
+
+    // Add point layers to the map
+    map.addMany([sacaaLayer, aerodromeAipLayer, aerodromeAicLayer, unlicensedLayer, atnsLayer, militaryLayer, helistopsLayer]);
+
     // Add drag functionality
     let isDraggingMarker = false;
 
-   view.on("drag", (event) => {
-    const { x, y, action } = event;
+    view.on("drag", (event) => {
+        const { x, y, action } = event;
 
-    // Get the map point from the screen point
-    const mapPoint = view.toMap({ x, y });
+        // Get the map point from the screen point
+        const mapPoint = view.toMap({ x, y });
 
-    if (action === "start") {
-        view.hitTest(event).then((response) => {
-            if (response.results.length) {
-                const graphic = response.results[0].graphic;
+        if (action === "start") {
+            view.hitTest(event).then((response) => {
+                if (response.results.length) {
+                    const graphic = response.results[0].graphic;
 
-                if (markerGraphics.includes(graphic)) {
-                    view.draggedGraphic = graphic;
-                    isDraggingMarker = true;
+                    if (markerGraphics.includes(graphic)) {
+                        view.draggedGraphic = graphic;
+                        isDraggingMarker = true;
 
-                    // Create and add the circle graphic dynamically
-                    const circleGeometry = new Circle({
-                        center: mapPoint,
-                        radius: 37040, // 20 nautical miles in meters
-                        geodesic: true
-                    });
+                        // Create and add the circle graphic dynamically
+                        const circleGeometry = new Circle({
+                            center: mapPoint,
+                            radius: 37040, // 20 nautical miles in meters
+                            geodesic: true
+                        });
 
-                    const circleSymbol = {
-                        type: "simple-fill",
-                        color: [255, 0, 0, 0.2], // Semi-transparent red
-                        outline: {
-                            color: [255, 0, 0, 0.8], // Red outline
-                            width: 1
-                        }
-                    };
+                        const circleSymbol = {
+                            type: "simple-fill",
+                            color: [255, 0, 0, 0.2], // Semi-transparent red
+                            outline: {
+                                color: [255, 0, 0, 0.8], // Red outline
+                                width: 1
+                            }
+                        };
 
-                    activeCircleGraphic = new Graphic({
-                        geometry: circleGeometry,
-                        symbol: circleSymbol
-                    });
+                        activeCircleGraphic = new Graphic({
+                            geometry: circleGeometry,
+                            symbol: circleSymbol
+                        });
 
-                    draggableGraphicsLayer.add(activeCircleGraphic);
+                        draggableGraphicsLayer.add(activeCircleGraphic);
 
-                    // Prevent map panning while dragging a marker
-                    event.stopPropagation();
+                        // Prevent map panning while dragging a marker
+                        event.stopPropagation();
+                    }
                 }
-            }
-        });
-    } else if (action === "update" && isDraggingMarker && view.draggedGraphic) {
-        // Update the position of the dragged marker
-        view.draggedGraphic.geometry = mapPoint;
-
-        // Update the circle geometry
-        if (activeCircleGraphic) {
-            activeCircleGraphic.geometry = new Circle({
-                center: mapPoint,
-                radius: 37040,
-                geodesic: true
             });
-        }
+        } else if (action === "update" && isDraggingMarker && view.draggedGraphic) {
+            // Update the position of the dragged marker
+            view.draggedGraphic.geometry = mapPoint;
 
-        // Check which POIs are within the circle
-        const circleExtent = activeCircleGraphic.geometry.extent;
-
-        const pointsWithinRadius = [];
-
-        const layers = [
-            sacaaLayer,
-            aerodromeAipLayer,
-            aerodromeAicLayer,
-            unlicensedLayer,
-            atnsLayer,
-            militaryLayer,
-            helistopsLayer
-        ];
-
-        layers.forEach((layer) => {
-            layer.queryFeatures({
-                geometry: activeCircleGraphic.geometry,
-                spatialRelationship: "intersects",
-                returnGeometry: false,
-                outFields: ["*"]
-            }).then((result) => {
-                result.features.forEach((feature) => {
-                    pointsWithinRadius.push(feature.attributes);
+            // Update the circle geometry
+            if (activeCircleGraphic) {
+                activeCircleGraphic.geometry = new Circle({
+                    center: mapPoint,
+                    radius: 37040,
+                    geodesic: true
                 });
+            }
 
-                // Update the popup dynamically
-                if (pointsWithinRadius.length) {
-                    const content = pointsWithinRadius
-                        .map(
-                            (point) =>
-                                `<b>${point.Name || "Unknown"}</b>: ${point.Description || "No description available"}`
-                        )
-                        .join("<br>");
+            // Check which POIs are within the circle
+            const pointsWithinRadius = [];
 
-                    view.popup.open({
-                        title: "Points of Interest",
-                        content: content,
-                        location: mapPoint
+            const layers = [
+                sacaaLayer,
+                aerodromeAipLayer,
+                aerodromeAicLayer,
+                unlicensedLayer,
+                atnsLayer,
+                militaryLayer,
+                helistopsLayer
+            ];
+
+            layers.forEach((layer) => {
+                layer.queryFeatures({
+                    geometry: activeCircleGraphic.geometry,
+                    spatialRelationship: "intersects",
+                    returnGeometry: false,
+                    outFields: ["*"]
+                }).then((result) => {
+                    result.features.forEach((feature) => {
+                        pointsWithinRadius.push(feature.attributes);
                     });
-                } else {
-                    view.popup.close();
-                }
+
+                    // Update the popup dynamically
+                    if (pointsWithinRadius.length) {
+                        const content = pointsWithinRadius
+                            .map(
+                                (point) =>
+                                    `<b>${point.Name || "Unknown"}</b>: ${point.Description || "No description available"}`
+                            )
+                            .join("<br>");
+
+                        view.popup.open({
+                            title: "Points of Interest",
+                            content: content,
+                            location: mapPoint
+                        });
+                    } else {
+                        view.popup.close();
+                    }
+                });
             });
-        });
 
-        // Prevent map panning while updating the marker position
-        event.stopPropagation();
-    } else if (action === "end") {
-        // End marker dragging
-        isDraggingMarker = false;
-        view.draggedGraphic = null;
+            // Prevent map panning while updating the marker position
+            event.stopPropagation();
+        } else if (action === "end") {
+            // End marker dragging
+            isDraggingMarker = false;
+            view.draggedGraphic = null;
 
-        // Remove the active circle
-        if (activeCircleGraphic) {
-            draggableGraphicsLayer.remove(activeCircleGraphic);
-            activeCircleGraphic = null;
+            // Remove the active circle
+            if (activeCircleGraphic) {
+                draggableGraphicsLayer.remove(activeCircleGraphic);
+                activeCircleGraphic = null;
+            }
+
+            // Close the popup
+            view.popup.close();
         }
-
-        // Close the popup
-        view.popup.close();
-    }
-});
+    });
+};
 
 
 
