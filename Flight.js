@@ -280,23 +280,20 @@ window.addMarkersAndDrawLine = function (data) {
     // Array to store marker graphics for updating positions dynamically
     const markerGraphics = [];
 
-    // Define polyline geometry and symbol
-    const polyline = {
-        type: "polyline",
-        paths: polylineCoordinates
-    };
-
-    const lineSymbol = {
-        type: "simple-line",
-        color: [0, 0, 255, 0.5], // Semi-transparent blue
-        width: 2
-    };
-
-    // Create and add polyline graphic to the layer
+    // Create the polyline graphic
     const polylineGraphic = new Graphic({
-        geometry: polyline,
-        symbol: lineSymbol
+        geometry: {
+            type: "polyline",
+            paths: polylineCoordinates
+        },
+        symbol: {
+            type: "simple-line",
+            color: [0, 0, 255, 0.5], // Semi-transparent blue
+            width: 2
+        }
     });
+
+    // Add the polyline graphic to the graphics layer
     graphicsLayer.add(polylineGraphic);
 
     // Create markers and add them to the map
@@ -340,6 +337,7 @@ window.addMarkersAndDrawLine = function (data) {
                 content: description
             }
         });
+
         graphicsLayer.add(markerGraphic);
         markerGraphics.push(markerGraphic);
     });
@@ -381,7 +379,7 @@ window.addMarkersAndDrawLine = function (data) {
                 // Update the polyline's geometry with the new coordinates
                 polylineGraphic.geometry = {
                     type: "polyline",
-                    paths: polylineCoordinates
+                    paths: [...polylineCoordinates]
                 };
             }
 
@@ -394,7 +392,6 @@ window.addMarkersAndDrawLine = function (data) {
         }
     });
 };
-
 
 
 
