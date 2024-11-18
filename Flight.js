@@ -280,6 +280,26 @@ window.addMarkersAndDrawLine = function (data) {
     // Array to store marker graphics for updating positions dynamically
     const markerGraphics = [];
 
+    // Define polyline geometry and symbol
+    const polyline = {
+        type: "polyline",
+        paths: polylineCoordinates
+    };
+
+    const lineSymbol = {
+        type: "simple-line",
+        color: [0, 0, 255, 0.5], // Semi-transparent blue
+        width: 2
+    };
+
+    // Create and add polyline graphic to the layer
+    const polylineGraphic = new Graphic({
+        geometry: polyline,
+        symbol: lineSymbol
+    });
+    graphicsLayer.add(polylineGraphic);
+
+    // Create markers and add them to the map
     data.forEach((point, index) => {
         const { latitude, longitude, name, description } = point;
 
@@ -324,25 +344,6 @@ window.addMarkersAndDrawLine = function (data) {
         markerGraphics.push(markerGraphic);
     });
 
-    // Define polyline geometry and symbol
-    const polyline = {
-        type: "polyline",
-        paths: polylineCoordinates
-    };
-
-    const lineSymbol = {
-        type: "simple-line",
-        color: [0, 0, 255, 0.5], // Semi-transparent blue
-        width: 2
-    };
-
-    // Create and add polyline graphic to the layer
-    const polylineGraphic = new Graphic({
-        geometry: polyline,
-        symbol: lineSymbol
-    });
-    graphicsLayer.add(polylineGraphic);
-
     // Add drag functionality
     let isDraggingMarker = false;
 
@@ -372,11 +373,16 @@ window.addMarkersAndDrawLine = function (data) {
             // Update the position of the dragged marker
             view.draggedGraphic.geometry = mapPoint;
 
-            // Update the polyline
+            // Update the polyline coordinates
             const index = markerGraphics.indexOf(view.draggedGraphic);
             if (index !== -1) {
                 polylineCoordinates[index] = [mapPoint.longitude, mapPoint.latitude];
-                polylineGraphic.geometry.paths = polylineCoordinates;
+
+                // Update the polyline's geometry with the new coordinates
+                polylineGraphic.geometry = {
+                    type: "polyline",
+                    paths: polylineCoordinates
+                };
             }
 
             // Prevent map panning while updating the marker position
