@@ -455,7 +455,7 @@ window.addMarkersAndDrawLine = function (data) {
                 location: mapPoint
             });
         } else {
-            view.popup.close();
+            //view.popup.close();
         }
     });
 });
