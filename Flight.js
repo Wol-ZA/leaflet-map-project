@@ -275,11 +275,10 @@ window.EndTracking = function() {
 window.addMarkersAndDrawLine = function (data) {
     // Clear previous graphics
     const draggableGraphicsLayer = new GraphicsLayer({
-        zIndex: 10
-    });
-    let markerToCircleMap = new Map();
-    map.add(draggableGraphicsLayer);
-    graphicsLayer.removeAll();
+    zIndex: 10  // Higher zIndex to ensure it stays on top
+});
+map.add(draggableGraphicsLayer);
+    graphicsLayer .removeAll();
 
     // Array to hold coordinates for the polyline
     const polylineCoordinates = [];
@@ -301,7 +300,7 @@ window.addMarkersAndDrawLine = function (data) {
             latitude: latitude
         };
 
-        // Define marker symbol
+        // Determine the correct PNG based on position in data
         let markerUrl;
         if (index === 0) {
             markerUrl = "markerstart.png"; // First point
@@ -311,6 +310,7 @@ window.addMarkersAndDrawLine = function (data) {
             markerUrl = "markerdefault.png"; // Intermediate points
         }
 
+        // Define marker symbol using the selected PNG
         const markerSymbol = {
             type: "picture-marker",
             url: markerUrl,
@@ -330,35 +330,6 @@ window.addMarkersAndDrawLine = function (data) {
 
         draggableGraphicsLayer.add(markerGraphic);
         markerGraphics.push(markerGraphic);
-
-        // Add red radius circle (20 nautical miles)
-        const circleRadius = 20 * 1.852; // 20 nautical miles in kilometers
-        const circleGeometry = {
-            type: "circle",
-            center: markerPoint,  // Ensure this is a valid point
-            radius: circleRadius * 1000 // Convert km to meters
-        };
-
-        const circleSymbol = {
-            type: "simple-fill",
-            color: [255, 0, 0, 0.2], // Semi-transparent red
-            outline: {
-                color: [255, 0, 0], // Red outline
-                width: 2
-            }
-        };
-
-        const circleGraphic = markerToCircleMap.get(view.draggedGraphic);
-        if (circleGraphic) {
-        const newCircleGeometry = {
-        type: "circle",
-        center: mapPoint,
-        radius: 20 * 1.852 * 1000 // 20 NM in meters
-    };
-        circleGraphic.setGeometry(newCircleGeometry);
-    }
-
-        draggableGraphicsLayer.add(circleGraphic);
     });
 
     // Create the polyline graphic with the coordinates
@@ -369,7 +340,7 @@ window.addMarkersAndDrawLine = function (data) {
         },
         symbol: {
             type: "simple-line",
-            color: [0, 0, 255, 0.5],
+            color: [0, 0, 255, 0.5], // Semi-transparent blue
             width: 2
         }
     });
@@ -382,16 +353,22 @@ window.addMarkersAndDrawLine = function (data) {
 
     view.on("drag", (event) => {
         const { x, y, action } = event;
+
+        // Get the map point from the screen point
         const mapPoint = view.toMap({ x, y });
 
         if (action === "start") {
+            // Check if the user is dragging a marker
             view.hitTest(event).then((response) => {
                 if (response.results.length) {
                     const graphic = response.results[0].graphic;
 
                     if (markerGraphics.includes(graphic)) {
+                        // Store the dragged graphic
                         view.draggedGraphic = graphic;
                         isDraggingMarker = true;
+
+                        // Prevent map panning while dragging a marker
                         event.stopPropagation();
                     }
                 }
@@ -404,58 +381,18 @@ window.addMarkersAndDrawLine = function (data) {
             const index = markerGraphics.indexOf(view.draggedGraphic);
             if (index !== -1) {
                 polylineCoordinates[index] = [mapPoint.longitude, mapPoint.latitude];
+
+                // Update the polyline's geometry with the new coordinates
                 polylineGraphic.geometry = {
                     type: "polyline",
                     paths: [...polylineCoordinates]
                 };
             }
 
-            // Update the radius circle around the dragged marker
-            const circleGraphic = draggableGraphicsLayer.graphics.find(g => {
-                return g.geometry.type === "circle" && 
-                    g.geometry.center.longitude === mapPoint.longitude && 
-                    g.geometry.center.latitude === mapPoint.latitude;
-            });
-
-            if (circleGraphic) {
-                // Update the existing circle's position
-                const newCircleGeometry = {
-                    type: "circle",
-                    center: mapPoint,
-                    radius: 20 * 1.852 * 1000 // 20 NM in meters
-                };
-
-                console.log("Updating circle geometry:", newCircleGeometry);
-
-                // Set the updated geometry for the circle graphic
-                circleGraphic.setGeometry(newCircleGeometry); 
-            } else {
-                // If no circle graphic exists, add one
-                const newCircleGeometry = {
-                    type: "circle",
-                    center: mapPoint,
-                    radius: 20 * 1.852 * 1000 // 20 NM in meters
-                };
-
-                const newCircleSymbol = {
-                    type: "simple-fill",
-                    color: [255, 0, 0, 0.2], // Semi-transparent red
-                    outline: {
-                        color: [255, 0, 0], // Red outline
-                        width: 2
-                    }
-                };
-
-                const newCircleGraphic = new Graphic({
-                    geometry: newCircleGeometry,
-                    symbol: newCircleSymbol
-                });
-
-                draggableGraphicsLayer.add(newCircleGraphic);
-            }
-
+            // Prevent map panning while updating the marker position
             event.stopPropagation();
         } else if (action === "end") {
+            // End marker dragging
             isDraggingMarker = false;
             view.draggedGraphic = null;
         }
@@ -471,7 +408,7 @@ window.addMarkersAndDrawLine = function (data) {
     });
 
     // Add a small buffer around the extent
-    const buffer = 0.1;
+    const buffer = 0.1; // Adjust the buffer if needed
     markerExtent.xmin -= buffer;
     markerExtent.ymin -= buffer;
     markerExtent.xmax += buffer;
@@ -481,19 +418,20 @@ window.addMarkersAndDrawLine = function (data) {
     view.goTo({
         extent: markerExtent
     }).then(() => {
-        const startMarker = data[0];
+        // Optionally, center on the first marker after zooming
+        const startMarker = data[0];  // First marker in the data
         const startPoint = new Point({
             longitude: startMarker.longitude,
             latitude: startMarker.latitude
         });
 
+        // Zoom to the extent including all markers
         view.goTo({
-            center: startPoint,
-            scale: 80000
+            center: startPoint,  // Pan to the first marker's coordinates
+            scale: 80000         // Adjust the zoom level if needed
         });
     });
 };
-
 
 
 window.removeMarkersAndLines = function() {
