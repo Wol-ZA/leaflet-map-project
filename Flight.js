@@ -376,102 +376,91 @@ window.addMarkersAndDrawLine = function (data) {
     // Add drag functionality
     let isDraggingMarker = false;
 
-    view.on("drag", (event) => {
-        const { x, y, action } = event;
+  // Add drag functionality
+let isDraggingMarker = false;
+let dragCircleGraphic = null; // Variable to store the circle graphic
 
-        // Get the map point from the screen point
-        const mapPoint = view.toMap({ x, y });
+view.on("drag", (event) => {
+    const { x, y, action } = event;
 
-        if (action === "start") {
-            // Check if the user is dragging a marker
-            view.hitTest(event).then((response) => {
-                if (response.results.length) {
-                    const graphic = response.results[0].graphic;
+    // Get the map point from the screen point
+    const mapPoint = view.toMap({ x, y });
 
-                    if (markerGraphics.includes(graphic)) {
-                        // Store the dragged graphic
-                        view.draggedGraphic = graphic;
-                        isDraggingMarker = true;
+    if (action === "start") {
+        // Check if the user is dragging a marker
+        view.hitTest(event).then((response) => {
+            if (response.results.length) {
+                const graphic = response.results[0].graphic;
 
-                        // Prevent map panning while dragging a marker
-                        event.stopPropagation();
-                    }
-                }
-            });
-        } else if (action === "update" && isDraggingMarker && view.draggedGraphic) {
-            // Update the position of the dragged marker
-            view.draggedGraphic.geometry = mapPoint;
+                if (markerGraphics.includes(graphic)) {
+                    // Store the dragged graphic
+                    view.draggedGraphic = graphic;
+                    isDraggingMarker = true;
 
-            // Update the polyline coordinates
-            const index = markerGraphics.indexOf(view.draggedGraphic);
-            if (index !== -1) {
-                polylineCoordinates[index] = [mapPoint.longitude, mapPoint.latitude];
-
-                // Update the polyline's geometry with the new coordinates
-                polylineGraphic.geometry = {
-                    type: "polyline",
-                    paths: [...polylineCoordinates]
-                };
-
-                // Update the circle geometry
-                const circleGraphic = draggableGraphicsLayer.graphics.items.find(
-                    (g) =>
-                        g.geometry.type === "polygon" &&
-                        g.geometry.extent.contains(view.draggedGraphic.geometry)
-                );
-
-                if (circleGraphic) {
-                    circleGraphic.geometry = new Circle({
-                        center: mapPoint,
-                        radius: 37040,
-                        geodesic: true
+                    // Add a circle around the marker
+                    dragCircleGraphic = new Graphic({
+                        geometry: new Circle({
+                            center: graphic.geometry,
+                            radius: 37040, // 20 nautical miles in meters
+                            geodesic: true
+                        }),
+                        symbol: {
+                            type: "simple-fill",
+                            color: [255, 0, 0, 0.2], // Semi-transparent red
+                            outline: {
+                                color: [255, 0, 0, 0.8], // Red outline
+                                width: 1
+                            }
+                        }
                     });
+
+                    draggableGraphicsLayer.add(dragCircleGraphic);
+
+                    // Prevent map panning while dragging a marker
+                    event.stopPropagation();
                 }
             }
+        });
+    } else if (action === "update" && isDraggingMarker && view.draggedGraphic) {
+        // Update the position of the dragged marker
+        view.draggedGraphic.geometry = mapPoint;
 
-            // Prevent map panning while updating the marker position
-            event.stopPropagation();
-        } else if (action === "end") {
-            // End marker dragging
-            isDraggingMarker = false;
-            view.draggedGraphic = null;
+        // Update the polyline coordinates
+        const index = markerGraphics.indexOf(view.draggedGraphic);
+        if (index !== -1) {
+            polylineCoordinates[index] = [mapPoint.longitude, mapPoint.latitude];
+
+            // Update the polyline's geometry with the new coordinates
+            polylineGraphic.geometry = {
+                type: "polyline",
+                paths: [...polylineCoordinates]
+            };
+
+            // Update the circle position
+            if (dragCircleGraphic) {
+                dragCircleGraphic.geometry = new Circle({
+                    center: mapPoint,
+                    radius: 37040, // 20 nautical miles
+                    geodesic: true
+                });
+            }
         }
-    });
 
-    // Calculate the extent (bounding box) that includes all the markers
-    const markerExtent = new Extent({
-        xmin: Math.min(...data.map((point) => point.longitude)),
-        ymin: Math.min(...data.map((point) => point.latitude)),
-        xmax: Math.max(...data.map((point) => point.longitude)),
-        ymax: Math.max(...data.map((point) => point.latitude)),
-        spatialReference: { wkid: 4326 }
-    });
+        // Prevent map panning while updating the marker position
+        event.stopPropagation();
+    } else if (action === "end") {
+        // End marker dragging
+        isDraggingMarker = false;
 
-    // Add a small buffer around the extent
-    const buffer = 0.1; // Adjust the buffer if needed
-    markerExtent.xmin -= buffer;
-    markerExtent.ymin -= buffer;
-    markerExtent.xmax += buffer;
-    markerExtent.ymax += buffer;
+        // Remove the circle
+        if (dragCircleGraphic) {
+            draggableGraphicsLayer.remove(dragCircleGraphic);
+            dragCircleGraphic = null;
+        }
 
-    // Pan and zoom to the extent of the markers
-    view.goTo({
-        extent: markerExtent
-    }).then(() => {
-        // Optionally, center on the first marker after zooming
-        const startMarker = data[0]; // First marker in the data
-        const startPoint = new Point({
-            longitude: startMarker.longitude,
-            latitude: startMarker.latitude
-        });
-
-        // Zoom to the extent including all markers
-        view.goTo({
-            center: startPoint, // Pan to the first marker's coordinates
-            scale: 80000 // Adjust the zoom level if needed
-        });
-    });
-};
+        view.draggedGraphic = null;
+    }
+});
 
 
 window.removeMarkersAndLines = function() {
