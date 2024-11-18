@@ -277,25 +277,6 @@ window.addMarkersAndDrawLine = function (data) {
     // Array to hold coordinates for the polyline
     const polylineCoordinates = [];
 
-    // Array to store marker graphics for updating positions dynamically
-    const markerGraphics = [];
-
-    // Create the polyline graphic
-    const polylineGraphic = new Graphic({
-        geometry: {
-            type: "polyline",
-            paths: polylineCoordinates
-        },
-        symbol: {
-            type: "simple-line",
-            color: [0, 0, 255, 0.5], // Semi-transparent blue
-            width: 2
-        }
-    });
-
-    // Add the polyline graphic to the graphics layer
-    graphicsLayer.add(polylineGraphic);
-
     // Create markers and add them to the map
     data.forEach((point, index) => {
         const { latitude, longitude, name, description } = point;
@@ -339,59 +320,34 @@ window.addMarkersAndDrawLine = function (data) {
         });
 
         graphicsLayer.add(markerGraphic);
-        markerGraphics.push(markerGraphic);
     });
 
-    // Add drag functionality
-    let isDraggingMarker = false;
+    // Define polyline geometry and symbol
+    const polylineGeometry = {
+        type: "polyline",
+        paths: polylineCoordinates
+    };
 
-    view.on("drag", (event) => {
-        const { x, y, action } = event;
+    const lineSymbol = {
+        type: "simple-line",
+        color: [0, 0, 255, 0.5], // Semi-transparent blue
+        width: 2
+    };
 
-        // Get the map point from the screen point
-        const mapPoint = view.toMap({ x, y });
+    // Create and add polyline graphic to the layer
+    const polylineGraphic = new Graphic({
+        geometry: polylineGeometry,
+        symbol: lineSymbol
+    });
 
-        if (action === "start") {
-            // Check if the user is dragging a marker
-            view.hitTest(event).then((response) => {
-                if (response.results.length) {
-                    const graphic = response.results[0].graphic;
+    graphicsLayer.add(polylineGraphic);
 
-                    if (markerGraphics.includes(graphic)) {
-                        // Store the dragged graphic
-                        view.draggedGraphic = graphic;
-                        isDraggingMarker = true;
-
-                        // Prevent map panning while dragging a marker
-                        event.stopPropagation();
-                    }
-                }
-            });
-        } else if (action === "update" && isDraggingMarker && view.draggedGraphic) {
-            // Update the position of the dragged marker
-            view.draggedGraphic.geometry = mapPoint;
-
-            // Update the polyline coordinates
-            const index = markerGraphics.indexOf(view.draggedGraphic);
-            if (index !== -1) {
-                polylineCoordinates[index] = [mapPoint.longitude, mapPoint.latitude];
-
-                // Update the polyline's geometry with the new coordinates
-                polylineGraphic.geometry = {
-                    type: "polyline",
-                    paths: [...polylineCoordinates]
-                };
-            }
-
-            // Prevent map panning while updating the marker position
-            event.stopPropagation();
-        } else if (action === "end") {
-            // End marker dragging
-            isDraggingMarker = false;
-            view.draggedGraphic = null;
-        }
+    // Force the map view to recognize changes
+    view.whenLayerView(graphicsLayer).then((layerView) => {
+        layerView.refresh();
     });
 };
+
 
 
 
