@@ -1,4 +1,5 @@
 require([
+    "esri/geometry/Circle",
     "esri/geometry/Extent",
     "esri/Map",
     "esri/views/MapView",
@@ -8,7 +9,7 @@ require([
     "esri/geometry/Point",
     "esri/symbols/PictureMarkerSymbol",
     "esri/layers/GraphicsLayer"
-], function(Extent, Map, MapView, SceneView, GeoJSONLayer, Graphic, Point, PictureMarkerSymbol, GraphicsLayer) {
+], function(Circle, Extent, Map, MapView, SceneView, GeoJSONLayer, Graphic, Point, PictureMarkerSymbol, GraphicsLayer) {
 
     // Create the map
  window.map = new Map({
