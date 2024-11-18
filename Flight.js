@@ -276,25 +276,7 @@ window.addMarkersAndDrawLine = function (data) {
 
     // Array to hold coordinates for the polyline
     const polylineCoordinates = [];
-
-    // Array to store marker graphics for updating positions dynamically
-    const markerGraphics = [];
-
-    // Create the polyline graphic
-    const polylineGraphic = new Graphic({
-        geometry: {
-            type: "polyline",
-            paths: polylineCoordinates
-        },
-        symbol: {
-            type: "simple-line",
-            color: [0, 0, 255, 0.5], // Semi-transparent blue
-            width: 2
-        }
-    });
-
-    // Add the polyline graphic to the graphics layer
-    graphicsLayer.add(polylineGraphic);
+    const markerGraphics = []; // Array to keep track of marker graphics
 
     // Create markers and add them to the map
     data.forEach((point, index) => {
@@ -339,12 +321,30 @@ window.addMarkersAndDrawLine = function (data) {
         });
 
         graphicsLayer.add(markerGraphic);
-        markerGraphics.push(markerGraphic);
+        markerGraphics.push(markerGraphic); // Store in array for dragging functionality
     });
 
-    // Add drag functionality
-    let isDraggingMarker = false;
+    // Define polyline geometry and symbol
+    const polylineGeometry = {
+        type: "polyline",
+        paths: polylineCoordinates
+    };
 
+    const lineSymbol = {
+        type: "simple-line",
+        color: [0, 0, 255, 0.5], // Semi-transparent blue
+        width: 2
+    };
+
+    // Create and add polyline graphic to the layer
+    const polylineGraphic = new Graphic({
+        geometry: polylineGeometry,
+        symbol: lineSymbol
+    });
+
+    graphicsLayer.add(polylineGraphic);
+
+    // Make markers draggable
     view.on("drag", (event) => {
         const { x, y, action } = event;
 
@@ -352,7 +352,7 @@ window.addMarkersAndDrawLine = function (data) {
         const mapPoint = view.toMap({ x, y });
 
         if (action === "start") {
-            // Check if the user is dragging a marker
+            // Identify the closest marker to start dragging
             view.hitTest(event).then((response) => {
                 if (response.results.length) {
                     const graphic = response.results[0].graphic;
@@ -360,42 +360,35 @@ window.addMarkersAndDrawLine = function (data) {
                     if (markerGraphics.includes(graphic)) {
                         // Store the dragged graphic
                         view.draggedGraphic = graphic;
-                        isDraggingMarker = true;
-
-                        // Prevent map panning while dragging a marker
-                        event.stopPropagation();
                     }
                 }
             });
-        } else if (action === "update" && isDraggingMarker && view.draggedGraphic) {
+        } else if (action === "update" && view.draggedGraphic) {
             // Update the position of the dragged marker
             view.draggedGraphic.geometry = mapPoint;
 
-            // Update the polyline coordinates
+            // Update the polyline
             const index = markerGraphics.indexOf(view.draggedGraphic);
             if (index !== -1) {
                 polylineCoordinates[index] = [mapPoint.longitude, mapPoint.latitude];
-
-                // Update the polyline's geometry with the new coordinates
                 polylineGraphic.geometry = {
                     type: "polyline",
-                    paths: [...polylineCoordinates]
+                    paths: polylineCoordinates
                 };
             }
-
-            // Prevent map panning while updating the marker position
-            event.stopPropagation();
         } else if (action === "end") {
-            // End marker dragging
-            isDraggingMarker = false;
+            // Clear the dragged graphic
             view.draggedGraphic = null;
         }
     });
-     graphicsLayer.visible = false;
+
+    // Force re-rendering to ensure immediate visibility
+    graphicsLayer.visible = false;
     setTimeout(() => {
         graphicsLayer.visible = true;
     }, 0);
 };
+
 
 
 
