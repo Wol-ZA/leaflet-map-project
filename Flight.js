@@ -479,42 +479,6 @@ window.addMarkersAndDrawLine = function (data) {
     });
 };
 
-    // Calculate the extent (bounding box) that includes all the markers
-    const markerExtent = new Extent({
-        xmin: Math.min(...data.map((point) => point.longitude)),
-        ymin: Math.min(...data.map((point) => point.latitude)),
-        xmax: Math.max(...data.map((point) => point.longitude)),
-        ymax: Math.max(...data.map((point) => point.latitude)),
-        spatialReference: { wkid: 4326 }
-    });
-
-    // Add a small buffer around the extent
-    const buffer = 0.1;
-    markerExtent.xmin -= buffer;
-    markerExtent.ymin -= buffer;
-    markerExtent.xmax += buffer;
-    markerExtent.ymax += buffer;
-
-    // Pan and zoom to the extent of the markers
-    view.goTo({
-        extent: markerExtent
-    }).then(() => {
-        const startMarker = data[0];
-        const startPoint = new Point({
-            longitude: startMarker.longitude,
-            latitude: startMarker.latitude
-        });
-
-        view.goTo({
-            center: startPoint,
-            scale: 80000
-        });
-    });
-});
-
-
-
-
 
 
 window.removeMarkersAndLines = function() {
