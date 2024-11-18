@@ -16,7 +16,7 @@ require([
 });
 
     // Create the MapView centered on George, South Africa
-    const view = new MapView({
+    let view = new MapView({
         container: "viewDiv",
         map: map,
         center: [22.4617, -33.9646],
@@ -277,6 +277,7 @@ window.addMarkersAndDrawLine = function (data) {
     const draggableGraphicsLayer = new GraphicsLayer({
         zIndex: 10
     });
+    let markerToCircleMap = new Map();
     map.add(draggableGraphicsLayer);
     graphicsLayer.removeAll();
 
@@ -347,10 +348,15 @@ window.addMarkersAndDrawLine = function (data) {
             }
         };
 
-        const circleGraphic = new Graphic({
-            geometry: circleGeometry,
-            symbol: circleSymbol
-        });
+        const circleGraphic = markerToCircleMap.get(view.draggedGraphic);
+        if (circleGraphic) {
+        const newCircleGeometry = {
+        type: "circle",
+        center: mapPoint,
+        radius: 20 * 1.852 * 1000 // 20 NM in meters
+    };
+        circleGraphic.setGeometry(newCircleGeometry);
+    }
 
         draggableGraphicsLayer.add(circleGraphic);
     });
