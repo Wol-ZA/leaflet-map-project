@@ -391,6 +391,10 @@ window.addMarkersAndDrawLine = function (data) {
             view.draggedGraphic = null;
         }
     });
+     graphicsLayer.visible = false;
+    setTimeout(() => {
+        graphicsLayer.visible = true;
+    }, 0);
 };
 
 
