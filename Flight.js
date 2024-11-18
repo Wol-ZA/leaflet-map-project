@@ -392,13 +392,23 @@ window.addMarkersAndDrawLine = function (data) {
         }
     });
 
-    // Manually set a small zoom to force a re-render and update the map
-    setTimeout(() => {
-        view.goTo(view.center).then(() => {
-            // Ensure the map refreshes the layer rendering
-            view.invalidateRender();
+    // Manually trigger a refresh of the map view to ensure the graphics appear immediately
+    view.when(() => {
+        // We adjust the view slightly (e.g., zoom out and back in) to trigger a refresh
+        const center = view.center;
+        const scale = view.scale;
+        
+        // Adjust the scale slightly and reset to force a re-render
+        view.goTo({
+            center: center,
+            scale: scale + 0.1 // Slight zoom in to trigger re-render
+        }).then(() => {
+            view.goTo({
+                center: center,
+                scale: scale // Reset to original scale
+            });
         });
-    }, 0); // Small delay to ensure the graphics have been added before forcing update
+    });
 };
 
 
