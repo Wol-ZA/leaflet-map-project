@@ -344,17 +344,16 @@ window.addMarkersAndDrawLine = function (data) {
     graphicsLayer.add(polylineGraphic);
 
     // Add drag functionality
+    let isDraggingMarker = false;
+
     view.on("drag", (event) => {
         const { x, y, action } = event;
-
-        // Stop map panning when interacting with a marker
-        event.stopPropagation();
 
         // Get the map point from the screen point
         const mapPoint = view.toMap({ x, y });
 
         if (action === "start") {
-            // Identify the closest marker to start dragging
+            // Check if the user is dragging a marker
             view.hitTest(event).then((response) => {
                 if (response.results.length) {
                     const graphic = response.results[0].graphic;
@@ -362,10 +361,14 @@ window.addMarkersAndDrawLine = function (data) {
                     if (markerGraphics.includes(graphic)) {
                         // Store the dragged graphic
                         view.draggedGraphic = graphic;
+                        isDraggingMarker = true;
+
+                        // Prevent map panning while dragging a marker
+                        event.stopPropagation();
                     }
                 }
             });
-        } else if (action === "update" && view.draggedGraphic) {
+        } else if (action === "update" && isDraggingMarker && view.draggedGraphic) {
             // Update the position of the dragged marker
             view.draggedGraphic.geometry = mapPoint;
 
@@ -375,8 +378,12 @@ window.addMarkersAndDrawLine = function (data) {
                 polylineCoordinates[index] = [mapPoint.longitude, mapPoint.latitude];
                 polylineGraphic.geometry.paths = polylineCoordinates;
             }
+
+            // Prevent map panning while updating the marker position
+            event.stopPropagation();
         } else if (action === "end") {
-            // Clear the dragged graphic
+            // End marker dragging
+            isDraggingMarker = false;
             view.draggedGraphic = null;
         }
     });
