@@ -270,12 +270,13 @@ window.EndTracking = function() {
     }
 };
 
-const draggableGraphicsLayer = new GraphicsLayer({
-    zIndex: 10  // Higher zIndex to ensure it stays on top
-});
+
     
 window.addMarkersAndDrawLine = function (data) {
     // Clear previous graphics
+    const draggableGraphicsLayer = new GraphicsLayer({
+    zIndex: 10  // Higher zIndex to ensure it stays on top
+});
     draggableGraphicsLayer.removeAll();
 
     // Array to hold coordinates for the polyline
