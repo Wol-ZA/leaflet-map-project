@@ -353,7 +353,6 @@ window.addMarkersAndDrawLine = function (data) {
 
     // Add the polyline graphic to the graphics layer
     draggableGraphicsLayer.add(polylineGraphic);
-
     // Add drag functionality
     let isDraggingMarker = false;
 
@@ -404,18 +403,29 @@ window.addMarkersAndDrawLine = function (data) {
             // Update the position of the dragged marker
             view.draggedGraphic.geometry = mapPoint;
 
+            // Update the polyline coordinates
+            const index = markerGraphics.indexOf(view.draggedGraphic);
+            if (index !== -1) {
+                polylineCoordinates[index] = [mapPoint.longitude, mapPoint.latitude];
+
+                // Update the polyline's geometry with the new coordinates
+                polylineGraphic.geometry = {
+                    type: "polyline",
+                    paths: [...polylineCoordinates]
+                };
+            }
+
             // Update the circle geometry
             if (activeCircleGraphic) {
                 activeCircleGraphic.geometry = new Circle({
                     center: mapPoint,
-                    radius: 37040,
+                    radius: 37040, // 20 nautical miles in meters
                     geodesic: true
                 });
             }
 
             // Check which POIs are within the circle
             const pointsWithinRadius = [];
-
             const layers = [
                 sacaaLayer,
                 aerodromeAipLayer,
@@ -426,39 +436,39 @@ window.addMarkersAndDrawLine = function (data) {
                 helistopsLayer
             ];
 
-           layers.forEach((layer) => {
-    layer.queryFeatures({
-        geometry: activeCircleGraphic.geometry,
-        spatialRelationship: "intersects",
-        returnGeometry: false,
-        outFields: ["*"]
-    }).then((result) => {
-        result.features.forEach((feature) => {
-            pointsWithinRadius.push({
-                name: feature.attributes.name || "Unknown",
-                description: feature.attributes.description || "No description available"
-            });
-        });
+            layers.forEach((layer) => {
+                layer.queryFeatures({
+                    geometry: activeCircleGraphic.geometry,
+                    spatialRelationship: "intersects",
+                    returnGeometry: false,
+                    outFields: ["*"]
+                }).then((result) => {
+                    result.features.forEach((feature) => {
+                        pointsWithinRadius.push({
+                            name: feature.attributes.name || "Unknown",
+                            description: feature.attributes.description || "No description available"
+                        });
+                    });
 
-        // Update the popup dynamically
-        if (pointsWithinRadius.length) {
-            const content = pointsWithinRadius
-                .map(
-                    (point) =>
-                        `<b>${point.name}</b>: ${point.description}`
-                )
-                .join("<br>");
+                    // Update the popup dynamically
+                    if (pointsWithinRadius.length) {
+                        const content = pointsWithinRadius
+                            .map(
+                                (point) =>
+                                    `<b>${point.name}</b>: ${point.description}`
+                            )
+                            .join("<br>");
 
-            view.popup.open({
-                title: "Points of Interest",
-                content: content,
-                location: mapPoint
+                        view.popup.open({
+                            title: "Points of Interest",
+                            content: content,
+                            location: mapPoint
+                        });
+                    } else {
+                        view.popup.close();
+                    }
+                });
             });
-        } else {
-            //view.popup.close();
-        }
-    });
-});
 
             // Prevent map panning while updating the marker position
             event.stopPropagation();
