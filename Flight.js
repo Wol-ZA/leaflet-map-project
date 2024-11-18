@@ -199,13 +199,6 @@ function createDirectionalPolyline(userPoint, heading) {
         atnsLayer.visible = document.getElementById("atnsLayerToggle").checked;
         militaryLayer.visible = document.getElementById("militaryLayerToggle").checked;
         helistopsLayer.visible = document.getElementById("helistopsLayerToggle").checked;
-             // Set pointer-events based on layer visibility
-        if (accfisLayer.visible || atzCtrLayer.visible || ctaLayer.visible || tmaLayer.visible || fadFapFarLayer.visible) {
-            // Disable pointer events on polygons to allow marker interaction
-            view.container.style.pointerEvents = "none";
-        } else {
-            view.container.style.pointerEvents = "auto";
-        }
     }
 
     // Add event listeners to the checkboxes
@@ -353,52 +346,52 @@ window.addMarkersAndDrawLine = function (data) {
     // Add drag functionality
     let isDraggingMarker = false;
 
-   view.on("drag", function (event) {
-    const { x, y, action } = event;
+    view.on("drag", (event) => {
+        const { x, y, action } = event;
 
-    // Get the map point from the screen point
-    const mapPoint = view.toMap({ x, y });
+        // Get the map point from the screen point
+        const mapPoint = view.toMap({ x, y });
 
-    if (action === "start") {
-        // Check if the user is dragging a marker
-        view.hitTest(event).then((response) => {
-            if (response.results.length) {
-                const graphic = response.results[0].graphic;
+        if (action === "start") {
+            // Check if the user is dragging a marker
+            view.hitTest(event).then((response) => {
+                if (response.results.length) {
+                    const graphic = response.results[0].graphic;
 
-                // Check if the clicked graphic is one of the marker graphics
-                if (markerGraphics.includes(graphic)) {
-                    view.draggedGraphic = graphic;
-                    isDraggingMarker = true;
+                    if (markerGraphics.includes(graphic)) {
+                        // Store the dragged graphic
+                        view.draggedGraphic = graphic;
+                        isDraggingMarker = true;
 
-                    // Prevent map panning while dragging a marker
-                    event.stopPropagation();
+                        // Prevent map panning while dragging a marker
+                        event.stopPropagation();
+                    }
                 }
+            });
+        } else if (action === "update" && isDraggingMarker && view.draggedGraphic) {
+            // Update the position of the dragged marker
+            view.draggedGraphic.geometry = mapPoint;
+
+            // Update the polyline coordinates
+            const index = markerGraphics.indexOf(view.draggedGraphic);
+            if (index !== -1) {
+                polylineCoordinates[index] = [mapPoint.longitude, mapPoint.latitude];
+
+                // Update the polyline's geometry with the new coordinates
+                polylineGraphic.geometry = {
+                    type: "polyline",
+                    paths: [...polylineCoordinates]
+                };
             }
-        });
-    } else if (action === "update" && isDraggingMarker && view.draggedGraphic) {
-        // Update the position of the dragged marker
-        view.draggedGraphic.geometry = mapPoint;
 
-        // Update the polyline coordinates
-        const index = markerGraphics.indexOf(view.draggedGraphic);
-        if (index !== -1) {
-            polylineCoordinates[index] = [mapPoint.longitude, mapPoint.latitude];
-
-            // Update the polyline's geometry with the new coordinates
-            polylineGraphic.geometry = {
-                type: "polyline",
-                paths: [...polylineCoordinates]
-            };
+            // Prevent map panning while updating the marker position
+            event.stopPropagation();
+        } else if (action === "end") {
+            // End marker dragging
+            isDraggingMarker = false;
+            view.draggedGraphic = null;
         }
-
-        // Prevent map panning while updating the marker position
-        event.stopPropagation();
-    } else if (action === "end") {
-        // End marker dragging
-        isDraggingMarker = false;
-        view.draggedGraphic = null;
-    }
-});
+    });
 
     // Calculate the extent (bounding box) that includes all the markers
     const markerExtent = new Extent({
