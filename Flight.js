@@ -510,7 +510,7 @@ window.addMarkersAndDrawLine = function (data) {
             scale: 80000
         });
     });
-};
+});
 
 
 
