@@ -275,10 +275,10 @@ window.EndTracking = function() {
 window.addMarkersAndDrawLine = function (data) {
     // Clear previous graphics
     const draggableGraphicsLayer = new GraphicsLayer({
-    zIndex: 10  // Higher zIndex to ensure it stays on top
-});
-map.add(draggableGraphicsLayer);
-    graphicsLayer .removeAll();
+        zIndex: 10 // Higher zIndex to ensure it stays on top
+    });
+    map.add(draggableGraphicsLayer);
+    draggableGraphicsLayer.removeAll();
 
     // Array to hold coordinates for the polyline
     const polylineCoordinates = [];
@@ -328,8 +328,32 @@ map.add(draggableGraphicsLayer);
             }
         });
 
+        // Add the marker graphic
         draggableGraphicsLayer.add(markerGraphic);
         markerGraphics.push(markerGraphic);
+
+        // Add a circle with a radius of 20 nautical miles
+        const circleGeometry = new Circle({
+            center: markerPoint,
+            radius: 37040, // 20 nautical miles in meters
+            geodesic: true // Ensures the radius is accurate on a globe
+        });
+
+        const circleSymbol = {
+            type: "simple-fill",
+            color: [255, 0, 0, 0.2], // Semi-transparent red
+            outline: {
+                color: [255, 0, 0, 0.8], // Red outline
+                width: 1
+            }
+        };
+
+        const circleGraphic = new Graphic({
+            geometry: circleGeometry,
+            symbol: circleSymbol
+        });
+
+        draggableGraphicsLayer.add(circleGraphic);
     });
 
     // Create the polyline graphic with the coordinates
@@ -387,6 +411,21 @@ map.add(draggableGraphicsLayer);
                     type: "polyline",
                     paths: [...polylineCoordinates]
                 };
+
+                // Update the circle geometry
+                const circleGraphic = draggableGraphicsLayer.graphics.items.find(
+                    (g) =>
+                        g.geometry.type === "polygon" &&
+                        g.geometry.extent.contains(view.draggedGraphic.geometry)
+                );
+
+                if (circleGraphic) {
+                    circleGraphic.geometry = new Circle({
+                        center: mapPoint,
+                        radius: 37040,
+                        geodesic: true
+                    });
+                }
             }
 
             // Prevent map panning while updating the marker position
@@ -419,7 +458,7 @@ map.add(draggableGraphicsLayer);
         extent: markerExtent
     }).then(() => {
         // Optionally, center on the first marker after zooming
-        const startMarker = data[0];  // First marker in the data
+        const startMarker = data[0]; // First marker in the data
         const startPoint = new Point({
             longitude: startMarker.longitude,
             latitude: startMarker.latitude
@@ -427,8 +466,8 @@ map.add(draggableGraphicsLayer);
 
         // Zoom to the extent including all markers
         view.goTo({
-            center: startPoint,  // Pan to the first marker's coordinates
-            scale: 80000         // Adjust the zoom level if needed
+            center: startPoint, // Pan to the first marker's coordinates
+            scale: 80000 // Adjust the zoom level if needed
         });
     });
 };
