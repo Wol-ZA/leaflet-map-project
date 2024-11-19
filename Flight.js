@@ -466,64 +466,68 @@ window.addMarkersAndDrawLine = function (data) {
         });
     }
 
-    // Add click event to the view to detect polyline clicks
-    view.on("click", (event) => {
-        view.hitTest(event).then((response) => {
-            // Check if the click was on the polyline
-            if (response.results.length > 0) {
-                const graphic = response.results[0].graphic;
-                if (graphic === polylineGraphic) {
-                    const mapPoint = view.toMap({ x: event.x, y: event.y });
+    // Track marker dragging using view's "drag" event
+    let draggedMarker = null;
 
-                    // Create a marker at the clicked location
-                    const markerSymbol = {
-                        type: "picture-marker",
-                        url: "markerdefault.png",
-                        width: "36px",
-                        height: "36px"
-                    };
+    view.on("drag", (event) => {
+        const { action } = event;
+        const mapPoint = view.toMap({ x: event.x, y: event.y });
 
-                    const markerGraphic = new Graphic({
-                        geometry: { type: "point", longitude: mapPoint.longitude, latitude: mapPoint.latitude },
-                        symbol: markerSymbol
-                    });
+        if (action === "start") {
+            view.hitTest(event).then((response) => {
+                if (response.results.length) {
+                    const graphic = response.results[0].graphic;
+                    if (markerGraphics.includes(graphic)) {
+                        draggedMarker = graphic;
+                        isDraggingMarker = true;
 
-                    draggableGraphicsLayer.add(markerGraphic);
-                    markerGraphics.push(markerGraphic);
-
-                    // Make the marker draggable
-                    let isDragging = false;
-                    markerGraphic.on("drag-start", () => {
-                        isDragging = true;
-                    });
-
-                    markerGraphic.on("drag", (dragEvent) => {
-                        if (isDragging) {
-                            const updatedPoint = view.toMap({ x: dragEvent.x, y: dragEvent.y });
-                            markerGraphic.geometry = updatedPoint;
-
-                            // Update the polyline coordinates
-                            const index = polylineCoordinates.findIndex(
-                                (coord) => coord[0] === updatedPoint.longitude && coord[1] === updatedPoint.latitude
-                            );
-                            if (index !== -1) {
-                                polylineCoordinates[index] = [updatedPoint.longitude, updatedPoint.latitude];
-                                polylineGraphic.geometry = { type: "polyline", paths: [...polylineCoordinates] };
-                            }
-                        }
-                    });
-
-                    markerGraphic.on("drag-end", () => {
-                        isDragging = false;
-                    });
+                        activeCircleGraphic = createCircle(mapPoint);
+                        draggableGraphicsLayer.add(activeCircleGraphic);
+                        event.stopPropagation();
+                    }
                 }
+            });
+        } else if (action === "update" && isDraggingMarker && draggedMarker) {
+            draggedMarker.geometry = mapPoint;
+
+            const index = markerGraphics.indexOf(draggedMarker);
+            if (index !== -1) {
+                polylineCoordinates[index] = [mapPoint.longitude, mapPoint.latitude];
+                polylineGraphic.geometry = { type: "polyline", paths: [...polylineCoordinates] };
             }
-        });
+
+            if (activeCircleGraphic) {
+                activeCircleGraphic.geometry = createCircle(mapPoint).geometry;
+
+                getFeaturesWithinRadius(mapPoint, (pointsWithinRadius) => {
+                    const content = pointsWithinRadius.map(point => ` 
+                        <div class="item">
+                            <div class="icon">
+                                <img src="${point.icon}" alt="${point.name}" style="width: 16px; height: 16px; margin-right: 5px;">
+                                ${point.name}
+                            </div>
+                            <span class="identifier">${point.description}</span>
+                        </div>`).join("");
+
+                    const screenPoint = view.toScreen(mapPoint);
+                    showCustomPopup(content, screenPoint, pointsWithinRadius);
+                });
+            }
+            event.stopPropagation();
+        } else if (action === "end") {
+            isDraggingMarker = false;
+            draggedMarker = null;
+
+            if (activeCircleGraphic) {
+                draggableGraphicsLayer.remove(activeCircleGraphic);
+                activeCircleGraphic = null;
+            }
+        }
     });
 
-    // Hide popup when clicking on the map
     view.on("click", (event) => hideCustomPopup());
 };
+
 
 
 
