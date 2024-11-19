@@ -302,8 +302,8 @@ window.addMarkersAndDrawLine = function (data) {
     const polylineCoordinates = [];
     const markerGraphics = [];
     let activeCircleGraphic = null;
-    let draggedMarker = null; // To track the marker being dragged
-    let originalPosition = null; // Track the original position of the marker being dragged
+    let draggedMarker = null;
+    let originalPosition = null;
 
     // Create markers
     data.forEach((point, index) => {
@@ -339,7 +339,6 @@ window.addMarkersAndDrawLine = function (data) {
     });
     draggableGraphicsLayer.add(polylineGraphic);
 
-    // Custom popup creation
     const customPopup = createPopup();
 
     function createPopup() {
@@ -420,6 +419,33 @@ window.addMarkersAndDrawLine = function (data) {
         });
     }
 
+    // Define the getFeaturesWithinRadius function here
+    function getFeaturesWithinRadius(mapPoint, callback) {
+        const pointsWithinRadius = [];
+
+        layers.forEach((layer) => {
+            layer.queryFeatures({
+                geometry: activeCircleGraphic.geometry,
+                spatialRelationship: "intersects",
+                returnGeometry: false,
+                outFields: ["*"]
+            }).then((result) => {
+                result.features.forEach((feature) => {
+                    const layerName = Object.keys(layerIcons).find(key => layer === eval(key));
+                    const iconUrl = layerIcons[layerName];
+
+                    pointsWithinRadius.push({
+                        name: feature.attributes.name || "Unknown",
+                        description: feature.attributes.description || "No description available",
+                        icon: iconUrl
+                    });
+                });
+
+                callback(pointsWithinRadius);
+            });
+        });
+    }
+
     view.on("drag", (event) => {
         const { action } = event;
         const mapPoint = view.toMap({ x: event.x, y: event.y });
@@ -429,8 +455,7 @@ window.addMarkersAndDrawLine = function (data) {
                 if (response.results.length) {
                     const graphic = response.results[0].graphic;
                     if (markerGraphics.includes(graphic)) {
-                        // Save the original position of the dragged marker
-                        originalPosition = { ...graphic.geometry }; // Make a deep copy
+                        originalPosition = { ...graphic.geometry }; // Save original position
                         draggedMarker = graphic;
                         isDraggingMarker = true;
 
@@ -452,6 +477,7 @@ window.addMarkersAndDrawLine = function (data) {
             if (activeCircleGraphic) {
                 activeCircleGraphic.geometry = createCircle(mapPoint).geometry;
 
+                // Call the getFeaturesWithinRadius function
                 getFeaturesWithinRadius(mapPoint, (pointsWithinRadius) => {
                     const content = pointsWithinRadius.map(point => 
                         `<div class="item">
@@ -479,7 +505,6 @@ window.addMarkersAndDrawLine = function (data) {
         }
     });
 
-    // Event listener for Cancel button
     customPopup.addEventListener("click", (event) => {
         if (event.target.classList.contains("cancel") && draggedMarker) {
             // Reset marker position to the original position
