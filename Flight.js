@@ -275,6 +275,27 @@ window.EndTracking = function() {
     
 // Add markers and handle drag events
 window.addMarkersAndDrawLine = function (data) {
+
+    const layerIcons = {
+    sacaaLayer: "sacaa.png",
+    aerodromeAipLayer: "aip.png",
+    aerodromeAicLayer: "aic.png",
+    unlicensedLayer: "unlicensed.png",
+    atnsLayer: "atns.png",
+    militaryLayer: "military.png",
+    helistopsLayer: "helistops.png"
+};
+
+const layers = [
+    sacaaLayer,
+    aerodromeAipLayer,
+    aerodromeAicLayer,
+    unlicensedLayer,
+    atnsLayer,
+    militaryLayer,
+    helistopsLayer
+];
+    
     const draggableGraphicsLayer = new GraphicsLayer({ zIndex: 10 });
     map.add(draggableGraphicsLayer);
     draggableGraphicsLayer.removeAll();
@@ -417,54 +438,54 @@ window.addMarkersAndDrawLine = function (data) {
             polylineGraphic.geometry = { type: "polyline", paths: [...polylineCoordinates] };
         }
 
-        if (activeCircleGraphic) {
-            activeCircleGraphic.geometry = new Circle({
-                center: mapPoint,
-                radius: 37040, // 20 nautical miles in meters
-                geodesic: true
-            });
+       if (activeCircleGraphic) {
+    activeCircleGraphic.geometry = new Circle({
+        center: mapPoint,
+        radius: 37040, // 20 nautical miles in meters
+        geodesic: true
+    });
 
-            // Check points within the radius
-            const pointsWithinRadius = [];
-            const layers = [
-                sacaaLayer,
-                aerodromeAipLayer,
-                aerodromeAicLayer,
-                unlicensedLayer,
-                atnsLayer,
-                militaryLayer,
-                helistopsLayer
-            ];
+    const pointsWithinRadius = []; // Holds POIs with icons and details
 
-            layers.forEach((layer) => {
-                layer.queryFeatures({
-                    geometry: activeCircleGraphic.geometry,
-                    spatialRelationship: "intersects",
-                    returnGeometry: false,
-                    outFields: ["*"]
-                }).then((result) => {
-                    result.features.forEach((feature) => {
-                        pointsWithinRadius.push({
-                            name: feature.attributes.name || "Unknown",
-                            description: feature.attributes.description || "No description available"
-                        });
-                    });
+    // Query all layers for features within the circle
+    layers.forEach((layer) => {
+        layer.queryFeatures({
+            geometry: activeCircleGraphic.geometry,
+            spatialRelationship: "intersects",
+            returnGeometry: false,
+            outFields: ["*"]
+        }).then((result) => {
+            result.features.forEach((feature) => {
+                const layerName = Object.keys(layerIcons).find(key => layer === eval(key));
+                const iconUrl = layerIcons[layerName];
 
-                    // Update the popup content dynamically
-                    if (pointsWithinRadius.length) {
-                        const content = pointsWithinRadius
-                            .map(point => `<b>${point.name}</b>: ${point.description}`)
-                            .join("<br>");
-
-                        // Calculate the screenPoint from the mapPoint
-                        const screenPoint = view.toScreen(mapPoint);
-                        showCustomPopup(content, screenPoint);
-                    } else {
-                        hideCustomPopup();
-                    }
+                pointsWithinRadius.push({
+                    name: feature.attributes.name || "Unknown",
+                    description: feature.attributes.description || "No description available",
+                    icon: iconUrl
                 });
             });
-        }
+
+            // Generate dynamic popup content
+            const content = pointsWithinRadius
+                .map(
+                    (point) => `
+                        <div class="item">
+                            <div class="icon">
+                                <img src="${point.icon}" alt="${point.name}" style="width: 16px; height: 16px; margin-right: 5px;">
+                                ${point.name}
+                            </div>
+                            <span class="identifier">${point.description}</span>
+                        </div>`
+                )
+                .join("");
+
+            // Calculate screenPoint and display custom popup
+            const screenPoint = view.toScreen(mapPoint);
+            showCustomPopup(content, screenPoint);
+        });
+    });
+}
 
         event.stopPropagation();
     } else if (action === "end") {
