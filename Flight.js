@@ -508,6 +508,8 @@ window.addMarkersAndDrawLine = function (data) {
     // Handle cancel button click
     customPopup.addEventListener("click", (event) => {
         if (event.target.classList.contains("cancel") && draggedMarker) {
+            console.log("Cancel clicked"); // Debugging output to check if this works
+
             // Reset marker position to the original position
             if (originalPosition) {
                 draggedMarker.geometry = originalPosition; // Reset geometry
@@ -524,7 +526,6 @@ window.addMarkersAndDrawLine = function (data) {
 
     view.on("click", (event) => hideCustomPopup());
 };
-
 
 
 
