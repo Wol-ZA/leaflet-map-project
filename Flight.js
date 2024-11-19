@@ -336,11 +336,36 @@ window.addMarkersAndDrawLine = function (data) {
 
     // Helper to show custom popup
     function showCustomPopup(content, screenPoint) {
-        customPopup.innerHTML = content;
-        customPopup.style.left = `${screenPoint.x}px`;
-        customPopup.style.top = `${screenPoint.y}px`;
-        customPopup.style.display = "block";
-    }
+    const popupHTML = `
+        <h3>Current Location</h3>
+        <div class="content">${content}</div>
+        <div class="input-group">
+            <label>Waypoint Name:</label>
+            <input type="text" placeholder="Enter waypoint name">
+            <label>Identifier:</label>
+            <input type="text" placeholder="Enter identifier">
+            <div>
+                <button>Create</button>
+                <button class="cancel">Cancel</button>
+            </div>
+        </div>
+        <div class="item">
+            <div class="icon">
+                <span></span> Port St John (FAPJ) R136
+            </div>
+            <span class="identifier">PJV</span>
+        </div>
+        <div class="item">
+            <div class="icon">
+                <span></span> UTOXO
+            </div>
+        </div>
+    `;
+    customPopup.innerHTML = popupHTML;
+    customPopup.style.left = `${screenPoint.x}px`;
+    customPopup.style.top = `${screenPoint.y}px`;
+    customPopup.style.display = "block";
+}
 
     // Helper to hide custom popup
     function hideCustomPopup() {
