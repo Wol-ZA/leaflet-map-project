@@ -482,22 +482,27 @@ window.addMarkersAndDrawLine = function (data) {
         const { action } = event;
         const mapPoint = view.toMap({ x: event.x, y: event.y });
 
-        if (action === "start") {
-            view.hitTest(event).then((response) => {
-                if (response.results.length) {
-                    const graphic = response.results[0].graphic;
-                    if (markerGraphics.includes(graphic)) {
-                        originalPosition = graphic.geometry.clone();
-                        console.log("Original position stored:", originalPosition);
-                        view.draggedGraphic = graphic;
-                        isDraggingMarker = true;
+ if (action === "start") {
+    view.hitTest(event).then((response) => {
+        if (response.results.length) {
+            const graphic = response.results[0].graphic;
+            if (markerGraphics.includes(graphic)) {
+                // Clone the geometry to store the original position
+                originalPosition = graphic.geometry.clone();
+                console.log("Original position set:", originalPosition);
 
-                        activeCircleGraphic = createCircle(mapPoint);
-                        draggableGraphicsLayer.add(activeCircleGraphic);
-                        event.stopPropagation();
-                    }
-                }
-            });
+                // Assign dragged graphic
+                view.draggedGraphic = graphic;
+                isDraggingMarker = true;
+
+                // Create a visual circle if needed
+                activeCircleGraphic = createCircle(mapPoint);
+                draggableGraphicsLayer.add(activeCircleGraphic);
+
+                event.stopPropagation();
+            }
+        }
+    });
         } else if (action === "update" && isDraggingMarker && view.draggedGraphic) {
             view.draggedGraphic.geometry = mapPoint;
 
@@ -527,44 +532,47 @@ window.addMarkersAndDrawLine = function (data) {
             }
             event.stopPropagation();
         } else if (action === "end") {
-            isDraggingMarker = false;
-            view.draggedGraphic = null;
+    isDraggingMarker = false;
 
-            if (activeCircleGraphic) {
-                draggableGraphicsLayer.remove(activeCircleGraphic);
-                activeCircleGraphic = null;
-            }
-        }
+    if (activeCircleGraphic) {
+        draggableGraphicsLayer.remove(activeCircleGraphic);
+        activeCircleGraphic = null;
+    }
+
+    // Do not reset view.draggedGraphic immediately
+    // Keep it available for the Cancel button logic
+    console.log("Drag ended. Dragged graphic:", view.draggedGraphic);
+}
     });
 
     // Event listener for Cancel button
-  customPopup.addEventListener("click", (event) => {
+ customPopup.addEventListener("click", (event) => {
     if (event.target.classList.contains("cancel")) {
         console.log("Cancel button clicked");
-        
+
         if (view.draggedGraphic && originalPosition) {
-            console.log("Resetting marker to original position:", originalPosition);
-            
+            console.log("Resetting marker to:", originalPosition);
+
             // Reset marker position
             view.draggedGraphic.geometry = originalPosition.clone();
-            
-            // Re-add graphic to refresh
+
+            // Force a refresh of the graphic
             draggableGraphicsLayer.remove(view.draggedGraphic);
             draggableGraphicsLayer.add(view.draggedGraphic);
 
-            // Update polyline
+            // Reset polyline coordinates
             const index = markerGraphics.indexOf(view.draggedGraphic);
             if (index !== -1) {
                 polylineCoordinates[index] = [originalPosition.longitude, originalPosition.latitude];
                 polylineGraphic.geometry = { type: "polyline", paths: [...polylineCoordinates] };
                 console.log("Polyline reset");
             }
-        } else {
-            console.warn("No dragged graphic or original position found");
-        }
 
-        // Hide popup
-        hideCustomPopup();
+            // Hide popup
+            hideCustomPopup();
+        } else {
+            console.warn("No dragged graphic or original position found.");
+        }
     }
 });
 
