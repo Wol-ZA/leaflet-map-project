@@ -444,7 +444,7 @@ const layers = [
             polylineGraphic.geometry = { type: "polyline", paths: [...polylineCoordinates] };
         }
 
-       if (activeCircleGraphic) {
+      if (activeCircleGraphic) {
     activeCircleGraphic.geometry = new Circle({
         center: mapPoint,
         radius: 37040, // 20 nautical miles in meters
@@ -492,7 +492,6 @@ const layers = [
         });
     });
 }
-
         event.stopPropagation();
     } else if (action === "end") {
         isDraggingMarker = false;
