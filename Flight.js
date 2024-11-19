@@ -538,22 +538,32 @@ window.addMarkersAndDrawLine = function (data) {
     });
 
     // Event listener for Cancel button
-    customPopup.addEventListener("click", (event) => {
+  customPopup.addEventListener("click", (event) => {
     if (event.target.classList.contains("cancel")) {
-        console.log("Cancel button clicked"); // Debug message
+        console.log("Cancel button clicked");
+        
         if (view.draggedGraphic && originalPosition) {
-            // Reset the marker to its original position
-            view.draggedGraphic.geometry = originalPosition.clone(); // Use deep clone if needed
-            console.log("Marker position reset to:", originalPosition);
+            console.log("Resetting marker to original position:", originalPosition);
             
+            // Reset marker position
+            view.draggedGraphic.geometry = originalPosition.clone();
+            
+            // Re-add graphic to refresh
+            draggableGraphicsLayer.remove(view.draggedGraphic);
+            draggableGraphicsLayer.add(view.draggedGraphic);
+
             // Update polyline
             const index = markerGraphics.indexOf(view.draggedGraphic);
             if (index !== -1) {
                 polylineCoordinates[index] = [originalPosition.longitude, originalPosition.latitude];
                 polylineGraphic.geometry = { type: "polyline", paths: [...polylineCoordinates] };
-                console.log("Polyline updated");
+                console.log("Polyline reset");
             }
+        } else {
+            console.warn("No dragged graphic or original position found");
         }
+
+        // Hide popup
         hideCustomPopup();
     }
 });
