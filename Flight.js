@@ -349,107 +349,109 @@ window.addMarkersAndDrawLine = function (data) {
 
     let isDraggingMarker = false;
 
-    view.on("drag", (event) => {
-        const { x, y, action } = event;
-        const mapPoint = view.toMap({ x, y });
+   view.on("drag", (event) => {
+    const { action } = event;
+    const mapPoint = view.toMap({ x: event.x, y: event.y });
 
-        if (action === "start") {
-            view.hitTest(event).then((response) => {
-                if (response.results.length) {
-                    const graphic = response.results[0].graphic;
-                    if (markerGraphics.includes(graphic)) {
-                        view.draggedGraphic = graphic;
-                        isDraggingMarker = true;
+    if (action === "start") {
+        view.hitTest(event).then((response) => {
+            if (response.results.length) {
+                const graphic = response.results[0].graphic;
+                if (markerGraphics.includes(graphic)) {
+                    view.draggedGraphic = graphic;
+                    isDraggingMarker = true;
 
-                        const circleGeometry = new Circle({
-                            center: mapPoint,
-                            radius: 37040, // 20 nautical miles in meters
-                            geodesic: true
-                        });
-
-                        const circleSymbol = {
-                            type: "simple-fill",
-                            color: [255, 0, 0, 0.2],
-                            outline: { color: [255, 0, 0, 0.8], width: 1 }
-                        };
-
-                        activeCircleGraphic = new Graphic({
-                            geometry: circleGeometry,
-                            symbol: circleSymbol
-                        });
-
-                        draggableGraphicsLayer.add(activeCircleGraphic);
-                        event.stopPropagation();
-                    }
-                }
-            });
-        } else if (action === "update" && isDraggingMarker && view.draggedGraphic) {
-            view.draggedGraphic.geometry = mapPoint;
-
-            const index = markerGraphics.indexOf(view.draggedGraphic);
-            if (index !== -1) {
-                polylineCoordinates[index] = [mapPoint.longitude, mapPoint.latitude];
-                polylineGraphic.geometry = { type: "polyline", paths: [...polylineCoordinates] };
-            }
-
-            if (activeCircleGraphic) {
-                activeCircleGraphic.geometry = new Circle({
-                    center: mapPoint,
-                    radius: 37040, // 20 nautical miles in meters
-                    geodesic: true
-                });
-
-                // Check points within the radius
-                const pointsWithinRadius = [];
-                const layers = [
-                    sacaaLayer,
-                    aerodromeAipLayer,
-                    aerodromeAicLayer,
-                    unlicensedLayer,
-                    atnsLayer,
-                    militaryLayer,
-                    helistopsLayer
-                ];
-
-                layers.forEach((layer) => {
-                    layer.queryFeatures({
-                        geometry: activeCircleGraphic.geometry,
-                        spatialRelationship: "intersects",
-                        returnGeometry: false,
-                        outFields: ["*"]
-                    }).then((result) => {
-                        result.features.forEach((feature) => {
-                            pointsWithinRadius.push({
-                                name: feature.attributes.name || "Unknown",
-                                description: feature.attributes.description || "No description available"
-                            });
-                        });
-
-                        // Update the popup content dynamically
-                        if (pointsWithinRadius.length) {
-                            const content = pointsWithinRadius
-                                .map(point => `<b>${point.name}</b>: ${point.description}`)
-                                .join("<br>");
-
-                            showCustomPopup(content, event.screenPoint);
-                        } else {
-                            hideCustomPopup();
-                        }
+                    const circleGeometry = new Circle({
+                        center: mapPoint,
+                        radius: 37040, // 20 nautical miles in meters
+                        geodesic: true
                     });
-                });
-            }
 
-            event.stopPropagation();
-        } else if (action === "end") {
-            isDraggingMarker = false;
-            view.draggedGraphic = null;
+                    const circleSymbol = {
+                        type: "simple-fill",
+                        color: [255, 0, 0, 0.2],
+                        outline: { color: [255, 0, 0, 0.8], width: 1 }
+                    };
 
-            if (activeCircleGraphic) {
-                draggableGraphicsLayer.remove(activeCircleGraphic);
-                activeCircleGraphic = null;
+                    activeCircleGraphic = new Graphic({
+                        geometry: circleGeometry,
+                        symbol: circleSymbol
+                    });
+
+                    draggableGraphicsLayer.add(activeCircleGraphic);
+                    event.stopPropagation();
+                }
             }
+        });
+    } else if (action === "update" && isDraggingMarker && view.draggedGraphic) {
+        view.draggedGraphic.geometry = mapPoint;
+
+        const index = markerGraphics.indexOf(view.draggedGraphic);
+        if (index !== -1) {
+            polylineCoordinates[index] = [mapPoint.longitude, mapPoint.latitude];
+            polylineGraphic.geometry = { type: "polyline", paths: [...polylineCoordinates] };
         }
-    });
+
+        if (activeCircleGraphic) {
+            activeCircleGraphic.geometry = new Circle({
+                center: mapPoint,
+                radius: 37040, // 20 nautical miles in meters
+                geodesic: true
+            });
+
+            // Check points within the radius
+            const pointsWithinRadius = [];
+            const layers = [
+                sacaaLayer,
+                aerodromeAipLayer,
+                aerodromeAicLayer,
+                unlicensedLayer,
+                atnsLayer,
+                militaryLayer,
+                helistopsLayer
+            ];
+
+            layers.forEach((layer) => {
+                layer.queryFeatures({
+                    geometry: activeCircleGraphic.geometry,
+                    spatialRelationship: "intersects",
+                    returnGeometry: false,
+                    outFields: ["*"]
+                }).then((result) => {
+                    result.features.forEach((feature) => {
+                        pointsWithinRadius.push({
+                            name: feature.attributes.name || "Unknown",
+                            description: feature.attributes.description || "No description available"
+                        });
+                    });
+
+                    // Update the popup content dynamically
+                    if (pointsWithinRadius.length) {
+                        const content = pointsWithinRadius
+                            .map(point => `<b>${point.name}</b>: ${point.description}`)
+                            .join("<br>");
+
+                        // Calculate the screenPoint from the mapPoint
+                        const screenPoint = view.toScreen(mapPoint);
+                        showCustomPopup(content, screenPoint);
+                    } else {
+                        hideCustomPopup();
+                    }
+                });
+            });
+        }
+
+        event.stopPropagation();
+    } else if (action === "end") {
+        isDraggingMarker = false;
+        view.draggedGraphic = null;
+
+        if (activeCircleGraphic) {
+            draggableGraphicsLayer.remove(activeCircleGraphic);
+            activeCircleGraphic = null;
+        }
+    }
+});
 
     view.on("click", (event) => hideCustomPopup());
 };
