@@ -489,7 +489,8 @@ window.addMarkersAndDrawLine = function (data) {
                     if (markerGraphics.includes(graphic)) {
                         // Track the original position of the marker
                         originalPosition = { ...graphic.geometry };
-                        console.log(originalPosition);
+                        console.log(mapPoint.longitude);
+                        console.log(mapPoint.latitude);
                         view.draggedGraphic = graphic;
                         isDraggingMarker = true;
 
