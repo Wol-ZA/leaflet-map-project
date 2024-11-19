@@ -356,43 +356,65 @@ const layers = [
     document.body.appendChild(customPopup);
 
     // Helper to show custom popup
-    function showCustomPopup(content, screenPoint) {
-    const popupHTML = `
-        <h3>Current Location</h3>
-        <div class="content">${content}</div>
+   function showCustomPopup(content, screenPoint) {
+    const pointsWithinRadius = []; // Holds POIs with icons and details
 
-        <!-- Input group for waypoint name and identifier -->
-        <div class="input-group">
-            <label>Waypoint Name:</label>
-            <input type="text" placeholder="Enter waypoint name">
-            <label>Identifier:</label>
-            <input type="text" placeholder="Enter identifier">
-            <div>
-                <button>Create</button>
-                <button class="cancel">Cancel</button>
-            </div>
-        </div>
+    // Query all layers for features within the circle
+    layers.forEach((layer) => {
+        layer.queryFeatures({
+            geometry: activeCircleGraphic.geometry,
+            spatialRelationship: "intersects",
+            returnGeometry: false,
+            outFields: ["*"]
+        }).then((result) => {
+            result.features.forEach((feature) => {
+                const layerName = Object.keys(layerIcons).find(key => layer === eval(key));
+                const iconUrl = layerIcons[layerName];
 
-        <!-- POIs as tags below -->
-        <div class="tags">
-            ${pointsWithinRadius
+                pointsWithinRadius.push({
+                    name: feature.attributes.name || "Unknown",
+                    description: feature.attributes.description || "No description available",
+                    icon: iconUrl
+                });
+            });
+
+            // Generate dynamic popup content with tags
+            const poiTags = pointsWithinRadius
                 .map(
                     (point) => `
-                    <div class="tag">
-                        <span class="tag-icon">
-                            <img src="${point.icon}" alt="${point.name}" />
-                        </span>
-                        <span class="tag-name">${point.name}</span>
-                    </div>`
+                        <span class="poi-tag">
+                            <img src="${point.icon}" alt="${point.name}" style="width: 16px; height: 16px; margin-right: 5px;">
+                            ${point.name}
+                        </span>`
                 )
-                .join("")}
-        </div>
-    `;
-    
-    customPopup.innerHTML = popupHTML;
-    customPopup.style.left = `${screenPoint.x}px`;
-    customPopup.style.top = `${screenPoint.y}px`;
-    customPopup.style.display = "block";
+                .join("");
+
+            // Now build the full popup HTML content
+            const popupHTML = `
+                <h3>Current Location</h3>
+                <div class="content">${content}</div>
+                <div class="input-group">
+                    <label>Waypoint Name:</label>
+                    <input type="text" placeholder="Enter waypoint name">
+                    <label>Identifier:</label>
+                    <input type="text" placeholder="Enter identifier">
+                    <div>
+                        <button>Create</button>
+                        <button class="cancel">Cancel</button>
+                    </div>
+                </div>
+                <div class="poi-tags">
+                    ${poiTags}
+                </div>
+            `;
+
+            // Set the popup content and position it
+            customPopup.innerHTML = popupHTML;
+            customPopup.style.left = `${screenPoint.x}px`;
+            customPopup.style.top = `${screenPoint.y}px`;
+            customPopup.style.display = "block";
+        });
+    });
 }
     // Helper to hide custom popup
     function hideCustomPopup() {
