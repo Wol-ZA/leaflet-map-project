@@ -385,15 +385,15 @@ window.addMarkersAndDrawLine = function (data) {
     function generatePopupHTML(content, pointsWithinRadius) {
         const poiTags = pointsWithinRadius
             .map(
-                (point) => ` 
+                (point) => 
                     <span class="poi-tag">
                         <img src="${point.icon}" alt="${point.name}" style="width: 16px; height: 16px; margin-right: 5px;">
                         ${point.name}
-                    </span>`
+                    </span>
             )
             .join("");
 
-        return `
+        return 
             <h3>Current Location</h3>
             <div class="content">${content}</div>
             <div class="input-group">
@@ -409,36 +409,49 @@ window.addMarkersAndDrawLine = function (data) {
             <div class="poi-tags">
                 ${poiTags}
             </div>
-        `;
+        ;
     }
 
     // Helper to show custom popup
     function showCustomPopup(content, screenPoint, pointsWithinRadius) {
-        const popupHTML = generatePopupHTML(content, pointsWithinRadius);
-        customPopup.innerHTML = popupHTML;
+    const popupHTML = generatePopupHTML(content, pointsWithinRadius);
+    customPopup.innerHTML = popupHTML;
 
-        // Set initial position of the popup
-        customPopup.style.left = `${screenPoint.x}px`;
-        customPopup.style.top = `${screenPoint.y}px`;
-        customPopup.style.display = "block";
+    // Set initial position of the popup
+    customPopup.style.left = ${screenPoint.x}px;
+    customPopup.style.top = ${screenPoint.y}px;
+    customPopup.style.display = "block";
 
-        // Check if the popup overflows the screen horizontally (right side)
-        const popupRect = customPopup.getBoundingClientRect();
-        const screenWidth = window.innerWidth;
-        const screenHeight = window.innerHeight;
+    // Check if the popup overflows the screen horizontally (right side)
+    const popupRect = customPopup.getBoundingClientRect();
+    const screenWidth = window.innerWidth;
+    const screenHeight = window.innerHeight;
 
-        // Adjust for horizontal overflow (right side)
-        if (popupRect.right > screenWidth) {
-            const offsetX = popupRect.right - screenWidth;
-            customPopup.style.left = `${screenPoint.x - offsetX - 10}px`; // Adjust 10px for margin
-        }
-
-        // Adjust for vertical overflow (bottom side)
-        if (popupRect.bottom > screenHeight) {
-            const offsetY = popupRect.bottom - screenHeight;
-            customPopup.style.top = `${screenPoint.y - offsetY - 10}px`; // Adjust 10px for margin
-        }
+    // Adjust for horizontal overflow (right side)
+    if (popupRect.right > screenWidth) {
+        const offsetX = popupRect.right - screenWidth;
+        customPopup.style.left = ${screenPoint.x - offsetX - 10}px; // Adjust 10px for margin
     }
+
+    // Adjust for vertical overflow (bottom side)
+    if (popupRect.bottom > screenHeight) {
+        const offsetY = popupRect.bottom - screenHeight;
+        customPopup.style.top = ${screenPoint.y - offsetY - 10}px; // Adjust 10px for margin
+    }
+
+    // Optionally: Adjust for overflow on the left side (if it's too far left)
+    if (popupRect.left < 0) {
+        const offsetX = popupRect.left;
+        customPopup.style.left = ${screenPoint.x - offsetX + 10}px; // Adjust 10px for margin
+    }
+
+    // Optionally: Adjust for overflow on the top side (if it's too far up)
+    if (popupRect.top < 0) {
+        const offsetY = popupRect.top;
+        customPopup.style.top = ${screenPoint.y - offsetY + 10}px; // Adjust 10px for margin
+    }
+}
+
 
     // Helper to hide custom popup
     function hideCustomPopup() {
@@ -466,9 +479,6 @@ window.addMarkersAndDrawLine = function (data) {
         });
     }
 
-    // Handle marker drag events and polyline updates
-    let draggedMarker = null;
-
     view.on("drag", (event) => {
         const { action } = event;
         const mapPoint = view.toMap({ x: event.x, y: event.y });
@@ -478,7 +488,7 @@ window.addMarkersAndDrawLine = function (data) {
                 if (response.results.length) {
                     const graphic = response.results[0].graphic;
                     if (markerGraphics.includes(graphic)) {
-                        draggedMarker = graphic;
+                        view.draggedGraphic = graphic;
                         isDraggingMarker = true;
 
                         activeCircleGraphic = createCircle(mapPoint);
@@ -487,10 +497,10 @@ window.addMarkersAndDrawLine = function (data) {
                     }
                 }
             });
-        } else if (action === "update" && isDraggingMarker && draggedMarker) {
-            draggedMarker.geometry = mapPoint;
+        } else if (action === "update" && isDraggingMarker && view.draggedGraphic) {
+            view.draggedGraphic.geometry = mapPoint;
 
-            const index = markerGraphics.indexOf(draggedMarker);
+            const index = markerGraphics.indexOf(view.draggedGraphic);
             if (index !== -1) {
                 polylineCoordinates[index] = [mapPoint.longitude, mapPoint.latitude];
                 polylineGraphic.geometry = { type: "polyline", paths: [...polylineCoordinates] };
@@ -500,14 +510,14 @@ window.addMarkersAndDrawLine = function (data) {
                 activeCircleGraphic.geometry = createCircle(mapPoint).geometry;
 
                 getFeaturesWithinRadius(mapPoint, (pointsWithinRadius) => {
-                    const content = pointsWithinRadius.map(point => ` 
+                    const content = pointsWithinRadius.map(point => 
                         <div class="item">
                             <div class="icon">
                                 <img src="${point.icon}" alt="${point.name}" style="width: 16px; height: 16px; margin-right: 5px;">
                                 ${point.name}
                             </div>
                             <span class="identifier">${point.description}</span>
-                        </div>`).join("");
+                        </div>).join("");
 
                     const screenPoint = view.toScreen(mapPoint);
                     showCustomPopup(content, screenPoint, pointsWithinRadius);
@@ -516,7 +526,7 @@ window.addMarkersAndDrawLine = function (data) {
             event.stopPropagation();
         } else if (action === "end") {
             isDraggingMarker = false;
-            draggedMarker = null;
+            view.draggedGraphic = null;
 
             if (activeCircleGraphic) {
                 draggableGraphicsLayer.remove(activeCircleGraphic);
@@ -525,92 +535,8 @@ window.addMarkersAndDrawLine = function (data) {
         }
     });
 
-    // Handle click event on polyline to add new marker only if polyline is clicked
-    view.on("click", (event) => {
-        view.hitTest(event).then((response) => {
-            const mapPoint = view.toMap({ x: event.x, y: event.y });
-
-            const polylineHit = response.results.some(result => result.graphic === polylineGraphic);
-
-            if (polylineHit) {
-                const nearestSegmentIndex = getNearestSegmentIndex(mapPoint);
-                if (nearestSegmentIndex !== -1) {
-                    const [lon1, lat1] = polylineCoordinates[nearestSegmentIndex];
-                    const [lon2, lat2] = polylineCoordinates[nearestSegmentIndex + 1];
-
-                    const newLon = (lon1 + lon2) / 2;
-                    const newLat = (lat1 + lat2) / 2;
-
-                    const markerSymbol = {
-                        type: "picture-marker",
-                        url: "markerdefault.png",
-                        width: "36px",
-                        height: "36px"
-                    };
-
-                    const markerGraphic = new Graphic({
-                        geometry: { type: "point", longitude: newLon, latitude: newLat },
-                        symbol: markerSymbol,
-                    });
-
-                    draggableGraphicsLayer.add(markerGraphic);
-                    markerGraphics.push(markerGraphic);
-
-                    // Insert new point into polyline at the correct position
-                    polylineCoordinates.splice(nearestSegmentIndex + 1, 0, [newLon, newLat]);
-                    polylineGraphic.geometry = { type: "polyline", paths: polylineCoordinates };
-
-                    event.stopPropagation();
-                    hideCustomPopup();
-                }
-            }
-        });
-    });
-
-    // Function to get nearest polyline segment index
-    function getNearestSegmentIndex(mapPoint) {
-        let closestIndex = -1;
-        let minDistance = Infinity;
-
-        for (let i = 0; i < polylineCoordinates.length - 1; i++) {
-            const [lon1, lat1] = polylineCoordinates[i];
-            const [lon2, lat2] = polylineCoordinates[i + 1];
-
-            const distance = getDistanceToSegment(mapPoint, { lon1, lat1 }, { lon2, lat2 });
-            if (distance < minDistance) {
-                minDistance = distance;
-                closestIndex = i;
-            }
-        }
-        return closestIndex;
-    }
-
-    // Function to calculate distance from point to segment
-    function getDistanceToSegment(point, p1, p2) {
-        const x0 = point.longitude;
-        const y0 = point.latitude;
-        const x1 = p1.lon1;
-        const y1 = p1.lat1;
-        const x2 = p2.lon2;
-        const y2 = p2.lat2;
-
-        const dx = x2 - x1;
-        const dy = y2 - y1;
-
-        const length = Math.sqrt(dx * dx + dy * dy);
-        if (length === 0) return Math.sqrt((x0 - x1) ** 2 + (y0 - y1) ** 2);
-
-        const t = ((x0 - x1) * dx + (y0 - y1) * dy) / length;
-        const tClamped = Math.max(0, Math.min(1, t));
-
-        const closestX = x1 + tClamped * dx;
-        const closestY = y1 + tClamped * dy;
-
-        return Math.sqrt((x0 - closestX) ** 2 + (y0 - closestY) ** 2);
-    }
+    view.on("click", (event) => hideCustomPopup());
 };
-
-
 
 
 
