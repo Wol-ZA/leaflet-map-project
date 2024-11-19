@@ -488,6 +488,7 @@ window.addMarkersAndDrawLine = function (data) {
                     const graphic = response.results[0].graphic;
                     if (markerGraphics.includes(graphic)) {
                         originalPosition = graphic.geometry.clone();
+                        console.log("Original position stored:", originalPosition);
                         view.draggedGraphic = graphic;
                         isDraggingMarker = true;
 
@@ -538,21 +539,24 @@ window.addMarkersAndDrawLine = function (data) {
 
     // Event listener for Cancel button
     customPopup.addEventListener("click", (event) => {
-       if (event.target.classList.contains("cancel")) {
+    if (event.target.classList.contains("cancel")) {
+        console.log("Cancel button clicked"); // Debug message
         if (view.draggedGraphic && originalPosition) {
             // Reset the marker to its original position
-            view.draggedGraphic.geometry = originalPosition;
-
-            // Reset the polyline coordinates
+            view.draggedGraphic.geometry = originalPosition.clone(); // Use deep clone if needed
+            console.log("Marker position reset to:", originalPosition);
+            
+            // Update polyline
             const index = markerGraphics.indexOf(view.draggedGraphic);
             if (index !== -1) {
                 polylineCoordinates[index] = [originalPosition.longitude, originalPosition.latitude];
                 polylineGraphic.geometry = { type: "polyline", paths: [...polylineCoordinates] };
+                console.log("Polyline updated");
             }
         }
         hideCustomPopup();
     }
-    });
+});
 
     view.on("click", (event) => hideCustomPopup());
 };
