@@ -391,7 +391,7 @@ window.addMarkersAndDrawLine = function (data) {
                         ${point.name}
                     </span>
             )
-            .join("");
+            .join(""); 
 
         return 
             <h3>Current Location</h3>
