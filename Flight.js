@@ -347,29 +347,8 @@ window.addMarkersAndDrawLine = function (data) {
         customPopup.style.display = "none";
     }
 
-    view.on("click", (event) => {
-        view.hitTest(event).then((response) => {
-            const results = response.results;
-            if (results.length) {
-                const graphic = results[0].graphic;
-                if (markerGraphics.includes(graphic)) {
-                    const attributes = graphic.attributes;
-                    const content = `
-                        <h3>${attributes.name}</h3>
-                        <p>${attributes.description}</p>
-                    `;
-                    showCustomPopup(content, event.screenPoint);
-                } else {
-                    hideCustomPopup();
-                }
-            } else {
-                hideCustomPopup();
-            }
-        });
-    });
-
-    // Drag functionality
     let isDraggingMarker = false;
+
     view.on("drag", (event) => {
         const { x, y, action } = event;
         const mapPoint = view.toMap({ x, y });
@@ -381,6 +360,25 @@ window.addMarkersAndDrawLine = function (data) {
                     if (markerGraphics.includes(graphic)) {
                         view.draggedGraphic = graphic;
                         isDraggingMarker = true;
+
+                        const circleGeometry = new Circle({
+                            center: mapPoint,
+                            radius: 37040, // 20 nautical miles in meters
+                            geodesic: true
+                        });
+
+                        const circleSymbol = {
+                            type: "simple-fill",
+                            color: [255, 0, 0, 0.2],
+                            outline: { color: [255, 0, 0, 0.8], width: 1 }
+                        };
+
+                        activeCircleGraphic = new Graphic({
+                            geometry: circleGeometry,
+                            symbol: circleSymbol
+                        });
+
+                        draggableGraphicsLayer.add(activeCircleGraphic);
                         event.stopPropagation();
                     }
                 }
@@ -394,12 +392,66 @@ window.addMarkersAndDrawLine = function (data) {
                 polylineGraphic.geometry = { type: "polyline", paths: [...polylineCoordinates] };
             }
 
+            if (activeCircleGraphic) {
+                activeCircleGraphic.geometry = new Circle({
+                    center: mapPoint,
+                    radius: 37040, // 20 nautical miles in meters
+                    geodesic: true
+                });
+
+                // Check points within the radius
+                const pointsWithinRadius = [];
+                const layers = [
+                    sacaaLayer,
+                    aerodromeAipLayer,
+                    aerodromeAicLayer,
+                    unlicensedLayer,
+                    atnsLayer,
+                    militaryLayer,
+                    helistopsLayer
+                ];
+
+                layers.forEach((layer) => {
+                    layer.queryFeatures({
+                        geometry: activeCircleGraphic.geometry,
+                        spatialRelationship: "intersects",
+                        returnGeometry: false,
+                        outFields: ["*"]
+                    }).then((result) => {
+                        result.features.forEach((feature) => {
+                            pointsWithinRadius.push({
+                                name: feature.attributes.name || "Unknown",
+                                description: feature.attributes.description || "No description available"
+                            });
+                        });
+
+                        // Update the popup content dynamically
+                        if (pointsWithinRadius.length) {
+                            const content = pointsWithinRadius
+                                .map(point => `<b>${point.name}</b>: ${point.description}`)
+                                .join("<br>");
+
+                            showCustomPopup(content, event.screenPoint);
+                        } else {
+                            hideCustomPopup();
+                        }
+                    });
+                });
+            }
+
             event.stopPropagation();
         } else if (action === "end") {
             isDraggingMarker = false;
             view.draggedGraphic = null;
+
+            if (activeCircleGraphic) {
+                draggableGraphicsLayer.remove(activeCircleGraphic);
+                activeCircleGraphic = null;
+            }
         }
     });
+
+    view.on("click", (event) => hideCustomPopup());
 };
 
 
