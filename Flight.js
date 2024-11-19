@@ -275,47 +275,26 @@ window.EndTracking = function() {
     
 // Add markers and handle drag events
 window.addMarkersAndDrawLine = function (data) {
-    // Clear previous graphics
-    const draggableGraphicsLayer = new GraphicsLayer({
-        zIndex: 10 // Higher zIndex to ensure it stays on top
-    });
+    const draggableGraphicsLayer = new GraphicsLayer({ zIndex: 10 });
     map.add(draggableGraphicsLayer);
     draggableGraphicsLayer.removeAll();
 
-    // Array to hold coordinates for the polyline
     const polylineCoordinates = [];
-
-    // Array to store marker graphics for updating positions dynamically
     const markerGraphics = [];
-
-    // Circle graphic holder
     let activeCircleGraphic = null;
 
-    // Create markers and add them to the map
+    // Create markers
     data.forEach((point, index) => {
         const { latitude, longitude, name, description } = point;
-
-        // Add to polyline coordinates
         polylineCoordinates.push([longitude, latitude]);
 
-        // Define the point geometry for markers
-        const markerPoint = {
-            type: "point",
-            longitude: longitude,
-            latitude: latitude
-        };
+        const markerPoint = { type: "point", longitude, latitude };
+        let markerUrl = index === 0
+            ? "markerstart.png"
+            : index === data.length - 1
+            ? "markerend.png"
+            : "markerdefault.png";
 
-        // Determine the correct PNG based on position in data
-        let markerUrl;
-        if (index === 0) {
-            markerUrl = "markerstart.png"; // First point
-        } else if (index === data.length - 1) {
-            markerUrl = "markerend.png"; // Last point
-        } else {
-            markerUrl = "markerdefault.png"; // Intermediate points
-        }
-
-        // Define marker symbol using the selected PNG
         const markerSymbol = {
             type: "picture-marker",
             url: markerUrl,
@@ -323,175 +302,106 @@ window.addMarkersAndDrawLine = function (data) {
             height: "36px"
         };
 
-        // Create and add marker graphic with popupTemplate
         const markerGraphic = new Graphic({
             geometry: markerPoint,
             symbol: markerSymbol,
-            popupTemplate: {
-                title: name,
-                content: description
-            }
+            attributes: { name, description } // Store attributes for custom popup
         });
 
-        // Add the marker graphic
         draggableGraphicsLayer.add(markerGraphic);
         markerGraphics.push(markerGraphic);
     });
 
-    // Create the polyline graphic with the coordinates
     const polylineGraphic = new Graphic({
-        geometry: {
-            type: "polyline",
-            paths: polylineCoordinates
-        },
+        geometry: { type: "polyline", paths: polylineCoordinates },
         symbol: {
             type: "simple-line",
-            color: [0, 0, 255, 0.5], // Semi-transparent blue
+            color: [0, 0, 255, 0.5],
             width: 2
         }
     });
-
-    // Add the polyline graphic to the graphics layer
     draggableGraphicsLayer.add(polylineGraphic);
-    // Add drag functionality
-    let isDraggingMarker = false;
 
+    // Custom popup element
+    const customPopup = document.createElement("div");
+    customPopup.id = "custom-popup";
+    customPopup.style.position = "absolute";
+    customPopup.style.background = "white";
+    customPopup.style.border = "1px solid #ccc";
+    customPopup.style.padding = "10px";
+    customPopup.style.display = "none";
+    customPopup.style.zIndex = "1000";
+    customPopup.style.boxShadow = "0 2px 10px rgba(0, 0, 0, 0.1)";
+    document.body.appendChild(customPopup);
+
+    // Helper to show custom popup
+    function showCustomPopup(content, screenPoint) {
+        customPopup.innerHTML = content;
+        customPopup.style.left = `${screenPoint.x}px`;
+        customPopup.style.top = `${screenPoint.y}px`;
+        customPopup.style.display = "block";
+    }
+
+    // Helper to hide custom popup
+    function hideCustomPopup() {
+        customPopup.style.display = "none";
+    }
+
+    view.on("click", (event) => {
+        view.hitTest(event).then((response) => {
+            const results = response.results;
+            if (results.length) {
+                const graphic = results[0].graphic;
+                if (markerGraphics.includes(graphic)) {
+                    const attributes = graphic.attributes;
+                    const content = `
+                        <h3>${attributes.name}</h3>
+                        <p>${attributes.description}</p>
+                    `;
+                    showCustomPopup(content, event.screenPoint);
+                } else {
+                    hideCustomPopup();
+                }
+            } else {
+                hideCustomPopup();
+            }
+        });
+    });
+
+    // Drag functionality
+    let isDraggingMarker = false;
     view.on("drag", (event) => {
         const { x, y, action } = event;
-
-        // Get the map point from the screen point
         const mapPoint = view.toMap({ x, y });
 
         if (action === "start") {
             view.hitTest(event).then((response) => {
                 if (response.results.length) {
                     const graphic = response.results[0].graphic;
-
                     if (markerGraphics.includes(graphic)) {
                         view.draggedGraphic = graphic;
                         isDraggingMarker = true;
-
-                        // Create and add the circle graphic dynamically
-                        const circleGeometry = new Circle({
-                            center: mapPoint,
-                            radius: 37040, // 20 nautical miles in meters
-                            geodesic: true
-                        });
-
-                        const circleSymbol = {
-                            type: "simple-fill",
-                            color: [255, 0, 0, 0.2], // Semi-transparent red
-                            outline: {
-                                color: [255, 0, 0, 0.8], // Red outline
-                                width: 1
-                            }
-                        };
-
-                        activeCircleGraphic = new Graphic({
-                            geometry: circleGeometry,
-                            symbol: circleSymbol
-                        });
-
-                        draggableGraphicsLayer.add(activeCircleGraphic);
-
-                        // Prevent map panning while dragging a marker
                         event.stopPropagation();
                     }
                 }
             });
         } else if (action === "update" && isDraggingMarker && view.draggedGraphic) {
-            // Update the position of the dragged marker
             view.draggedGraphic.geometry = mapPoint;
 
-            // Update the polyline coordinates
             const index = markerGraphics.indexOf(view.draggedGraphic);
             if (index !== -1) {
                 polylineCoordinates[index] = [mapPoint.longitude, mapPoint.latitude];
-
-                // Update the polyline's geometry with the new coordinates
-                polylineGraphic.geometry = {
-                    type: "polyline",
-                    paths: [...polylineCoordinates]
-                };
+                polylineGraphic.geometry = { type: "polyline", paths: [...polylineCoordinates] };
             }
 
-            // Update the circle geometry
-            if (activeCircleGraphic) {
-                activeCircleGraphic.geometry = new Circle({
-                    center: mapPoint,
-                    radius: 37040, // 20 nautical miles in meters
-                    geodesic: true
-                });
-            }
-
-            // Check which POIs are within the circle
-            const pointsWithinRadius = [];
-            const layers = [
-                sacaaLayer,
-                aerodromeAipLayer,
-                aerodromeAicLayer,
-                unlicensedLayer,
-                atnsLayer,
-                militaryLayer,
-                helistopsLayer
-            ];
-
-            layers.forEach((layer) => {
-                layer.queryFeatures({
-                    geometry: activeCircleGraphic.geometry,
-                    spatialRelationship: "intersects",
-                    returnGeometry: false,
-                    outFields: ["*"]
-                }).then((result) => {
-                    result.features.forEach((feature) => {
-                        pointsWithinRadius.push({
-                            name: feature.attributes.name || "Unknown",
-                            description: feature.attributes.description || "No description available"
-                        });
-                    });
-
-                    // Update the popup dynamically
-                    if (pointsWithinRadius.length) {
-                        const content = pointsWithinRadius
-                            .map(
-                                (point) =>
-                                    <b>${point.name}</b>: ${point.description}
-                            )
-                            .join("<br>");
-
-                        view.popup.open({
-                            title: "Points of Interest",
-                            content: content,
-                            location: mapPoint
-                        });
-                    } else {
-                        view.popup.close();
-                    }
-                });
-            });
-
-            // Prevent map panning while updating the marker position
             event.stopPropagation();
         } else if (action === "end") {
-            // End marker dragging
             isDraggingMarker = false;
             view.draggedGraphic = null;
-
-            // Remove the active circle
-            if (activeCircleGraphic) {
-                draggableGraphicsLayer.remove(activeCircleGraphic);
-                activeCircleGraphic = null;
-            }
-
-             if (view.popup && view.popup.visible) {
-        // Popup is already open, so we don't need to close it
-        // We could choose to update it if necessary, for example with a final list of points.
-        
-    }
-       
         }
     });
 };
+
 
 
 
