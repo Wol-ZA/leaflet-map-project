@@ -275,36 +275,47 @@ window.EndTracking = function() {
     
 // Add markers and handle drag events
 window.addMarkersAndDrawLine = function (data) {
+    // Clear previous graphics
     const draggableGraphicsLayer = new GraphicsLayer({
         zIndex: 10 // Higher zIndex to ensure it stays on top
     });
     map.add(draggableGraphicsLayer);
     draggableGraphicsLayer.removeAll();
 
+    // Array to hold coordinates for the polyline
     const polylineCoordinates = [];
+
+    // Array to store marker graphics for updating positions dynamically
     const markerGraphics = [];
+
+    // Circle graphic holder
     let activeCircleGraphic = null;
 
+    // Create markers and add them to the map
     data.forEach((point, index) => {
         const { latitude, longitude, name, description } = point;
 
+        // Add to polyline coordinates
         polylineCoordinates.push([longitude, latitude]);
 
+        // Define the point geometry for markers
         const markerPoint = {
             type: "point",
             longitude: longitude,
             latitude: latitude
         };
 
+        // Determine the correct PNG based on position in data
         let markerUrl;
         if (index === 0) {
-            markerUrl = "markerstart.png";
+            markerUrl = "markerstart.png"; // First point
         } else if (index === data.length - 1) {
-            markerUrl = "markerend.png";
+            markerUrl = "markerend.png"; // Last point
         } else {
-            markerUrl = "markerdefault.png";
+            markerUrl = "markerdefault.png"; // Intermediate points
         }
 
+        // Define marker symbol using the selected PNG
         const markerSymbol = {
             type: "picture-marker",
             url: markerUrl,
@@ -312,6 +323,7 @@ window.addMarkersAndDrawLine = function (data) {
             height: "36px"
         };
 
+        // Create and add marker graphic with popupTemplate
         const markerGraphic = new Graphic({
             geometry: markerPoint,
             symbol: markerSymbol,
@@ -321,10 +333,12 @@ window.addMarkersAndDrawLine = function (data) {
             }
         });
 
+        // Add the marker graphic
         draggableGraphicsLayer.add(markerGraphic);
         markerGraphics.push(markerGraphic);
     });
 
+    // Create the polyline graphic with the coordinates
     const polylineGraphic = new Graphic({
         geometry: {
             type: "polyline",
@@ -332,17 +346,20 @@ window.addMarkersAndDrawLine = function (data) {
         },
         symbol: {
             type: "simple-line",
-            color: [0, 0, 255, 0.5],
+            color: [0, 0, 255, 0.5], // Semi-transparent blue
             width: 2
         }
     });
 
+    // Add the polyline graphic to the graphics layer
     draggableGraphicsLayer.add(polylineGraphic);
-
+    // Add drag functionality
     let isDraggingMarker = false;
 
     view.on("drag", (event) => {
         const { x, y, action } = event;
+
+        // Get the map point from the screen point
         const mapPoint = view.toMap({ x, y });
 
         if (action === "start") {
@@ -354,17 +371,18 @@ window.addMarkersAndDrawLine = function (data) {
                         view.draggedGraphic = graphic;
                         isDraggingMarker = true;
 
+                        // Create and add the circle graphic dynamically
                         const circleGeometry = new Circle({
                             center: mapPoint,
-                            radius: 37040,
+                            radius: 37040, // 20 nautical miles in meters
                             geodesic: true
                         });
 
                         const circleSymbol = {
                             type: "simple-fill",
-                            color: [255, 0, 0, 0.2],
+                            color: [255, 0, 0, 0.2], // Semi-transparent red
                             outline: {
-                                color: [255, 0, 0, 0.8],
+                                color: [255, 0, 0, 0.8], // Red outline
                                 width: 1
                             }
                         };
@@ -375,30 +393,38 @@ window.addMarkersAndDrawLine = function (data) {
                         });
 
                         draggableGraphicsLayer.add(activeCircleGraphic);
+
+                        // Prevent map panning while dragging a marker
                         event.stopPropagation();
                     }
                 }
             });
         } else if (action === "update" && isDraggingMarker && view.draggedGraphic) {
+            // Update the position of the dragged marker
             view.draggedGraphic.geometry = mapPoint;
 
+            // Update the polyline coordinates
             const index = markerGraphics.indexOf(view.draggedGraphic);
             if (index !== -1) {
                 polylineCoordinates[index] = [mapPoint.longitude, mapPoint.latitude];
+
+                // Update the polyline's geometry with the new coordinates
                 polylineGraphic.geometry = {
                     type: "polyline",
                     paths: [...polylineCoordinates]
                 };
             }
 
+            // Update the circle geometry
             if (activeCircleGraphic) {
                 activeCircleGraphic.geometry = new Circle({
                     center: mapPoint,
-                    radius: 37040,
+                    radius: 37040, // 20 nautical miles in meters
                     geodesic: true
                 });
             }
 
+            // Check which POIs are within the circle
             const pointsWithinRadius = [];
             const layers = [
                 sacaaLayer,
@@ -410,90 +436,62 @@ window.addMarkersAndDrawLine = function (data) {
                 helistopsLayer
             ];
 
-layers.forEach((layer) => {
-    layer.queryFeatures({
-        geometry: activeCircleGraphic.geometry,
-        spatialRelationship: "intersects",
-        returnGeometry: true,
-        outFields: ["*"]
-    }).then((result) => {
-        result.features.forEach((feature) => {
-            pointsWithinRadius.push({
-                name: feature.attributes.name || "Unknown",
-                description: feature.attributes.description || "No description available",
-                location: feature.geometry
-            });
-        });
-
-        console.log("Points within radius:", pointsWithinRadius); // Debugging
-
-        if (pointsWithinRadius.length) {
-            view.popup.open({
-                title: "Points of Interest",
-                content: function () {
-                    const container = document.createElement("div");
-
-                    if (!pointsWithinRadius.length) {
-                        container.textContent = "No points of interest found.";
-                        return container;
-                    }
-
-                    pointsWithinRadius.forEach((point, i) => {
-                        const button = document.createElement("button");
-                        button.textContent = point.name;
-                        button.style.margin = "5px";
-                        button.onclick = () => {
-                            placeMarkerOnPOI(i);
-                        };
-                        container.appendChild(button);
+            layers.forEach((layer) => {
+                layer.queryFeatures({
+                    geometry: activeCircleGraphic.geometry,
+                    spatialRelationship: "intersects",
+                    returnGeometry: false,
+                    outFields: ["*"]
+                }).then((result) => {
+                    result.features.forEach((feature) => {
+                        pointsWithinRadius.push({
+                            name: feature.attributes.name || "Unknown",
+                            description: feature.attributes.description || "No description available"
+                        });
                     });
 
-                    return container;
-                },
-                location: mapPoint
-            });
-        } else {
-            console.log("No points found."); // Debugging
-            view.popup.close();
-        }
-    });
-});
+                    // Update the popup dynamically
+                    if (pointsWithinRadius.length) {
+                        const content = pointsWithinRadius
+                            .map(
+                                (point) =>
+                                    <b>${point.name}</b>: ${point.description}
+                            )
+                            .join("<br>");
 
+                        view.popup.open({
+                            title: "Points of Interest",
+                            content: content,
+                            location: mapPoint
+                        });
+                    } else {
+                        view.popup.close();
+                    }
+                });
+            });
+
+            // Prevent map panning while updating the marker position
             event.stopPropagation();
         } else if (action === "end") {
+            // End marker dragging
             isDraggingMarker = false;
             view.draggedGraphic = null;
 
+            // Remove the active circle
             if (activeCircleGraphic) {
                 draggableGraphicsLayer.remove(activeCircleGraphic);
                 activeCircleGraphic = null;
             }
 
-            if (view.popup && view.popup.visible) {
-                // Popup is already open, no need to close it.
-            }
+             if (view.popup && view.popup.visible) {
+        // Popup is already open, so we don't need to close it
+        // We could choose to update it if necessary, for example with a final list of points.
+        
+    }
+       
         }
     });
-
-    window.placeMarkerOnPOI = function (poiIndex) {
-        const poi = view.pointsWithinRadius[poiIndex];
-        if (poi && view.draggedGraphic) {
-            view.draggedGraphic.geometry = poi.location;
-
-            const index = markerGraphics.indexOf(view.draggedGraphic);
-            if (index !== -1) {
-                polylineCoordinates[index] = [poi.location.longitude, poi.location.latitude];
-                polylineGraphic.geometry = {
-                    type: "polyline",
-                    paths: [...polylineCoordinates]
-                };
-            }
-
-            view.popup.close();
-        }
-    };
 };
-
 
 
 
