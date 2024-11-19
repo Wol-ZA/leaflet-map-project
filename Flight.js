@@ -530,11 +530,9 @@ window.addMarkersAndDrawLine = function (data) {
         view.hitTest(event).then((response) => {
             const mapPoint = view.toMap({ x: event.x, y: event.y });
 
-            // Check if the click hits the polyline
             const polylineHit = response.results.some(result => result.graphic === polylineGraphic);
 
             if (polylineHit) {
-                // Get nearest segment and add new marker
                 const nearestSegmentIndex = getNearestSegmentIndex(mapPoint);
                 if (nearestSegmentIndex !== -1) {
                     const [lon1, lat1] = polylineCoordinates[nearestSegmentIndex];
@@ -558,7 +556,7 @@ window.addMarkersAndDrawLine = function (data) {
                     draggableGraphicsLayer.add(markerGraphic);
                     markerGraphics.push(markerGraphic);
 
-                    // Update polyline coordinates
+                    // Insert new point into polyline at the correct position
                     polylineCoordinates.splice(nearestSegmentIndex + 1, 0, [newLon, newLat]);
                     polylineGraphic.geometry = { type: "polyline", paths: polylineCoordinates };
 
@@ -611,6 +609,7 @@ window.addMarkersAndDrawLine = function (data) {
         return Math.sqrt((x0 - closestX) ** 2 + (y0 - closestY) ** 2);
     }
 };
+
 
 
 
