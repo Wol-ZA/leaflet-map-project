@@ -466,53 +466,59 @@ window.addMarkersAndDrawLine = function (data) {
         });
     }
 
-    // Add click event on the polyline
-    polylineGraphic.on("click", (event) => {
-        const mapPoint = view.toMap({ x: event.x, y: event.y });
-        
-        // Create a marker at the clicked location
-        const markerSymbol = {
-            type: "picture-marker",
-            url: "markerdefault.png",
-            width: "36px",
-            height: "36px"
-        };
+    // Add click event to the view to detect polyline clicks
+    view.on("click", (event) => {
+        view.hitTest(event).then((response) => {
+            // Check if the click was on the polyline
+            if (response.results.length > 0) {
+                const graphic = response.results[0].graphic;
+                if (graphic === polylineGraphic) {
+                    const mapPoint = view.toMap({ x: event.x, y: event.y });
 
-        const markerGraphic = new Graphic({
-            geometry: { type: "point", longitude: mapPoint.longitude, latitude: mapPoint.latitude },
-            symbol: markerSymbol
-        });
+                    // Create a marker at the clicked location
+                    const markerSymbol = {
+                        type: "picture-marker",
+                        url: "markerdefault.png",
+                        width: "36px",
+                        height: "36px"
+                    };
 
-        draggableGraphicsLayer.add(markerGraphic);
-        markerGraphics.push(markerGraphic);
+                    const markerGraphic = new Graphic({
+                        geometry: { type: "point", longitude: mapPoint.longitude, latitude: mapPoint.latitude },
+                        symbol: markerSymbol
+                    });
 
-        // Make the marker draggable
-        let isDragging = false;
-        markerGraphic.on("drag-start", () => {
-            isDragging = true;
-        });
+                    draggableGraphicsLayer.add(markerGraphic);
+                    markerGraphics.push(markerGraphic);
 
-        markerGraphic.on("drag", (dragEvent) => {
-            if (isDragging) {
-                const updatedPoint = view.toMap({ x: dragEvent.x, y: dragEvent.y });
-                markerGraphic.geometry = updatedPoint;
+                    // Make the marker draggable
+                    let isDragging = false;
+                    markerGraphic.on("drag-start", () => {
+                        isDragging = true;
+                    });
 
-                // Update the polyline coordinates
-                const index = polylineCoordinates.findIndex(
-                    (coord) => coord[0] === updatedPoint.longitude && coord[1] === updatedPoint.latitude
-                );
-                if (index !== -1) {
-                    polylineCoordinates[index] = [updatedPoint.longitude, updatedPoint.latitude];
-                    polylineGraphic.geometry = { type: "polyline", paths: [...polylineCoordinates] };
+                    markerGraphic.on("drag", (dragEvent) => {
+                        if (isDragging) {
+                            const updatedPoint = view.toMap({ x: dragEvent.x, y: dragEvent.y });
+                            markerGraphic.geometry = updatedPoint;
+
+                            // Update the polyline coordinates
+                            const index = polylineCoordinates.findIndex(
+                                (coord) => coord[0] === updatedPoint.longitude && coord[1] === updatedPoint.latitude
+                            );
+                            if (index !== -1) {
+                                polylineCoordinates[index] = [updatedPoint.longitude, updatedPoint.latitude];
+                                polylineGraphic.geometry = { type: "polyline", paths: [...polylineCoordinates] };
+                            }
+                        }
+                    });
+
+                    markerGraphic.on("drag-end", () => {
+                        isDragging = false;
+                    });
                 }
             }
         });
-
-        markerGraphic.on("drag-end", () => {
-            isDragging = false;
-        });
-
-        event.stopPropagation();
     });
 
     // Hide popup when clicking on the map
