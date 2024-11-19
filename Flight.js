@@ -275,27 +275,26 @@ window.EndTracking = function() {
     
 // Add markers and handle drag events
 window.addMarkersAndDrawLine = function (data) {
-
     const layerIcons = {
-    sacaaLayer: "sacaa.png",
-    aerodromeAipLayer: "aip.png",
-    aerodromeAicLayer: "aic.png",
-    unlicensedLayer: "unlicensed.png",
-    atnsLayer: "atns.png",
-    militaryLayer: "military.png",
-    helistopsLayer: "helistops.png"
-};
+        sacaaLayer: "sacaa.png",
+        aerodromeAipLayer: "aip.png",
+        aerodromeAicLayer: "aic.png",
+        unlicensedLayer: "unlicensed.png",
+        atnsLayer: "atns.png",
+        militaryLayer: "military.png",
+        helistopsLayer: "helistops.png"
+    };
 
-const layers = [
-    sacaaLayer,
-    aerodromeAipLayer,
-    aerodromeAicLayer,
-    unlicensedLayer,
-    atnsLayer,
-    militaryLayer,
-    helistopsLayer
-];
-    
+    const layers = [
+        sacaaLayer,
+        aerodromeAipLayer,
+        aerodromeAicLayer,
+        unlicensedLayer,
+        atnsLayer,
+        militaryLayer,
+        helistopsLayer
+    ];
+
     const draggableGraphicsLayer = new GraphicsLayer({ zIndex: 10 });
     map.add(draggableGraphicsLayer);
     draggableGraphicsLayer.removeAll();
@@ -309,8 +308,7 @@ const layers = [
         const { latitude, longitude, name, description } = point;
         polylineCoordinates.push([longitude, latitude]);
 
-        const markerPoint = { type: "point", longitude, latitude };
-        let markerUrl = index === 0
+        const markerUrl = index === 0
             ? "markerstart.png"
             : index === data.length - 1
             ? "markerend.png"
@@ -324,9 +322,9 @@ const layers = [
         };
 
         const markerGraphic = new Graphic({
-            geometry: markerPoint,
+            geometry: { type: "point", longitude, latitude },
             symbol: markerSymbol,
-            attributes: { name, description } // Store attributes for custom popup
+            attributes: { name, description }
         });
 
         draggableGraphicsLayer.add(markerGraphic);
@@ -335,87 +333,62 @@ const layers = [
 
     const polylineGraphic = new Graphic({
         geometry: { type: "polyline", paths: polylineCoordinates },
-        symbol: {
-            type: "simple-line",
-            color: [0, 0, 255, 0.5],
-            width: 2
-        }
+        symbol: { type: "simple-line", color: [0, 0, 255, 0.5], width: 2 }
     });
     draggableGraphicsLayer.add(polylineGraphic);
 
-    // Custom popup element
-    const customPopup = document.createElement("div");
-    customPopup.id = "custom-popup";
-    customPopup.style.position = "absolute";
-    customPopup.style.background = "white";
-    customPopup.style.border = "1px solid #ccc";
-    customPopup.style.padding = "10px";
-    customPopup.style.display = "none";
-    customPopup.style.zIndex = "1000";
-    customPopup.style.boxShadow = "0 2px 10px rgba(0, 0, 0, 0.1)";
-    document.body.appendChild(customPopup);
+    // Custom popup creation
+    const customPopup = createPopup();
+
+    function createPopup() {
+        const popup = document.createElement("div");
+        popup.id = "custom-popup";
+        popup.style.position = "absolute";
+        popup.style.background = "white";
+        popup.style.border = "1px solid #ccc";
+        popup.style.padding = "10px";
+        popup.style.display = "none";
+        popup.style.zIndex = "1000";
+        popup.style.boxShadow = "0 2px 10px rgba(0, 0, 0, 0.1)";
+        document.body.appendChild(popup);
+        return popup;
+    }
+
+    // Function to query features and build popup content
+    function getFeaturesWithinRadius(mapPoint, callback) {
+        const pointsWithinRadius = [];
+
+        layers.forEach((layer) => {
+            layer.queryFeatures({
+                geometry: activeCircleGraphic.geometry,
+                spatialRelationship: "intersects",
+                returnGeometry: false,
+                outFields: ["*"]
+            }).then((result) => {
+                result.features.forEach((feature) => {
+                    const layerName = Object.keys(layerIcons).find(key => layer === eval(key));
+                    const iconUrl = layerIcons[layerName];
+
+                    pointsWithinRadius.push({
+                        name: feature.attributes.name || "Unknown",
+                        description: feature.attributes.description || "No description available",
+                        icon: iconUrl
+                    });
+                });
+
+                callback(pointsWithinRadius);
+            });
+        });
+    }
 
     // Helper to show custom popup
-   function showCustomPopup(content, screenPoint) {
-    const pointsWithinRadius = []; // Holds POIs with icons and details
+    function showCustomPopup(content, screenPoint) {
+        customPopup.innerHTML = content;
+        customPopup.style.left = `${screenPoint.x}px`;
+        customPopup.style.top = `${screenPoint.y}px`;
+        customPopup.style.display = "block";
+    }
 
-    // Query all layers for features within the circle
-    layers.forEach((layer) => {
-        layer.queryFeatures({
-            geometry: activeCircleGraphic.geometry,
-            spatialRelationship: "intersects",
-            returnGeometry: false,
-            outFields: ["*"]
-        }).then((result) => {
-            result.features.forEach((feature) => {
-                const layerName = Object.keys(layerIcons).find(key => layer === eval(key));
-                const iconUrl = layerIcons[layerName];
-
-                pointsWithinRadius.push({
-                    name: feature.attributes.name || "Unknown",
-                    description: feature.attributes.description || "No description available",
-                    icon: iconUrl
-                });
-            });
-
-            // Generate dynamic popup content with tags
-            const poiTags = pointsWithinRadius
-                .map(
-                    (point) => `
-                        <span class="poi-tag">
-                            <img src="${point.icon}" alt="${point.name}" style="width: 16px; height: 16px; margin-right: 5px;">
-                            ${point.name}
-                        </span>`
-                )
-                .join("");
-
-            // Now build the full popup HTML content
-            const popupHTML = `
-                <h3>Current Location</h3>
-                <div class="content">${content}</div>
-                <div class="input-group">
-                    <label>Waypoint Name:</label>
-                    <input type="text" placeholder="Enter waypoint name">
-                    <label>Identifier:</label>
-                    <input type="text" placeholder="Enter identifier">
-                    <div>
-                        <button>Create</button>
-                        <button class="cancel">Cancel</button>
-                    </div>
-                </div>
-                <div class="poi-tags">
-                    ${poiTags}
-                </div>
-            `;
-
-            // Set the popup content and position it
-            customPopup.innerHTML = popupHTML;
-            customPopup.style.left = `${screenPoint.x}px`;
-            customPopup.style.top = `${screenPoint.y}px`;
-            customPopup.style.display = "block";
-        });
-    });
-}
     // Helper to hide custom popup
     function hideCustomPopup() {
         customPopup.style.display = "none";
@@ -423,108 +396,80 @@ const layers = [
 
     let isDraggingMarker = false;
 
-   view.on("drag", (event) => {
-    const { action } = event;
-    const mapPoint = view.toMap({ x: event.x, y: event.y });
-
-    if (action === "start") {
-        view.hitTest(event).then((response) => {
-            if (response.results.length) {
-                const graphic = response.results[0].graphic;
-                if (markerGraphics.includes(graphic)) {
-                    view.draggedGraphic = graphic;
-                    isDraggingMarker = true;
-
-                    const circleGeometry = new Circle({
-                        center: mapPoint,
-                        radius: 37040, // 20 nautical miles in meters
-                        geodesic: true
-                    });
-
-                    const circleSymbol = {
-                        type: "simple-fill",
-                        color: [255, 0, 0, 0.2],
-                        outline: { color: [255, 0, 0, 0.8], width: 1 }
-                    };
-
-                    activeCircleGraphic = new Graphic({
-                        geometry: circleGeometry,
-                        symbol: circleSymbol
-                    });
-
-                    draggableGraphicsLayer.add(activeCircleGraphic);
-                    event.stopPropagation();
-                }
-            }
+    function createCircle(mapPoint) {
+        const circleGeometry = new Circle({
+            center: mapPoint,
+            radius: 37040, // 20 nautical miles in meters
+            geodesic: true
         });
-    } else if (action === "update" && isDraggingMarker && view.draggedGraphic) {
-        view.draggedGraphic.geometry = mapPoint;
 
-        const index = markerGraphics.indexOf(view.draggedGraphic);
-        if (index !== -1) {
-            polylineCoordinates[index] = [mapPoint.longitude, mapPoint.latitude];
-            polylineGraphic.geometry = { type: "polyline", paths: [...polylineCoordinates] };
-        }
+        const circleSymbol = {
+            type: "simple-fill",
+            color: [255, 0, 0, 0.2],
+            outline: { color: [255, 0, 0, 0.8], width: 1 }
+        };
 
-      if (activeCircleGraphic) {
-    activeCircleGraphic.geometry = new Circle({
-        center: mapPoint,
-        radius: 37040, // 20 nautical miles in meters
-        geodesic: true
-    });
+        return new Graphic({
+            geometry: circleGeometry,
+            symbol: circleSymbol
+        });
+    }
 
-    const pointsWithinRadius = []; // Holds POIs with icons and details
+    view.on("drag", (event) => {
+        const { action } = event;
+        const mapPoint = view.toMap({ x: event.x, y: event.y });
 
-    // Query all layers for features within the circle
-    layers.forEach((layer) => {
-        layer.queryFeatures({
-            geometry: activeCircleGraphic.geometry,
-            spatialRelationship: "intersects",
-            returnGeometry: false,
-            outFields: ["*"]
-        }).then((result) => {
-            result.features.forEach((feature) => {
-                const layerName = Object.keys(layerIcons).find(key => layer === eval(key));
-                const iconUrl = layerIcons[layerName];
+        if (action === "start") {
+            view.hitTest(event).then((response) => {
+                if (response.results.length) {
+                    const graphic = response.results[0].graphic;
+                    if (markerGraphics.includes(graphic)) {
+                        view.draggedGraphic = graphic;
+                        isDraggingMarker = true;
 
-                pointsWithinRadius.push({
-                    name: feature.attributes.name || "Unknown",
-                    description: feature.attributes.description || "No description available",
-                    icon: iconUrl
-                });
+                        activeCircleGraphic = createCircle(mapPoint);
+                        draggableGraphicsLayer.add(activeCircleGraphic);
+                        event.stopPropagation();
+                    }
+                }
             });
+        } else if (action === "update" && isDraggingMarker && view.draggedGraphic) {
+            view.draggedGraphic.geometry = mapPoint;
 
-            // Generate dynamic popup content
-            const content = pointsWithinRadius
-                .map(
-                    (point) => `
+            const index = markerGraphics.indexOf(view.draggedGraphic);
+            if (index !== -1) {
+                polylineCoordinates[index] = [mapPoint.longitude, mapPoint.latitude];
+                polylineGraphic.geometry = { type: "polyline", paths: [...polylineCoordinates] };
+            }
+
+            if (activeCircleGraphic) {
+                activeCircleGraphic.geometry = createCircle(mapPoint).geometry;
+
+                getFeaturesWithinRadius(mapPoint, (pointsWithinRadius) => {
+                    const content = pointsWithinRadius.map(point => `
                         <div class="item">
                             <div class="icon">
                                 <img src="${point.icon}" alt="${point.name}" style="width: 16px; height: 16px; margin-right: 5px;">
                                 ${point.name}
                             </div>
                             <span class="identifier">${point.description}</span>
-                        </div>`
-                )
-                .join("");
+                        </div>`).join("");
 
-            // Calculate screenPoint and display custom popup
-            const screenPoint = view.toScreen(mapPoint);
-            showCustomPopup(content, screenPoint);
-        });
-    });
-}
-        event.stopPropagation();
-    } else if (action === "end") {
-        isDraggingMarker = false;
-        view.draggedGraphic = null;
+                    const screenPoint = view.toScreen(mapPoint);
+                    showCustomPopup(content, screenPoint);
+                });
+            }
+            event.stopPropagation();
+        } else if (action === "end") {
+            isDraggingMarker = false;
+            view.draggedGraphic = null;
 
-        if (activeCircleGraphic) {
-            draggableGraphicsLayer.remove(activeCircleGraphic);
-            activeCircleGraphic = null;
+            if (activeCircleGraphic) {
+                draggableGraphicsLayer.remove(activeCircleGraphic);
+                activeCircleGraphic = null;
+            }
         }
-    }
-});
+    });
 
     view.on("click", (event) => hideCustomPopup());
 };
