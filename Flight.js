@@ -525,42 +525,48 @@ window.addMarkersAndDrawLine = function (data) {
         }
     });
 
-    // Handle click event on polyline to add new marker between existing markers
+    // Handle click event on polyline to add new marker only if polyline is clicked
     view.on("click", (event) => {
-        const mapPoint = view.toMap({ x: event.x, y: event.y });
+        view.hitTest(event).then((response) => {
+            const mapPoint = view.toMap({ x: event.x, y: event.y });
 
-        // Find the closest polyline segment
-        const nearestSegmentIndex = getNearestSegmentIndex(mapPoint);
-        if (nearestSegmentIndex !== -1) {
-            // Insert the new marker between the two closest points
-            const [lon1, lat1] = polylineCoordinates[nearestSegmentIndex];
-            const [lon2, lat2] = polylineCoordinates[nearestSegmentIndex + 1];
+            // Check if the click hits the polyline
+            const polylineHit = response.results.some(result => result.graphic === polylineGraphic);
 
-            const newLon = (lon1 + lon2) / 2;
-            const newLat = (lat1 + lat2) / 2;
+            if (polylineHit) {
+                // Get nearest segment and add new marker
+                const nearestSegmentIndex = getNearestSegmentIndex(mapPoint);
+                if (nearestSegmentIndex !== -1) {
+                    const [lon1, lat1] = polylineCoordinates[nearestSegmentIndex];
+                    const [lon2, lat2] = polylineCoordinates[nearestSegmentIndex + 1];
 
-            const markerSymbol = {
-                type: "picture-marker",
-                url: "markerdefault.png",
-                width: "36px",
-                height: "36px"
-            };
+                    const newLon = (lon1 + lon2) / 2;
+                    const newLat = (lat1 + lat2) / 2;
 
-            const markerGraphic = new Graphic({
-                geometry: { type: "point", longitude: newLon, latitude: newLat },
-                symbol: markerSymbol,
-            });
+                    const markerSymbol = {
+                        type: "picture-marker",
+                        url: "markerdefault.png",
+                        width: "36px",
+                        height: "36px"
+                    };
 
-            draggableGraphicsLayer.add(markerGraphic);
-            markerGraphics.push(markerGraphic);
+                    const markerGraphic = new Graphic({
+                        geometry: { type: "point", longitude: newLon, latitude: newLat },
+                        symbol: markerSymbol,
+                    });
 
-            // Update polyline coordinates
-            polylineCoordinates.splice(nearestSegmentIndex + 1, 0, [newLon, newLat]);
-            polylineGraphic.geometry = { type: "polyline", paths: polylineCoordinates };
+                    draggableGraphicsLayer.add(markerGraphic);
+                    markerGraphics.push(markerGraphic);
 
-            event.stopPropagation();
-            hideCustomPopup();
-        }
+                    // Update polyline coordinates
+                    polylineCoordinates.splice(nearestSegmentIndex + 1, 0, [newLon, newLat]);
+                    polylineGraphic.geometry = { type: "polyline", paths: polylineCoordinates };
+
+                    event.stopPropagation();
+                    hideCustomPopup();
+                }
+            }
+        });
     });
 
     // Function to get nearest polyline segment index
@@ -571,7 +577,7 @@ window.addMarkersAndDrawLine = function (data) {
         for (let i = 0; i < polylineCoordinates.length - 1; i++) {
             const [lon1, lat1] = polylineCoordinates[i];
             const [lon2, lat2] = polylineCoordinates[i + 1];
-            
+
             const distance = getDistanceToSegment(mapPoint, { lon1, lat1 }, { lon2, lat2 });
             if (distance < minDistance) {
                 minDistance = distance;
@@ -605,7 +611,6 @@ window.addMarkersAndDrawLine = function (data) {
         return Math.sqrt((x0 - closestX) ** 2 + (y0 - closestY) ** 2);
     }
 };
-
 
 
 
