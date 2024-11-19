@@ -134,74 +134,32 @@
     background-color: #c82333;
 }
 
-#custom-popup .item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin: 10px 0;
-    font-size: 14px;
-}
-
-#custom-popup .item .icon {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-#custom-popup .item img {
-    border-radius: 50%;
-    border: 1px solid #ddd;
-}
-
-#custom-popup .item .icon span {
-    display: inline-block;
-    background: green;
-    border-radius: 50%;
-    width: 12px;
-    height: 12px;
-}
-
-#custom-popup .item .identifier {
-    color: #555;
-    font-size: 12px;
-}
-    #custom-popup .tags {
+/* Tags for POIs */
+#custom-popup .poi-tags {
+    margin-top: 15px;
     display: flex;
     flex-wrap: wrap;
-    margin-top: 15px;
     gap: 8px;
-    padding-top: 10px;
-    border-top: 1px solid #ddd;
 }
 
-#custom-popup .tag {
-    background-color: #f1f1f1;
-    padding: 5px 12px;
-    border-radius: 20px;
-    display: flex;
+#custom-popup .poi-tag {
+    display: inline-flex;
     align-items: center;
-    gap: 5px;
+    background-color: #e0f7fa;
+    padding: 5px 10px;
+    border-radius: 20px;
     font-size: 12px;
-    font-weight: bold;
-    color: #333;
-    border: 1px solid #ddd;
-    transition: all 0.3s;
+    color: #00796b;
+    border: 1px solid #00796b;
 }
 
-#custom-popup .tag:hover {
-    background-color: #e2e2e2;
-    cursor: pointer;
-}
-
-#custom-popup .tag-icon img {
+#custom-popup .poi-tag img {
+    border-radius: 50%;
     width: 16px;
     height: 16px;
-    border-radius: 50%;
+    margin-right: 5px;
 }
 
-#custom-popup .tag-name {
-    text-transform: capitalize;
-}
 
     
   </style>
