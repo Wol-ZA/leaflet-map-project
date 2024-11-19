@@ -381,9 +381,41 @@ window.addMarkersAndDrawLine = function (data) {
         });
     }
 
+    // Function to generate HTML for the popup
+    function generatePopupHTML(content, pointsWithinRadius) {
+        const poiTags = pointsWithinRadius
+            .map(
+                (point) => `
+                    <span class="poi-tag">
+                        <img src="${point.icon}" alt="${point.name}" style="width: 16px; height: 16px; margin-right: 5px;">
+                        ${point.name}
+                    </span>`
+            )
+            .join("");
+
+        return `
+            <h3>Current Location</h3>
+            <div class="content">${content}</div>
+            <div class="input-group">
+                <label>Waypoint Name:</label>
+                <input type="text" placeholder="Enter waypoint name">
+                <label>Identifier:</label>
+                <input type="text" placeholder="Enter identifier">
+                <div>
+                    <button>Create</button>
+                    <button class="cancel">Cancel</button>
+                </div>
+            </div>
+            <div class="poi-tags">
+                ${poiTags}
+            </div>
+        `;
+    }
+
     // Helper to show custom popup
-    function showCustomPopup(content, screenPoint) {
-        customPopup.innerHTML = content;
+    function showCustomPopup(content, screenPoint, pointsWithinRadius) {
+        const popupHTML = generatePopupHTML(content, pointsWithinRadius);
+        customPopup.innerHTML = popupHTML;
         customPopup.style.left = `${screenPoint.x}px`;
         customPopup.style.top = `${screenPoint.y}px`;
         customPopup.style.display = "block";
@@ -456,7 +488,7 @@ window.addMarkersAndDrawLine = function (data) {
                         </div>`).join("");
 
                     const screenPoint = view.toScreen(mapPoint);
-                    showCustomPopup(content, screenPoint);
+                    showCustomPopup(content, screenPoint, pointsWithinRadius);
                 });
             }
             event.stopPropagation();
