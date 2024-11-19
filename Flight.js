@@ -360,6 +360,8 @@ const layers = [
     const popupHTML = `
         <h3>Current Location</h3>
         <div class="content">${content}</div>
+
+        <!-- Input group for waypoint name and identifier -->
         <div class="input-group">
             <label>Waypoint Name:</label>
             <input type="text" placeholder="Enter waypoint name">
@@ -370,24 +372,28 @@ const layers = [
                 <button class="cancel">Cancel</button>
             </div>
         </div>
-        <div class="item">
-            <div class="icon">
-                <span></span> Port St John (FAPJ) R136
-            </div>
-            <span class="identifier">PJV</span>
-        </div>
-        <div class="item">
-            <div class="icon">
-                <span></span> UTOXO
-            </div>
+
+        <!-- POIs as tags below -->
+        <div class="tags">
+            ${pointsWithinRadius
+                .map(
+                    (point) => `
+                    <div class="tag">
+                        <span class="tag-icon">
+                            <img src="${point.icon}" alt="${point.name}" />
+                        </span>
+                        <span class="tag-name">${point.name}</span>
+                    </div>`
+                )
+                .join("")}
         </div>
     `;
+    
     customPopup.innerHTML = popupHTML;
     customPopup.style.left = `${screenPoint.x}px`;
     customPopup.style.top = `${screenPoint.y}px`;
     customPopup.style.display = "block";
 }
-
     // Helper to hide custom popup
     function hideCustomPopup() {
         customPopup.style.display = "none";
