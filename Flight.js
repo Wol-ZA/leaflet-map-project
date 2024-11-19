@@ -410,7 +410,7 @@ window.addMarkersAndDrawLine = function (data) {
                 helistopsLayer
             ];
 
-            layers.forEach((layer) => {
+layers.forEach((layer) => {
     layer.queryFeatures({
         geometry: activeCircleGraphic.geometry,
         spatialRelationship: "intersects",
@@ -425,18 +425,26 @@ window.addMarkersAndDrawLine = function (data) {
             });
         });
 
+        console.log("Points within radius:", pointsWithinRadius); // Debugging
+
         if (pointsWithinRadius.length) {
-            // Use a content function to dynamically generate buttons
             view.popup.open({
                 title: "Points of Interest",
-                content: () => {
+                content: function () {
                     const container = document.createElement("div");
+
+                    if (!pointsWithinRadius.length) {
+                        container.textContent = "No points of interest found.";
+                        return container;
+                    }
 
                     pointsWithinRadius.forEach((point, i) => {
                         const button = document.createElement("button");
                         button.textContent = point.name;
                         button.style.margin = "5px";
-                        button.onclick = () => placeMarkerOnPOI(i);
+                        button.onclick = () => {
+                            placeMarkerOnPOI(i);
+                        };
                         container.appendChild(button);
                     });
 
@@ -445,6 +453,7 @@ window.addMarkersAndDrawLine = function (data) {
                 location: mapPoint
             });
         } else {
+            console.log("No points found."); // Debugging
             view.popup.close();
         }
     });
