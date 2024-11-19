@@ -349,7 +349,7 @@ window.addMarkersAndDrawLine = function (data) {
         popup.style.background = "white";
         popup.style.border = "1px solid #ccc";
         popup.style.padding = "10px";
-        popup.style.display = "none";
+        popup.style.display = "none";  // Initially hidden
         popup.style.zIndex = "1000";
         popup.style.boxShadow = "0 2px 10px rgba(0, 0, 0, 0.1)";
         document.body.appendChild(popup);
@@ -382,9 +382,11 @@ window.addMarkersAndDrawLine = function (data) {
 
     // Function to hide the custom popup
     function hideCustomPopup() {
+        console.log("Hiding custom popup");
         customPopup.style.display = "none";
     }
 
+    // Track the marker drag events
     let isDraggingMarker = false;
 
     function createCircle(mapPoint) {
@@ -406,7 +408,6 @@ window.addMarkersAndDrawLine = function (data) {
         });
     }
 
-    // Track the marker drag events
     view.on("drag", (event) => {
         const { action } = event;
         const mapPoint = view.toMap({ x: event.x, y: event.y });
@@ -452,10 +453,11 @@ window.addMarkersAndDrawLine = function (data) {
 
     // Show popup for the marker
     function showCustomPopup(content, screenPoint) {
+        console.log("Displaying custom popup at position:", screenPoint);
         customPopup.innerHTML = generatePopupHTML(content);
         customPopup.style.left = `${screenPoint.x}px`;
         customPopup.style.top = `${screenPoint.y}px`;
-        customPopup.style.display = "block";
+        customPopup.style.display = "block";  // Ensure it is shown
     }
 
     function generatePopupHTML(content) {
