@@ -302,8 +302,7 @@ window.addMarkersAndDrawLine = function (data) {
     const polylineCoordinates = [];
     const markerGraphics = [];
     let activeCircleGraphic = null;
-    let draggedMarker = null;
-    let originalPosition = null;
+    let originalPosition = null; // Variable to track the original position of the marker
 
     // Create markers
     data.forEach((point, index) => {
@@ -339,7 +338,7 @@ window.addMarkersAndDrawLine = function (data) {
     });
     draggableGraphicsLayer.add(polylineGraphic);
 
-    // Create popup and attach event listener to cancel button
+    // Custom popup creation
     const customPopup = createPopup();
 
     function createPopup() {
@@ -349,50 +348,121 @@ window.addMarkersAndDrawLine = function (data) {
         popup.style.background = "white";
         popup.style.border = "1px solid #ccc";
         popup.style.padding = "10px";
-        popup.style.display = "none";  // Initially hidden
+        popup.style.display = "none";
         popup.style.zIndex = "1000";
         popup.style.boxShadow = "0 2px 10px rgba(0, 0, 0, 0.1)";
         document.body.appendChild(popup);
-
-        // Directly add event listener to the cancel button
-        const cancelButton = popup.querySelector(".cancel");
-        if (cancelButton) {
-            cancelButton.addEventListener("click", () => {
-                console.log("Cancel button clicked");
-                resetMarkerPosition(); // Reset marker position on cancel
-                hideCustomPopup(); // Close the popup
-            });
-        }
-
         return popup;
     }
 
-    // Reset marker to the original position
-    function resetMarkerPosition() {
-        if (draggedMarker && originalPosition) {
-            draggedMarker.geometry = originalPosition; // Reset geometry to original position
+    // Function to query features and build popup content
+    function getFeaturesWithinRadius(mapPoint, callback) {
+        const pointsWithinRadius = [];
 
-            const index = markerGraphics.indexOf(draggedMarker);
-            if (index !== -1) {
-                polylineCoordinates[index] = [originalPosition.longitude, originalPosition.latitude];
-                polylineGraphic.geometry = { type: "polyline", paths: [...polylineCoordinates] };
-            }
+        layers.forEach((layer) => {
+            layer.queryFeatures({
+                geometry: activeCircleGraphic.geometry,
+                spatialRelationship: "intersects",
+                returnGeometry: false,
+                outFields: ["*"]
+            }).then((result) => {
+                result.features.forEach((feature) => {
+                    const layerName = Object.keys(layerIcons).find(key => layer === eval(key));
+                    const iconUrl = layerIcons[layerName];
+
+                    pointsWithinRadius.push({
+                        name: feature.attributes.name || "Unknown",
+                        description: feature.attributes.description || "No description available",
+                        icon: iconUrl
+                    });
+                });
+
+                callback(pointsWithinRadius);
+            });
+        });
+    }
+
+    // Function to generate HTML for the popup
+    function generatePopupHTML(content, pointsWithinRadius) {
+        const poiTags = pointsWithinRadius
+            .map(
+                (point) => 
+                    `<span class="poi-tag">
+                        <img src="${point.icon}" alt="${point.name}" style="width: 16px; height: 16px; margin-right: 5px;">
+                        ${point.name}
+                    </span>`
+            )
+            .join(""); 
+
+        return `
+            <h3>Current Location</h3>
+            <div class="content">${content}</div>
+            <div class="input-group">
+                <label>Waypoint Name:</label>
+                <input type="text" placeholder="Enter waypoint name">
+                <label>Identifier:</label>
+                <input type="text" placeholder="Enter identifier">
+                <div>
+                    <button>Create</button>
+                    <button class="cancel">Cancel</button>
+                </div>
+            </div>
+            <div class="poi-tags">
+                ${poiTags}
+            </div>
+        `;
+    }
+
+    function showCustomPopup(content, screenPoint, pointsWithinRadius) {
+        const popupHTML = generatePopupHTML(content, pointsWithinRadius);
+        customPopup.innerHTML = popupHTML;
+
+        // Set initial position of the popup
+        customPopup.style.left = `${screenPoint.x}px`;
+        customPopup.style.top = `${screenPoint.y}px`;
+        customPopup.style.display = "block";
+
+        // Check if the popup overflows the screen horizontally (right side)
+        const popupRect = customPopup.getBoundingClientRect();
+        const screenWidth = window.innerWidth;
+        const screenHeight = window.innerHeight;
+
+        // Adjust for horizontal overflow (right side)
+        if (popupRect.right > screenWidth) {
+            const offsetX = popupRect.right - screenWidth;
+            customPopup.style.left = `${screenPoint.x - offsetX - 10}px`; // Adjust 10px for margin
+        }
+
+        // Adjust for vertical overflow (bottom side)
+        if (popupRect.bottom > screenHeight) {
+            const offsetY = popupRect.bottom - screenHeight;
+            customPopup.style.top = `${screenPoint.y - offsetY - 10}px`; // Adjust 10px for margin
+        }
+
+        // Optionally: Adjust for overflow on the left side (if it's too far left)
+        if (popupRect.left < 0) {
+            const offsetX = popupRect.left;
+            customPopup.style.left = `${screenPoint.x - offsetX + 10}px`; // Adjust 10px for margin
+        }
+
+        // Optionally: Adjust for overflow on the top side (if it's too far up)
+        if (popupRect.top < 0) {
+            const offsetY = popupRect.top;
+            customPopup.style.top = `${screenPoint.y - offsetY + 10}px`; // Adjust 10px for margin
         }
     }
 
-    // Function to hide the custom popup
+    // Helper to hide custom popup
     function hideCustomPopup() {
-        console.log("Hiding custom popup");
         customPopup.style.display = "none";
     }
 
-    // Track the marker drag events
     let isDraggingMarker = false;
 
     function createCircle(mapPoint) {
         const circleGeometry = new Circle({
             center: mapPoint,
-            radius: 37040,
+            radius: 37040, // 20 nautical miles in meters
             geodesic: true
         });
 
@@ -417,8 +487,9 @@ window.addMarkersAndDrawLine = function (data) {
                 if (response.results.length) {
                     const graphic = response.results[0].graphic;
                     if (markerGraphics.includes(graphic)) {
-                        originalPosition = { ...graphic.geometry }; // Save original position
-                        draggedMarker = graphic;
+                        // Track the original position of the marker
+                        originalPosition = { ...graphic.geometry };
+                        view.draggedGraphic = graphic;
                         isDraggingMarker = true;
 
                         activeCircleGraphic = createCircle(mapPoint);
@@ -427,10 +498,10 @@ window.addMarkersAndDrawLine = function (data) {
                     }
                 }
             });
-        } else if (action === "update" && isDraggingMarker && draggedMarker) {
-            draggedMarker.geometry = mapPoint;
+        } else if (action === "update" && isDraggingMarker && view.draggedGraphic) {
+            view.draggedGraphic.geometry = mapPoint;
 
-            const index = markerGraphics.indexOf(draggedMarker);
+            const index = markerGraphics.indexOf(view.draggedGraphic);
             if (index !== -1) {
                 polylineCoordinates[index] = [mapPoint.longitude, mapPoint.latitude];
                 polylineGraphic.geometry = { type: "polyline", paths: [...polylineCoordinates] };
@@ -438,11 +509,26 @@ window.addMarkersAndDrawLine = function (data) {
 
             if (activeCircleGraphic) {
                 activeCircleGraphic.geometry = createCircle(mapPoint).geometry;
+
+                getFeaturesWithinRadius(mapPoint, (pointsWithinRadius) => {
+                    const content = pointsWithinRadius.map(point => 
+                        `<div class="item">
+                            <div class="icon">
+                                <img src="${point.icon}" alt="${point.name}" style="width: 16px; height: 16px; margin-right: 5px;">
+                                ${point.name}
+                            </div>
+                            <span class="identifier">${point.description}</span>
+                        </div>`
+                    ).join("");  // Join all the individual HTML strings into one
+
+                    const screenPoint = view.toScreen(mapPoint);
+                    showCustomPopup(content, screenPoint, pointsWithinRadius);
+                });
             }
             event.stopPropagation();
         } else if (action === "end") {
             isDraggingMarker = false;
-            draggedMarker = null;
+            view.draggedGraphic = null;
 
             if (activeCircleGraphic) {
                 draggableGraphicsLayer.remove(activeCircleGraphic);
@@ -451,35 +537,20 @@ window.addMarkersAndDrawLine = function (data) {
         }
     });
 
-    // Show popup for the marker
-    function showCustomPopup(content, screenPoint) {
-        console.log("Displaying custom popup at position:", screenPoint);
-        customPopup.innerHTML = generatePopupHTML(content);
-        customPopup.style.left = `${screenPoint.x}px`;
-        customPopup.style.top = `${screenPoint.y}px`;
-        customPopup.style.display = "block";  // Ensure it is shown
-    }
+    // Event listener for Cancel button
+    customPopup.addEventListener("click", (event) => {
+        if (event.target.classList.contains("cancel")) {
+            // Reset marker position to the original one
+            if (view.draggedGraphic && originalPosition) {
+                view.draggedGraphic.geometry = originalPosition;
+            }
+            hideCustomPopup();
+        }
+    });
 
-    function generatePopupHTML(content) {
-        return `
-            <h3>Current Location</h3>
-            <div class="content">${content}</div>
-            <div class="input-group">
-                <label>Waypoint Name:</label>
-                <input type="text" placeholder="Enter waypoint name">
-                <label>Identifier:</label>
-                <input type="text" placeholder="Enter identifier">
-                <div>
-                    <button>Create</button>
-                    <button class="cancel">Cancel</button>
-                </div>
-            </div>
-        `;
-    }
-
-    // Close the popup on map click
-    view.on("click", () => hideCustomPopup());
+    view.on("click", (event) => hideCustomPopup());
 };
+
 
 
 
