@@ -510,7 +510,7 @@ window.addMarkersAndDrawLine = function (data) {
         if (event.target.classList.contains("cancel") && draggedMarker) {
             // Reset marker position to the original position
             if (originalPosition) {
-                draggedMarker.geometry = originalPosition;
+                draggedMarker.geometry = originalPosition; // Reset geometry
                 // Revert the polyline coordinates for the marker
                 const index = markerGraphics.indexOf(draggedMarker);
                 if (index !== -1) {
@@ -518,14 +518,12 @@ window.addMarkersAndDrawLine = function (data) {
                     polylineGraphic.geometry = { type: "polyline", paths: [...polylineCoordinates] };
                 }
             }
-            hideCustomPopup();
+            hideCustomPopup(); // Close the popup
         }
     });
 
     view.on("click", (event) => hideCustomPopup());
 };
-
-
 
 
 
