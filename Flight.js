@@ -411,40 +411,44 @@ window.addMarkersAndDrawLine = function (data) {
             ];
 
             layers.forEach((layer) => {
-                layer.queryFeatures({
-                    geometry: activeCircleGraphic.geometry,
-                    spatialRelationship: "intersects",
-                    returnGeometry: true,
-                    outFields: ["*"]
-                }).then((result) => {
-                    result.features.forEach((feature) => {
-                        pointsWithinRadius.push({
-                            name: feature.attributes.name || "Unknown",
-                            description: feature.attributes.description || "No description available",
-                            location: feature.geometry
-                        });
+    layer.queryFeatures({
+        geometry: activeCircleGraphic.geometry,
+        spatialRelationship: "intersects",
+        returnGeometry: true,
+        outFields: ["*"]
+    }).then((result) => {
+        result.features.forEach((feature) => {
+            pointsWithinRadius.push({
+                name: feature.attributes.name || "Unknown",
+                description: feature.attributes.description || "No description available",
+                location: feature.geometry
+            });
+        });
+
+        if (pointsWithinRadius.length) {
+            // Use a content function to dynamically generate buttons
+            view.popup.open({
+                title: "Points of Interest",
+                content: () => {
+                    const container = document.createElement("div");
+
+                    pointsWithinRadius.forEach((point, i) => {
+                        const button = document.createElement("button");
+                        button.textContent = point.name;
+                        button.style.margin = "5px";
+                        button.onclick = () => placeMarkerOnPOI(i);
+                        container.appendChild(button);
                     });
 
-                    if (pointsWithinRadius.length) {
-                        const content = pointsWithinRadius
-                            .map(
-                                (point, i) =>
-                                    `<button onclick="placeMarkerOnPOI(${i})">${point.name}</button><br>`
-                            )
-                            .join("");
-
-                        view.pointsWithinRadius = pointsWithinRadius;
-
-                        view.popup.open({
-                            title: "Points of Interest",
-                            content: content,
-                            location: mapPoint
-                        });
-                    } else {
-                        view.popup.close();
-                    }
-                });
+                    return container;
+                },
+                location: mapPoint
             });
+        } else {
+            view.popup.close();
+        }
+    });
+});
 
             event.stopPropagation();
         } else if (action === "end") {
