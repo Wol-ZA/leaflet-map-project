@@ -554,6 +554,7 @@ window.addMarkersAndDrawLine = function (data) {
 
 
 
+
 window.removeMarkersAndLines = function() {
     graphicsLayer.removeAll(); // Access graphicsLayer globally and clear all graphics
 };
