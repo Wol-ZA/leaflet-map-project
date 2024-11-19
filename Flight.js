@@ -303,7 +303,7 @@ window.addMarkersAndDrawLine = function (data) {
     const markerGraphics = [];
     let activeCircleGraphic = null;
     let draggedMarker = null;
-    let originalPosition = null;
+    let originalPosition = null; // Store the original position of the marker
 
     // Create markers
     data.forEach((point, index) => {
@@ -505,11 +505,18 @@ window.addMarkersAndDrawLine = function (data) {
         }
     });
 
+    // Handle cancel button click
     customPopup.addEventListener("click", (event) => {
         if (event.target.classList.contains("cancel") && draggedMarker) {
             // Reset marker position to the original position
             if (originalPosition) {
                 draggedMarker.geometry = originalPosition;
+                // Revert the polyline coordinates for the marker
+                const index = markerGraphics.indexOf(draggedMarker);
+                if (index !== -1) {
+                    polylineCoordinates[index] = [originalPosition.longitude, originalPosition.latitude];
+                    polylineGraphic.geometry = { type: "polyline", paths: [...polylineCoordinates] };
+                }
             }
             hideCustomPopup();
         }
