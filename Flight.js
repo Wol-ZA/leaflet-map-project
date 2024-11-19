@@ -302,6 +302,7 @@ window.addMarkersAndDrawLine = function (data) {
     const polylineCoordinates = [];
     const markerGraphics = [];
     let activeCircleGraphic = null;
+    let originalPosition = null; // Variable to track the original position of the marker
 
     // Create markers
     data.forEach((point, index) => {
@@ -382,75 +383,74 @@ window.addMarkersAndDrawLine = function (data) {
     }
 
     // Function to generate HTML for the popup
-   function generatePopupHTML(content, pointsWithinRadius) {
-     const poiTags = pointsWithinRadius
-         .map(
-             (point) => 
-                 `<span class="poi-tag">
-                     <img src="${point.icon}" alt="${point.name}" style="width: 16px; height: 16px; margin-right: 5px;">
-                     ${point.name}
-                 </span>`
-         )
-         .join(""); 
+    function generatePopupHTML(content, pointsWithinRadius) {
+        const poiTags = pointsWithinRadius
+            .map(
+                (point) => 
+                    `<span class="poi-tag">
+                        <img src="${point.icon}" alt="${point.name}" style="width: 16px; height: 16px; margin-right: 5px;">
+                        ${point.name}
+                    </span>`
+            )
+            .join(""); 
 
-     return `
-         <h3>Current Location</h3>
-         <div class="content">${content}</div>
-         <div class="input-group">
-             <label>Waypoint Name:</label>
-             <input type="text" placeholder="Enter waypoint name">
-             <label>Identifier:</label>
-             <input type="text" placeholder="Enter identifier">
-             <div>
-                 <button>Create</button>
-                 <button class="cancel">Cancel</button>
-             </div>
-         </div>
-         <div class="poi-tags">
-             ${poiTags}
-         </div>
-     `;
- }
+        return `
+            <h3>Current Location</h3>
+            <div class="content">${content}</div>
+            <div class="input-group">
+                <label>Waypoint Name:</label>
+                <input type="text" placeholder="Enter waypoint name">
+                <label>Identifier:</label>
+                <input type="text" placeholder="Enter identifier">
+                <div>
+                    <button>Create</button>
+                    <button class="cancel">Cancel</button>
+                </div>
+            </div>
+            <div class="poi-tags">
+                ${poiTags}
+            </div>
+        `;
+    }
 
- function showCustomPopup(content, screenPoint, pointsWithinRadius) {
-     const popupHTML = generatePopupHTML(content, pointsWithinRadius);
-     customPopup.innerHTML = popupHTML;
+    function showCustomPopup(content, screenPoint, pointsWithinRadius) {
+        const popupHTML = generatePopupHTML(content, pointsWithinRadius);
+        customPopup.innerHTML = popupHTML;
 
-     // Set initial position of the popup
-     customPopup.style.left = `${screenPoint.x}px`;
-     customPopup.style.top = `${screenPoint.y}px`;
-     customPopup.style.display = "block";
+        // Set initial position of the popup
+        customPopup.style.left = `${screenPoint.x}px`;
+        customPopup.style.top = `${screenPoint.y}px`;
+        customPopup.style.display = "block";
 
-     // Check if the popup overflows the screen horizontally (right side)
-     const popupRect = customPopup.getBoundingClientRect();
-     const screenWidth = window.innerWidth;
-     const screenHeight = window.innerHeight;
+        // Check if the popup overflows the screen horizontally (right side)
+        const popupRect = customPopup.getBoundingClientRect();
+        const screenWidth = window.innerWidth;
+        const screenHeight = window.innerHeight;
 
-     // Adjust for horizontal overflow (right side)
-     if (popupRect.right > screenWidth) {
-         const offsetX = popupRect.right - screenWidth;
-         customPopup.style.left = `${screenPoint.x - offsetX - 10}px`; // Adjust 10px for margin
-     }
+        // Adjust for horizontal overflow (right side)
+        if (popupRect.right > screenWidth) {
+            const offsetX = popupRect.right - screenWidth;
+            customPopup.style.left = `${screenPoint.x - offsetX - 10}px`; // Adjust 10px for margin
+        }
 
-     // Adjust for vertical overflow (bottom side)
-     if (popupRect.bottom > screenHeight) {
-         const offsetY = popupRect.bottom - screenHeight;
-         customPopup.style.top = `${screenPoint.y - offsetY - 10}px`; // Adjust 10px for margin
-     }
+        // Adjust for vertical overflow (bottom side)
+        if (popupRect.bottom > screenHeight) {
+            const offsetY = popupRect.bottom - screenHeight;
+            customPopup.style.top = `${screenPoint.y - offsetY - 10}px`; // Adjust 10px for margin
+        }
 
-     // Optionally: Adjust for overflow on the left side (if it's too far left)
-     if (popupRect.left < 0) {
-         const offsetX = popupRect.left;
-         customPopup.style.left = `${screenPoint.x - offsetX + 10}px`; // Adjust 10px for margin
-     }
+        // Optionally: Adjust for overflow on the left side (if it's too far left)
+        if (popupRect.left < 0) {
+            const offsetX = popupRect.left;
+            customPopup.style.left = `${screenPoint.x - offsetX + 10}px`; // Adjust 10px for margin
+        }
 
-     // Optionally: Adjust for overflow on the top side (if it's too far up)
-     if (popupRect.top < 0) {
-         const offsetY = popupRect.top;
-         customPopup.style.top = `${screenPoint.y - offsetY + 10}px`; // Adjust 10px for margin
-     }
- }
-
+        // Optionally: Adjust for overflow on the top side (if it's too far up)
+        if (popupRect.top < 0) {
+            const offsetY = popupRect.top;
+            customPopup.style.top = `${screenPoint.y - offsetY + 10}px`; // Adjust 10px for margin
+        }
+    }
 
     // Helper to hide custom popup
     function hideCustomPopup() {
@@ -487,6 +487,8 @@ window.addMarkersAndDrawLine = function (data) {
                 if (response.results.length) {
                     const graphic = response.results[0].graphic;
                     if (markerGraphics.includes(graphic)) {
+                        // Track the original position of the marker
+                        originalPosition = { ...graphic.geometry };
                         view.draggedGraphic = graphic;
                         isDraggingMarker = true;
 
@@ -510,17 +512,17 @@ window.addMarkersAndDrawLine = function (data) {
 
                 getFeaturesWithinRadius(mapPoint, (pointsWithinRadius) => {
                     const content = pointsWithinRadius.map(point => 
-    `<div class="item">
-        <div class="icon">
-            <img src="${point.icon}" alt="${point.name}" style="width: 16px; height: 16px; margin-right: 5px;">
-            ${point.name}
-        </div>
-        <span class="identifier">${point.description}</span>
-    </div>`
-).join("");  // Join all the individual HTML strings into one
+                        `<div class="item">
+                            <div class="icon">
+                                <img src="${point.icon}" alt="${point.name}" style="width: 16px; height: 16px; margin-right: 5px;">
+                                ${point.name}
+                            </div>
+                            <span class="identifier">${point.description}</span>
+                        </div>`
+                    ).join("");  // Join all the individual HTML strings into one
 
-const screenPoint = view.toScreen(mapPoint);
-showCustomPopup(content, screenPoint, pointsWithinRadius);
+                    const screenPoint = view.toScreen(mapPoint);
+                    showCustomPopup(content, screenPoint, pointsWithinRadius);
                 });
             }
             event.stopPropagation();
@@ -535,8 +537,20 @@ showCustomPopup(content, screenPoint, pointsWithinRadius);
         }
     });
 
+    // Event listener for Cancel button
+    customPopup.addEventListener("click", (event) => {
+        if (event.target.classList.contains("cancel")) {
+            // Reset marker position to the original one
+            if (view.draggedGraphic && originalPosition) {
+                view.draggedGraphic.geometry = originalPosition;
+            }
+            hideCustomPopup();
+        }
+    });
+
     view.on("click", (event) => hideCustomPopup());
 };
+
 
 
 
