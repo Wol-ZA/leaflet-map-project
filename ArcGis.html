@@ -70,6 +70,97 @@
   .layer-toggle input[type="checkbox"] {
       margin-right: 8px;
   }
+#custom-popup {
+    position: absolute;
+    background: white;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    padding: 15px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    color: #333;
+    max-width: 300px;
+    z-index: 1000;
+}
+
+#custom-popup h3 {
+    margin: 0 0 10px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #444;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 5px;
+}
+
+#custom-popup .content {
+    margin: 10px 0;
+    line-height: 1.5;
+}
+
+#custom-popup .input-group {
+    margin: 10px 0;
+}
+
+#custom-popup input[type="text"] {
+    width: calc(100% - 10px);
+    padding: 5px;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 13px;
+}
+
+#custom-popup button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    margin-right: 5px;
+}
+
+#custom-popup button.cancel {
+    background-color: #dc3545;
+}
+
+#custom-popup button:hover {
+    background-color: #0056b3;
+}
+
+#custom-popup button.cancel:hover {
+    background-color: #c82333;
+}
+
+#custom-popup .item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 5px 0;
+}
+
+#custom-popup .item .icon {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+#custom-popup .item .icon span {
+    display: inline-block;
+    background: green;
+    border-radius: 50%;
+    width: 12px;
+    height: 12px;
+}
+
+#custom-popup .item .identifier {
+    color: #555;
+    font-size: 12px;
+}
+
+    
   </style>
 </head>
 <body>
