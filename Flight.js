@@ -302,7 +302,8 @@ window.addMarkersAndDrawLine = function (data) {
     const polylineCoordinates = [];
     const markerGraphics = [];
     let activeCircleGraphic = null;
-    let originalPosition = null; // Variable to track the original position of the marker
+    let draggedMarker = null; // To track the marker being dragged
+    let originalPosition = null; // Track the original position of the marker being dragged
 
     // Create markers
     data.forEach((point, index) => {
@@ -355,34 +356,6 @@ window.addMarkersAndDrawLine = function (data) {
         return popup;
     }
 
-    // Function to query features and build popup content
-    function getFeaturesWithinRadius(mapPoint, callback) {
-        const pointsWithinRadius = [];
-
-        layers.forEach((layer) => {
-            layer.queryFeatures({
-                geometry: activeCircleGraphic.geometry,
-                spatialRelationship: "intersects",
-                returnGeometry: false,
-                outFields: ["*"]
-            }).then((result) => {
-                result.features.forEach((feature) => {
-                    const layerName = Object.keys(layerIcons).find(key => layer === eval(key));
-                    const iconUrl = layerIcons[layerName];
-
-                    pointsWithinRadius.push({
-                        name: feature.attributes.name || "Unknown",
-                        description: feature.attributes.description || "No description available",
-                        icon: iconUrl
-                    });
-                });
-
-                callback(pointsWithinRadius);
-            });
-        });
-    }
-
-    // Function to generate HTML for the popup
     function generatePopupHTML(content, pointsWithinRadius) {
         const poiTags = pointsWithinRadius
             .map(
@@ -417,42 +390,11 @@ window.addMarkersAndDrawLine = function (data) {
         const popupHTML = generatePopupHTML(content, pointsWithinRadius);
         customPopup.innerHTML = popupHTML;
 
-        // Set initial position of the popup
         customPopup.style.left = `${screenPoint.x}px`;
         customPopup.style.top = `${screenPoint.y}px`;
         customPopup.style.display = "block";
-
-        // Check if the popup overflows the screen horizontally (right side)
-        const popupRect = customPopup.getBoundingClientRect();
-        const screenWidth = window.innerWidth;
-        const screenHeight = window.innerHeight;
-
-        // Adjust for horizontal overflow (right side)
-        if (popupRect.right > screenWidth) {
-            const offsetX = popupRect.right - screenWidth;
-            customPopup.style.left = `${screenPoint.x - offsetX - 10}px`; // Adjust 10px for margin
-        }
-
-        // Adjust for vertical overflow (bottom side)
-        if (popupRect.bottom > screenHeight) {
-            const offsetY = popupRect.bottom - screenHeight;
-            customPopup.style.top = `${screenPoint.y - offsetY - 10}px`; // Adjust 10px for margin
-        }
-
-        // Optionally: Adjust for overflow on the left side (if it's too far left)
-        if (popupRect.left < 0) {
-            const offsetX = popupRect.left;
-            customPopup.style.left = `${screenPoint.x - offsetX + 10}px`; // Adjust 10px for margin
-        }
-
-        // Optionally: Adjust for overflow on the top side (if it's too far up)
-        if (popupRect.top < 0) {
-            const offsetY = popupRect.top;
-            customPopup.style.top = `${screenPoint.y - offsetY + 10}px`; // Adjust 10px for margin
-        }
     }
 
-    // Helper to hide custom popup
     function hideCustomPopup() {
         customPopup.style.display = "none";
     }
@@ -462,7 +404,7 @@ window.addMarkersAndDrawLine = function (data) {
     function createCircle(mapPoint) {
         const circleGeometry = new Circle({
             center: mapPoint,
-            radius: 37040, // 20 nautical miles in meters
+            radius: 37040,
             geodesic: true
         });
 
@@ -487,9 +429,9 @@ window.addMarkersAndDrawLine = function (data) {
                 if (response.results.length) {
                     const graphic = response.results[0].graphic;
                     if (markerGraphics.includes(graphic)) {
-                        // Track the original position of the marker
-                        originalPosition = { ...graphic.geometry };
-                        view.draggedGraphic = graphic;
+                        // Save the original position of the dragged marker
+                        originalPosition = { ...graphic.geometry }; // Make a deep copy
+                        draggedMarker = graphic;
                         isDraggingMarker = true;
 
                         activeCircleGraphic = createCircle(mapPoint);
@@ -498,10 +440,10 @@ window.addMarkersAndDrawLine = function (data) {
                     }
                 }
             });
-        } else if (action === "update" && isDraggingMarker && view.draggedGraphic) {
-            view.draggedGraphic.geometry = mapPoint;
+        } else if (action === "update" && isDraggingMarker && draggedMarker) {
+            draggedMarker.geometry = mapPoint;
 
-            const index = markerGraphics.indexOf(view.draggedGraphic);
+            const index = markerGraphics.indexOf(draggedMarker);
             if (index !== -1) {
                 polylineCoordinates[index] = [mapPoint.longitude, mapPoint.latitude];
                 polylineGraphic.geometry = { type: "polyline", paths: [...polylineCoordinates] };
@@ -528,7 +470,7 @@ window.addMarkersAndDrawLine = function (data) {
             event.stopPropagation();
         } else if (action === "end") {
             isDraggingMarker = false;
-            view.draggedGraphic = null;
+            draggedMarker = null;
 
             if (activeCircleGraphic) {
                 draggableGraphicsLayer.remove(activeCircleGraphic);
@@ -539,10 +481,10 @@ window.addMarkersAndDrawLine = function (data) {
 
     // Event listener for Cancel button
     customPopup.addEventListener("click", (event) => {
-        if (event.target.classList.contains("cancel")) {
-            // Reset marker position to the original one
-            if (view.draggedGraphic && originalPosition) {
-                view.draggedGraphic.geometry = originalPosition;
+        if (event.target.classList.contains("cancel") && draggedMarker) {
+            // Reset marker position to the original position
+            if (originalPosition) {
+                draggedMarker.geometry = originalPosition;
             }
             hideCustomPopup();
         }
@@ -550,6 +492,7 @@ window.addMarkersAndDrawLine = function (data) {
 
     view.on("click", (event) => hideCustomPopup());
 };
+
 
 
 
