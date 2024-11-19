@@ -466,7 +466,7 @@ window.addMarkersAndDrawLine = function (data) {
         });
     }
 
-    // Track marker dragging using view's "drag" event
+    // Handle marker drag events and polyline updates
     let draggedMarker = null;
 
     view.on("drag", (event) => {
@@ -525,7 +525,33 @@ window.addMarkersAndDrawLine = function (data) {
         }
     });
 
-    view.on("click", (event) => hideCustomPopup());
+    // Handle click event on polyline to add new marker
+    view.on("click", (event) => {
+        const mapPoint = view.toMap({ x: event.x, y: event.y });
+
+        // Create a new marker on polyline click
+        const markerSymbol = {
+            type: "picture-marker",
+            url: "markerdefault.png",
+            width: "36px",
+            height: "36px"
+        };
+
+        const markerGraphic = new Graphic({
+            geometry: { type: "point", longitude: mapPoint.longitude, latitude: mapPoint.latitude },
+            symbol: markerSymbol,
+        });
+
+        draggableGraphicsLayer.add(markerGraphic);
+        markerGraphics.push(markerGraphic);
+
+        // Update polyline coordinates
+        polylineCoordinates.push([mapPoint.longitude, mapPoint.latitude]);
+        polylineGraphic.geometry = { type: "polyline", paths: polylineCoordinates };
+
+        event.stopPropagation();
+        hideCustomPopup();
+    });
 };
 
 
