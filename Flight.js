@@ -385,7 +385,7 @@ window.addMarkersAndDrawLine = function (data) {
     function generatePopupHTML(content, pointsWithinRadius) {
         const poiTags = pointsWithinRadius
             .map(
-                (point) => `
+                (point) => ` 
                     <span class="poi-tag">
                         <img src="${point.icon}" alt="${point.name}" style="width: 16px; height: 16px; margin-right: 5px;">
                         ${point.name}
@@ -414,44 +414,31 @@ window.addMarkersAndDrawLine = function (data) {
 
     // Helper to show custom popup
     function showCustomPopup(content, screenPoint, pointsWithinRadius) {
-    const popupHTML = generatePopupHTML(content, pointsWithinRadius);
-    customPopup.innerHTML = popupHTML;
+        const popupHTML = generatePopupHTML(content, pointsWithinRadius);
+        customPopup.innerHTML = popupHTML;
 
-    // Set initial position of the popup
-    customPopup.style.left = `${screenPoint.x}px`;
-    customPopup.style.top = `${screenPoint.y}px`;
-    customPopup.style.display = "block";
+        // Set initial position of the popup
+        customPopup.style.left = `${screenPoint.x}px`;
+        customPopup.style.top = `${screenPoint.y}px`;
+        customPopup.style.display = "block";
 
-    // Check if the popup overflows the screen horizontally (right side)
-    const popupRect = customPopup.getBoundingClientRect();
-    const screenWidth = window.innerWidth;
-    const screenHeight = window.innerHeight;
+        // Check if the popup overflows the screen horizontally (right side)
+        const popupRect = customPopup.getBoundingClientRect();
+        const screenWidth = window.innerWidth;
+        const screenHeight = window.innerHeight;
 
-    // Adjust for horizontal overflow (right side)
-    if (popupRect.right > screenWidth) {
-        const offsetX = popupRect.right - screenWidth;
-        customPopup.style.left = `${screenPoint.x - offsetX - 10}px`; // Adjust 10px for margin
+        // Adjust for horizontal overflow (right side)
+        if (popupRect.right > screenWidth) {
+            const offsetX = popupRect.right - screenWidth;
+            customPopup.style.left = `${screenPoint.x - offsetX - 10}px`; // Adjust 10px for margin
+        }
+
+        // Adjust for vertical overflow (bottom side)
+        if (popupRect.bottom > screenHeight) {
+            const offsetY = popupRect.bottom - screenHeight;
+            customPopup.style.top = `${screenPoint.y - offsetY - 10}px`; // Adjust 10px for margin
+        }
     }
-
-    // Adjust for vertical overflow (bottom side)
-    if (popupRect.bottom > screenHeight) {
-        const offsetY = popupRect.bottom - screenHeight;
-        customPopup.style.top = `${screenPoint.y - offsetY - 10}px`; // Adjust 10px for margin
-    }
-
-    // Optionally: Adjust for overflow on the left side (if it's too far left)
-    if (popupRect.left < 0) {
-        const offsetX = popupRect.left;
-        customPopup.style.left = `${screenPoint.x - offsetX + 10}px`; // Adjust 10px for margin
-    }
-
-    // Optionally: Adjust for overflow on the top side (if it's too far up)
-    if (popupRect.top < 0) {
-        const offsetY = popupRect.top;
-        customPopup.style.top = `${screenPoint.y - offsetY + 10}px`; // Adjust 10px for margin
-    }
-}
-
 
     // Helper to hide custom popup
     function hideCustomPopup() {
@@ -479,65 +466,58 @@ window.addMarkersAndDrawLine = function (data) {
         });
     }
 
-    view.on("drag", (event) => {
-        const { action } = event;
+    // Add click event on the polyline
+    polylineGraphic.on("click", (event) => {
         const mapPoint = view.toMap({ x: event.x, y: event.y });
+        
+        // Create a marker at the clicked location
+        const markerSymbol = {
+            type: "picture-marker",
+            url: "markerdefault.png",
+            width: "36px",
+            height: "36px"
+        };
 
-        if (action === "start") {
-            view.hitTest(event).then((response) => {
-                if (response.results.length) {
-                    const graphic = response.results[0].graphic;
-                    if (markerGraphics.includes(graphic)) {
-                        view.draggedGraphic = graphic;
-                        isDraggingMarker = true;
+        const markerGraphic = new Graphic({
+            geometry: { type: "point", longitude: mapPoint.longitude, latitude: mapPoint.latitude },
+            symbol: markerSymbol
+        });
 
-                        activeCircleGraphic = createCircle(mapPoint);
-                        draggableGraphicsLayer.add(activeCircleGraphic);
-                        event.stopPropagation();
-                    }
+        draggableGraphicsLayer.add(markerGraphic);
+        markerGraphics.push(markerGraphic);
+
+        // Make the marker draggable
+        let isDragging = false;
+        markerGraphic.on("drag-start", () => {
+            isDragging = true;
+        });
+
+        markerGraphic.on("drag", (dragEvent) => {
+            if (isDragging) {
+                const updatedPoint = view.toMap({ x: dragEvent.x, y: dragEvent.y });
+                markerGraphic.geometry = updatedPoint;
+
+                // Update the polyline coordinates
+                const index = polylineCoordinates.findIndex(
+                    (coord) => coord[0] === updatedPoint.longitude && coord[1] === updatedPoint.latitude
+                );
+                if (index !== -1) {
+                    polylineCoordinates[index] = [updatedPoint.longitude, updatedPoint.latitude];
+                    polylineGraphic.geometry = { type: "polyline", paths: [...polylineCoordinates] };
                 }
-            });
-        } else if (action === "update" && isDraggingMarker && view.draggedGraphic) {
-            view.draggedGraphic.geometry = mapPoint;
-
-            const index = markerGraphics.indexOf(view.draggedGraphic);
-            if (index !== -1) {
-                polylineCoordinates[index] = [mapPoint.longitude, mapPoint.latitude];
-                polylineGraphic.geometry = { type: "polyline", paths: [...polylineCoordinates] };
             }
+        });
 
-            if (activeCircleGraphic) {
-                activeCircleGraphic.geometry = createCircle(mapPoint).geometry;
+        markerGraphic.on("drag-end", () => {
+            isDragging = false;
+        });
 
-                getFeaturesWithinRadius(mapPoint, (pointsWithinRadius) => {
-                    const content = pointsWithinRadius.map(point => `
-                        <div class="item">
-                            <div class="icon">
-                                <img src="${point.icon}" alt="${point.name}" style="width: 16px; height: 16px; margin-right: 5px;">
-                                ${point.name}
-                            </div>
-                            <span class="identifier">${point.description}</span>
-                        </div>`).join("");
-
-                    const screenPoint = view.toScreen(mapPoint);
-                    showCustomPopup(content, screenPoint, pointsWithinRadius);
-                });
-            }
-            event.stopPropagation();
-        } else if (action === "end") {
-            isDraggingMarker = false;
-            view.draggedGraphic = null;
-
-            if (activeCircleGraphic) {
-                draggableGraphicsLayer.remove(activeCircleGraphic);
-                activeCircleGraphic = null;
-            }
-        }
+        event.stopPropagation();
     });
 
+    // Hide popup when clicking on the map
     view.on("click", (event) => hideCustomPopup());
 };
-
 
 
 
