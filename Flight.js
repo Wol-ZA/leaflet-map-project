@@ -430,25 +430,25 @@ window.addMarkersAndDrawLine = function (data) {
         // Adjust for horizontal overflow (right side)
         if (popupRect.right > screenWidth) {
             const offsetX = popupRect.right - screenWidth;
-            customPopup.style.left = ${screenPoint.x - offsetX - 10}px; // Adjust 10px for margin
+            customPopup.style.left = `${screenPoint.x - offsetX - 10}px`; // Adjust 10px for margin
         }
 
         // Adjust for vertical overflow (bottom side)
         if (popupRect.bottom > screenHeight) {
             const offsetY = popupRect.bottom - screenHeight;
-            customPopup.style.top = ${screenPoint.y - offsetY - 10}px; // Adjust 10px for margin
+            customPopup.style.top = `${screenPoint.y - offsetY - 10}px`; // Adjust 10px for margin
         }
 
         // Optionally: Adjust for overflow on the left side (if it's too far left)
         if (popupRect.left < 0) {
             const offsetX = popupRect.left;
-            customPopup.style.left = ${screenPoint.x - offsetX + 10}px; // Adjust 10px for margin
+            customPopup.style.left = `${screenPoint.x - offsetX + 10}px`; // Adjust 10px for margin
         }
 
         // Optionally: Adjust for overflow on the top side (if it's too far up)
         if (popupRect.top < 0) {
             const offsetY = popupRect.top;
-            customPopup.style.top = ${screenPoint.y - offsetY + 10}px; // Adjust 10px for margin
+            customPopup.style.top = `${screenPoint.y - offsetY + 10}px`; // Adjust 10px for margin
         }
     }
 
