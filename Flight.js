@@ -613,6 +613,55 @@ function getFeaturesWithinRadius(mapPoint, callback) {
     }
 });
 
+customPopup.addEventListener("click", (event) => {
+    if (event.target.tagName === "BUTTON" && event.target.textContent.trim() === "Create") {
+        console.log("Create button clicked");
+
+        const waypointNameInput = customPopup.querySelector("input[placeholder='Enter waypoint name']");
+        const identifierInput = customPopup.querySelector("input[placeholder='Enter identifier']");
+
+        if (waypointNameInput && identifierInput) {
+            const waypointName = waypointNameInput.value.trim();
+            const identifier = identifierInput.value.trim();
+
+            if (!waypointName || !identifier) {
+                alert("Please fill in both the Waypoint Name and Identifier.");
+                return;
+            }
+
+            if (view.draggedGraphic) {
+                // Update the dragged graphic's attributes with new name and identifier
+                view.draggedGraphic.attributes.name = waypointName;
+                view.draggedGraphic.attributes.description = identifier;
+
+                // Persist its current position as the "original position"
+                originalPositionMark = view.draggedGraphic.geometry.clone();
+                console.log("New position saved:", originalPositionMark);
+
+                // Optionally update marker symbol to reflect the change
+                draggableGraphicsLayer.remove(view.draggedGraphic);
+                draggableGraphicsLayer.add(view.draggedGraphic);
+
+                // Update the polyline with the new position
+                const index = markerGraphics.indexOf(view.draggedGraphic);
+                if (index !== -1) {
+                    polylineCoordinates[index] = [
+                        originalPositionMark.longitude,
+                        originalPositionMark.latitude,
+                    ];
+                    polylineGraphic.geometry = { type: "polyline", paths: [...polylineCoordinates] };
+                    console.log("Polyline updated");
+                }
+
+                // Hide the popup after saving
+                hideCustomPopup();
+            }
+        } else {
+            console.warn("Input fields not found in popup.");
+        }
+    }
+});    
+
 view.on("click", (event) => {
     if (customPopup.style.display === "block" && view.draggedGraphic && originalPositionMark) {
         console.log("Map clicked: Resetting marker to original position");
