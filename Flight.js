@@ -596,7 +596,7 @@ window.addMarkersAndDrawLine = function (data) {
         }
         } 
     hideCustomPopup();
-   }); 
+   }; 
 
 
 
