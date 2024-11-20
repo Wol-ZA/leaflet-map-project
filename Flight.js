@@ -598,7 +598,7 @@ view.on("click", (event) => {
 
     // Hide popup
     hideCustomPopup();
-};
+});
 
 
 
@@ -609,4 +609,4 @@ window.removeMarkersAndLines = function() {
     
     // Initial layer visibility toggle
     toggleLayerVisibility();
-});
+
