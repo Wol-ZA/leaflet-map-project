@@ -595,9 +595,8 @@ window.addMarkersAndDrawLine = function (data) {
             console.log("Polyline reset");
         }
         } 
-    }
     hideCustomPopup();
-   }); 
+   }; 
 };
 
 
