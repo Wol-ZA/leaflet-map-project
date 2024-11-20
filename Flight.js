@@ -598,7 +598,7 @@ view.on("click", (event) => {
 
     // Hide popup
     hideCustomPopup();
-});
+};
 
 
 
