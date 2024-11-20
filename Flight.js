@@ -420,7 +420,7 @@ function getFeaturesWithinRadius(mapPoint, callback) {
             ${poiTags}
         </div>`;
 }
-    let originalPosition = null;
+    let originalPositionMark = null;
     function showCustomPopup(content, screenPoint, pointsWithinRadius) {
         const popupHTML = generatePopupHTML(content, pointsWithinRadius);
         customPopup.innerHTML = popupHTML;
@@ -449,7 +449,7 @@ function getFeaturesWithinRadius(mapPoint, callback) {
                 view.draggedGraphic.geometry = newPosition;
 
                 // Set the new position as the "original position" moving forward
-                originalPosition = newPosition;
+                originalPositionMark = newPosition;
 
                 // Update the polyline coordinates to reflect the marker's new position
                 const index = markerGraphics.indexOf(view.draggedGraphic);
