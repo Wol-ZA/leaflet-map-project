@@ -370,10 +370,12 @@ window.addMarkersAndDrawLine = function (data) {
                     const layerName = Object.keys(layerIcons).find(key => layer === eval(key));
                     const iconUrl = layerIcons[layerName];
 
-                    pointsWithinRadius.push({
-                        name: feature.attributes.name || "Unknown",
-                        description: feature.attributes.description || "No description available",
-                        icon: iconUrl
+                   pointsWithinRadius.push({
+                    name: feature.attributes.name || "Unknown",
+                    description: feature.attributes.description || "No description available",
+                    icon: iconUrl,
+                    latitude: feature.geometry.latitude,
+                    longitude: feature.geometry.longitude
                     });
                 });
 
@@ -384,34 +386,34 @@ window.addMarkersAndDrawLine = function (data) {
 
     // Function to generate HTML for the popup
     function generatePopupHTML(content, pointsWithinRadius) {
-        const poiTags = pointsWithinRadius
-            .map(
-                (point) => 
-                    `
-                    <span class="poi-tag">
-                        <img src="${point.icon}" alt="${point.name}" style="width: 16px; height: 16px; margin-right: 5px;">
-                        ${point.name}
-                    </span>`
-            )
-            .join(""); 
+    const poiTags = pointsWithinRadius
+        .map(
+            (point) => 
+                `
+                <span class="poi-tag" data-latitude="${point.latitude}" data-longitude="${point.longitude}">
+                    <img src="${point.icon}" alt="${point.name}" style="width: 16px; height: 16px; margin-right: 5px;">
+                    ${point.name}
+                </span>`
+        )
+        .join(""); 
 
-        return `
-    <h3>Current Location</h3>
-    <div class="content">${content}</div>
-    <div class="input-group">
-        <label>Waypoint Name:</label>
-        <input type="text" placeholder="Enter waypoint name">
-        <label>Identifier:</label>
-        <input type="text" placeholder="Enter identifier">
-        <div>
-            <button>Create</button>
-            <button class="cancel">Cancel</button>
+    return `
+        <h3>Current Location</h3>
+        <div class="content">${content}</div>
+        <div class="input-group">
+            <label>Waypoint Name:</label>
+            <input type="text" placeholder="Enter waypoint name">
+            <label>Identifier:</label>
+            <input type="text" placeholder="Enter identifier">
+            <div>
+                <button>Create</button>
+                <button class="cancel">Cancel</button>
+            </div>
         </div>
-    </div>
-    <div class="poi-tags">
-        ${poiTags}
-    </div>`;
-    }
+        <div class="poi-tags">
+            ${poiTags}
+        </div>`;
+}
 
     function showCustomPopup(content, screenPoint, pointsWithinRadius) {
         const popupHTML = generatePopupHTML(content, pointsWithinRadius);
@@ -422,11 +424,35 @@ window.addMarkersAndDrawLine = function (data) {
         customPopup.style.top = `${screenPoint.y}px`;
         customPopup.style.display = "block";
 
+        
         // Check if the popup overflows the screen horizontally (right side)
         const popupRect = customPopup.getBoundingClientRect();
         const screenWidth = window.innerWidth;
         const screenHeight = window.innerHeight;
 
+        customPopup.querySelectorAll(".poi-tag").forEach((tag) => {
+        tag.addEventListener("click", (event) => {
+            const latitude = parseFloat(tag.dataset.latitude);
+            const longitude = parseFloat(tag.dataset.longitude);
+
+            if (view.draggedGraphic) {
+                // Update the marker's position
+                const newPosition = { type: "point", latitude, longitude };
+                view.draggedGraphic.geometry = newPosition;
+
+                // Update the polyline
+                const index = markerGraphics.indexOf(view.draggedGraphic);
+                if (index !== -1) {
+                    polylineCoordinates[index] = [longitude, latitude];
+                    polylineGraphic.geometry = { type: "polyline", paths: [...polylineCoordinates] };
+                }
+
+                // Hide popup
+                hideCustomPopup();
+            }
+            });
+            });
+        
         // Adjust for horizontal overflow (right side)
         if (popupRect.right > screenWidth) {
             const offsetX = popupRect.right - screenWidth;
