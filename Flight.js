@@ -587,7 +587,7 @@ function getFeaturesWithinRadius(mapPoint, callback) {
     if (event.target.classList.contains("cancel")) {
         console.log("Cancel button clicked");
 
-        if (view.draggedGraphic && originalPosition) {
+        if (view.draggedGraphic && originalPositionMark) {
             console.log("Resetting marker to:", originalPositionMark);
 
             // Reset marker position
