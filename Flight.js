@@ -387,30 +387,30 @@ window.addMarkersAndDrawLine = function (data) {
         const poiTags = pointsWithinRadius
             .map(
                 (point) => 
-                    `<span class="poi-tag">
+                    `
+                    <span class="poi-tag">
                         <img src="${point.icon}" alt="${point.name}" style="width: 16px; height: 16px; margin-right: 5px;">
                         ${point.name}
                     </span>`
             )
             .join(""); 
 
-        return 
-            `<h3>Current Location</h3>
-            <div class="content">${content}</div>
-            <div class="input-group">
-                <label>Waypoint Name:</label>
-                <input type="text" placeholder="Enter waypoint name">
-                <label>Identifier:</label>
-                <input type="text" placeholder="Enter identifier">
-                <div>
-                    <button>Create</button>
-                    <button class="cancel">Cancel</button>
-                </div>
-            </div>
-            <div class="poi-tags">
-                ${poiTags}
-            </div>`
-        ;
+        return `
+    <h3>Current Location</h3>
+    <div class="content">${content}</div>
+    <div class="input-group">
+        <label>Waypoint Name:</label>
+        <input type="text" placeholder="Enter waypoint name">
+        <label>Identifier:</label>
+        <input type="text" placeholder="Enter identifier">
+        <div>
+            <button>Create</button>
+            <button class="cancel">Cancel</button>
+        </div>
+    </div>
+    <div class="poi-tags">
+        ${poiTags}
+    </div>`;
     }
 
     function showCustomPopup(content, screenPoint, pointsWithinRadius) {
@@ -418,8 +418,8 @@ window.addMarkersAndDrawLine = function (data) {
         customPopup.innerHTML = popupHTML;
 
         // Set initial position of the popup
-        customPopup.style.left = ${screenPoint.x}px;
-        customPopup.style.top = ${screenPoint.y}px;
+        customPopup.style.left = `${screenPoint.x}px`;
+        customPopup.style.top = `${screenPoint.y}px`;
         customPopup.style.display = "block";
 
         // Check if the popup overflows the screen horizontally (right side)
