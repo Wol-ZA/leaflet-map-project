@@ -686,18 +686,24 @@ view.on("click", (event) => {
     }
 });
 
-    view.on("click", (event) => {
+    const hitDetectionPolyline = new Graphic({
+    geometry: polylineGraphic.geometry,
+    symbol: {
+        type: "simple-line",
+        color: [0, 0, 0, 0], // Fully transparent line
+        width: 20 // Increase the width for hit detection
+    }
+});
+draggableGraphicsLayer.add(hitDetectionPolyline);
+    
+view.on("click", (event) => {
     view.hitTest(event).then((response) => {
         const graphic = response.results[0]?.graphic;
 
-        if (graphic === polylineGraphic) {
-            // Convert the clicked screen point to a map point
+        if (graphic === hitDetectionPolyline) {
             const clickedPoint = view.toMap(event);
-
-            // Find the closest segment of the polyline
             const segmentIndex = findClosestSegment(clickedPoint, polylineCoordinates);
             if (segmentIndex !== -1) {
-                // Add a new marker at the clicked location
                 addMarkerBetween(clickedPoint, segmentIndex);
             }
         }
