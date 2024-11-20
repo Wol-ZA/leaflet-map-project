@@ -437,32 +437,32 @@ function getFeaturesWithinRadius(mapPoint, callback) {
         const screenHeight = window.innerHeight;
 
        customPopup.querySelectorAll(".poi-tag").forEach((tag) => {
-        tag.addEventListener("click", (event) => {
-            const latitude = parseFloat(tag.dataset.latitude);
-            const longitude = parseFloat(tag.dataset.longitude);
+    tag.addEventListener("click", (event) => {
+        const latitude = parseFloat(tag.dataset.latitude);
+        const longitude = parseFloat(tag.dataset.longitude);
 
-            if (view.draggedGraphic) {
-                // Set the clicked POI tag's location as the new position
-                const newPosition = { type: "point", latitude, longitude };
+        if (view.draggedGraphic) {
+            // Set the clicked POI tag's location as the new position
+            const newPosition = { type: "point", latitude, longitude };
 
-                // Update the marker's geometry (location)
-                view.draggedGraphic.geometry = newPosition;
+            // Update the marker's geometry (location)
+            view.draggedGraphic.geometry = newPosition;
 
-                // Set the new position as the "original position" moving forward
-                originalPositionMark = newPosition;
+            // Set the new position as the "original position" moving forward
+            originalPositionMark = newPosition;
 
-                // Update the polyline coordinates to reflect the marker's new position
-                const index = markerGraphics.indexOf(view.draggedGraphic);
-                if (index !== -1) {
-                    polylineCoordinates[index] = [longitude, latitude];
-                    polylineGraphic.geometry = { type: "polyline", paths: [...polylineCoordinates] };
-                }
-
-                // Hide the popup after updating
-                hideCustomPopup();
+            // Update the polyline coordinates to reflect the marker's new position
+            const index = markerGraphics.indexOf(view.draggedGraphic);
+            if (index !== -1) {
+                polylineCoordinates[index] = [longitude, latitude];
+                polylineGraphic.geometry = { type: "polyline", paths: [...polylineCoordinates] };
             }
-        });
+
+            // Hide the popup after updating
+            hideCustomPopup();
+        }
     });
+});
         
         // Adjust for horizontal overflow (right side)
         if (popupRect.right > screenWidth) {
@@ -614,7 +614,7 @@ function getFeaturesWithinRadius(mapPoint, callback) {
 });
 
 view.on("click", (event) => {
-    if (view.draggedGraphic && originalPositionMark) {
+    if (customPopup.style.display === "block" && view.draggedGraphic && originalPositionMark) {
         console.log("Map clicked: Resetting marker to original position");
 
         // Reset marker position
@@ -631,10 +631,10 @@ view.on("click", (event) => {
             polylineGraphic.geometry = { type: "polyline", paths: [...polylineCoordinates] };
             console.log("Polyline reset");
         }
-    }
 
-    // Hide popup
-    hideCustomPopup();
+        // Hide the popup
+        hideCustomPopup();
+    }
 });
 };
 
