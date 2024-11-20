@@ -420,7 +420,7 @@ function getFeaturesWithinRadius(mapPoint, callback) {
             ${poiTags}
         </div>`;
 }
-
+    let originalPosition = null;
     function showCustomPopup(content, screenPoint, pointsWithinRadius) {
         const popupHTML = generatePopupHTML(content, pointsWithinRadius);
         customPopup.innerHTML = popupHTML;
@@ -436,28 +436,33 @@ function getFeaturesWithinRadius(mapPoint, callback) {
         const screenWidth = window.innerWidth;
         const screenHeight = window.innerHeight;
 
-        customPopup.querySelectorAll(".poi-tag").forEach((tag) => {
+       customPopup.querySelectorAll(".poi-tag").forEach((tag) => {
         tag.addEventListener("click", (event) => {
             const latitude = parseFloat(tag.dataset.latitude);
             const longitude = parseFloat(tag.dataset.longitude);
 
             if (view.draggedGraphic) {
-                // Update the marker's position
+                // Set the clicked POI tag's location as the new position
                 const newPosition = { type: "point", latitude, longitude };
+
+                // Update the marker's geometry (location)
                 view.draggedGraphic.geometry = newPosition;
 
-                // Update the polyline
+                // Set the new position as the "original position" moving forward
+                originalPosition = newPosition;
+
+                // Update the polyline coordinates to reflect the marker's new position
                 const index = markerGraphics.indexOf(view.draggedGraphic);
                 if (index !== -1) {
                     polylineCoordinates[index] = [longitude, latitude];
                     polylineGraphic.geometry = { type: "polyline", paths: [...polylineCoordinates] };
                 }
 
-                // Hide popup
+                // Hide the popup after updating
                 hideCustomPopup();
             }
-            });
-            });
+        });
+    });
         
         // Adjust for horizontal overflow (right side)
         if (popupRect.right > screenWidth) {
