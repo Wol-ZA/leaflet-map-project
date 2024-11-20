@@ -685,6 +685,88 @@ view.on("click", (event) => {
         hideCustomPopup();
     }
 });
+
+    view.on("click", (event) => {
+    view.hitTest(event).then((response) => {
+        const graphic = response.results[0]?.graphic;
+
+        if (graphic === polylineGraphic) {
+            // Convert the clicked screen point to a map point
+            const clickedPoint = view.toMap(event);
+
+            // Find the closest segment of the polyline
+            const segmentIndex = findClosestSegment(clickedPoint, polylineCoordinates);
+            if (segmentIndex !== -1) {
+                // Add a new marker at the clicked location
+                addMarkerBetween(clickedPoint, segmentIndex);
+            }
+        }
+    });
+});
+
+// Function to find the closest segment of the polyline
+function findClosestSegment(point, coordinates) {
+    let closestIndex = -1;
+    let minDistance = Infinity;
+
+    for (let i = 0; i < coordinates.length - 1; i++) {
+        const [x1, y1] = coordinates[i];
+        const [x2, y2] = coordinates[i + 1];
+        const distance = distanceToSegment(point, { x1, y1, x2, y2 });
+        if (distance < minDistance) {
+            minDistance = distance;
+            closestIndex = i;
+        }
+    }
+
+    return closestIndex;
+}
+
+// Function to compute the distance to a line segment
+function distanceToSegment(point, segment) {
+    const { x1, y1, x2, y2 } = segment;
+
+    // Vector projection math to find the closest point on the segment
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const t = ((point.longitude - x1) * dx + (point.latitude - y1) * dy) / (dx * dx + dy * dy);
+
+    const clampedT = Math.max(0, Math.min(1, t));
+    const nearestX = x1 + clampedT * dx;
+    const nearestY = y1 + clampedT * dy;
+
+    const distance = Math.sqrt(
+        Math.pow(nearestX - point.longitude, 2) + Math.pow(nearestY - point.latitude, 2)
+    );
+    return distance;
+}
+
+// Function to add a marker between two existing ones
+function addMarkerBetween(mapPoint, segmentIndex) {
+    const newMarkerSymbol = {
+        type: "picture-marker",
+        url: "markerdefault.png",
+        width: "36px",
+        height: "36px"
+    };
+
+    const newMarkerGraphic = new Graphic({
+        geometry: { type: "point", longitude: mapPoint.longitude, latitude: mapPoint.latitude },
+        symbol: newMarkerSymbol,
+        attributes: { name: "New Marker", description: "Inserted Marker" }
+    });
+
+    // Add the new marker graphic to the layer
+    draggableGraphicsLayer.add(newMarkerGraphic);
+
+    // Insert the new marker in the correct position
+    markerGraphics.splice(segmentIndex + 1, 0, newMarkerGraphic);
+    polylineCoordinates.splice(segmentIndex + 1, 0, [mapPoint.longitude, mapPoint.latitude]);
+
+    // Update the polyline geometry
+    polylineGraphic.geometry = { type: "polyline", paths: [...polylineCoordinates] };
+}
+    
 };
 
 
