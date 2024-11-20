@@ -525,8 +525,8 @@ function getFeaturesWithinRadius(mapPoint, callback) {
             const graphic = response.results[0].graphic;
             if (markerGraphics.includes(graphic)) {
                 // Clone the geometry to store the original position
-                originalPosition = graphic.geometry.clone();
-                console.log("Original position set:", originalPosition);
+                originalPositionMark = graphic.geometry.clone();
+                console.log("Original position set:", originalPositionMark);
 
                 // Assign dragged graphic
                 view.draggedGraphic = graphic;
@@ -588,10 +588,10 @@ function getFeaturesWithinRadius(mapPoint, callback) {
         console.log("Cancel button clicked");
 
         if (view.draggedGraphic && originalPosition) {
-            console.log("Resetting marker to:", originalPosition);
+            console.log("Resetting marker to:", originalPositionMark);
 
             // Reset marker position
-            view.draggedGraphic.geometry = originalPosition.clone();
+            view.draggedGraphic.geometry = originalPositionMark.clone();
 
             // Force a refresh of the graphic
             draggableGraphicsLayer.remove(view.draggedGraphic);
@@ -600,7 +600,7 @@ function getFeaturesWithinRadius(mapPoint, callback) {
             // Reset polyline coordinates
             const index = markerGraphics.indexOf(view.draggedGraphic);
             if (index !== -1) {
-                polylineCoordinates[index] = [originalPosition.longitude, originalPosition.latitude];
+                polylineCoordinates[index] = [originalPositionMark.longitude, originalPositionMark.latitude];
                 polylineGraphic.geometry = { type: "polyline", paths: [...polylineCoordinates] };
                 console.log("Polyline reset");
             }
@@ -614,11 +614,11 @@ function getFeaturesWithinRadius(mapPoint, callback) {
 });
 
 view.on("click", (event) => {
-    if (view.draggedGraphic && originalPosition) {
+    if (view.draggedGraphic && originalPositionMark) {
         console.log("Map clicked: Resetting marker to original position");
 
         // Reset marker position
-        view.draggedGraphic.geometry = originalPosition.clone();
+        view.draggedGraphic.geometry = originalPositionMark.clone();
 
         // Force a refresh of the graphic
         draggableGraphicsLayer.remove(view.draggedGraphic);
@@ -627,7 +627,7 @@ view.on("click", (event) => {
         // Reset polyline coordinates
         const index = markerGraphics.indexOf(view.draggedGraphic);
         if (index !== -1) {
-            polylineCoordinates[index] = [originalPosition.longitude, originalPosition.latitude];
+            polylineCoordinates[index] = [originalPositionMark.longitude, originalPositionMark.latitude];
             polylineGraphic.geometry = { type: "polyline", paths: [...polylineCoordinates] };
             console.log("Polyline reset");
         }
