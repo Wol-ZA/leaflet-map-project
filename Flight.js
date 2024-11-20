@@ -395,7 +395,7 @@ window.addMarkersAndDrawLine = function (data) {
             .join(""); 
 
         return 
-            <h3>Current Location</h3>
+            `<h3>Current Location</h3>
             <div class="content">${content}</div>
             <div class="input-group">
                 <label>Waypoint Name:</label>
@@ -409,7 +409,7 @@ window.addMarkersAndDrawLine = function (data) {
             </div>
             <div class="poi-tags">
                 ${poiTags}
-            </div>
+            </div>`
         ;
     }
 
