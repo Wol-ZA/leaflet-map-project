@@ -576,8 +576,8 @@ window.addMarkersAndDrawLine = function (data) {
     }
 });
 
-    view.on("click", (event) => {
-       if (view.draggedGraphic && originalPosition) {
+view.on("click", (event) => {
+    if (view.draggedGraphic && originalPosition) {
         console.log("Map clicked: Resetting marker to original position");
 
         // Reset marker position
@@ -594,9 +594,10 @@ window.addMarkersAndDrawLine = function (data) {
             polylineGraphic.geometry = { type: "polyline", paths: [...polylineCoordinates] };
             console.log("Polyline reset");
         }
-        } 
+    }
     hideCustomPopup();
-   }; 
+});
+
 
 
 
