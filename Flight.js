@@ -356,33 +356,39 @@ window.addMarkersAndDrawLine = function (data) {
     }
 
     // Function to query features and build popup content
-    function getFeaturesWithinRadius(mapPoint, callback) {
-        const pointsWithinRadius = [];
+function getFeaturesWithinRadius(mapPoint, callback) {
+    const pointsWithinRadius = [];
 
-        layers.forEach((layer) => {
-            layer.queryFeatures({
-                geometry: activeCircleGraphic.geometry,
-                spatialRelationship: "intersects",
-                returnGeometry: false,
-                outFields: ["*"]
-            }).then((result) => {
-                result.features.forEach((feature) => {
+    layers.forEach((layer) => {
+        layer.queryFeatures({
+            geometry: activeCircleGraphic.geometry,
+            spatialRelationship: "intersects",
+            returnGeometry: true, // Ensure geometry is returned
+            outFields: ["*"]
+        }).then((result) => {
+            result.features.forEach((feature) => {
+                if (feature.geometry) { // Ensure geometry exists
                     const layerName = Object.keys(layerIcons).find(key => layer === eval(key));
                     const iconUrl = layerIcons[layerName];
 
-                   pointsWithinRadius.push({
-                    name: feature.attributes.name || "Unknown",
-                    description: feature.attributes.description || "No description available",
-                    icon: iconUrl,
-                    latitude: feature.geometry.latitude,
-                    longitude: feature.geometry.longitude
+                    pointsWithinRadius.push({
+                        name: feature.attributes.name || "Unknown",
+                        description: feature.attributes.description || "No description available",
+                        icon: iconUrl,
+                        latitude: feature.geometry.latitude,
+                        longitude: feature.geometry.longitude
                     });
-                });
-
-                callback(pointsWithinRadius);
+                } else {
+                    console.warn("Feature geometry is null. Skipping:", feature);
+                }
             });
+
+            callback(pointsWithinRadius);
+        }).catch((error) => {
+            console.error("Error querying features:", error);
         });
-    }
+    });
+}
 
     // Function to generate HTML for the popup
     function generatePopupHTML(content, pointsWithinRadius) {
