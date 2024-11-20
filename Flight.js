@@ -576,27 +576,8 @@ window.addMarkersAndDrawLine = function (data) {
     }
 });
 
-view.on("click", (event) => {
-    if (view.draggedGraphic && originalPosition) {
-        console.log("Map clicked: Resetting marker to original position");
-
-        // Reset marker position
-        view.draggedGraphic.geometry = originalPosition.clone();
-
-        // Force a refresh of the graphic
-        draggableGraphicsLayer.remove(view.draggedGraphic);
-        draggableGraphicsLayer.add(view.draggedGraphic);
-
-        // Reset polyline coordinates
-        const index = markerGraphics.indexOf(view.draggedGraphic);
-        if (index !== -1) {
-            polylineCoordinates[index] = [originalPosition.longitude, originalPosition.latitude];
-            polylineGraphic.geometry = { type: "polyline", paths: [...polylineCoordinates] };
-            console.log("Polyline reset");
-        }
-    }
-    hideCustomPopup();
-});
+view.on("click", (event) => hideCustomPopup());
+};
 
 
 
