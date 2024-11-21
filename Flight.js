@@ -319,9 +319,7 @@ window.addMarkersAndDrawLine = function (data) {
             type: "picture-marker",
             url: markerUrl,
             width: "36px",
-            height: "36px",
-             yoffset: "18px", // Adjust for anchor at bottom
-            anchor: "bottom-center"
+            height: "36px"
         };
 
         const markerGraphic = new Graphic({
@@ -397,16 +395,16 @@ function getFeaturesWithinRadius(mapPoint, callback) {
     const poiTags = pointsWithinRadius
         .map(
             (point) => 
-                `
-                <span class="poi-tag" data-latitude="${point.latitude}" data-longitude="${point.longitude}">
+                
+                `<span class="poi-tag" data-latitude="${point.latitude}" data-longitude="${point.longitude}">
                     <img src="${point.icon}" alt="${point.name}" style="width: 16px; height: 16px; margin-right: 5px;">
                     ${point.name}
                 </span>`
         )
         .join(""); 
 
-    return `
-        <h3>Current Location</h3>
+    return 
+        `<h3>Current Location</h3>
         <div class="content">${content}</div>
         <div class="input-group">
             <label>Waypoint Name:</label>
@@ -428,8 +426,8 @@ function getFeaturesWithinRadius(mapPoint, callback) {
         customPopup.innerHTML = popupHTML;
 
         // Set initial position of the popup
-        customPopup.style.left = `${screenPoint.x}px`;
-        customPopup.style.top = `${screenPoint.y}px`;
+        customPopup.style.left = ${screenPoint.x}px;
+        customPopup.style.top = ${screenPoint.y}px;
         customPopup.style.display = "block";
 
         
@@ -438,7 +436,7 @@ function getFeaturesWithinRadius(mapPoint, callback) {
         const screenWidth = window.innerWidth;
         const screenHeight = window.innerHeight;
 
-customPopup.querySelectorAll(".poi-tag").forEach((tag) => {
+      customPopup.querySelectorAll(".poi-tag").forEach((tag) => {
     tag.addEventListener("click", (event) => {
         const latitude = parseFloat(tag.dataset.latitude);
         const longitude = parseFloat(tag.dataset.longitude);
@@ -450,14 +448,15 @@ customPopup.querySelectorAll(".poi-tag").forEach((tag) => {
             // Update the marker's geometry (location)
             view.draggedGraphic.geometry = newPosition;
 
+            // Set the new position as the "original position" moving forward
+            originalPositionMark = newPosition;
+
             // Update the polyline coordinates to reflect the marker's new position
             const index = markerGraphics.indexOf(view.draggedGraphic);
             if (index !== -1) {
                 polylineCoordinates[index] = [longitude, latitude];
                 polylineGraphic.geometry = { type: "polyline", paths: [...polylineCoordinates] };
             }
-
-            // Clear dragged graphic to allow polyline interactions
 
             // Hide the popup after updating
             hideCustomPopup();
@@ -516,7 +515,7 @@ customPopup.querySelectorAll(".poi-tag").forEach((tag) => {
         });
     }
 
-     view.on("drag", (event) => {
+    view.on("drag", (event) => {
         const { action } = event;
         const mapPoint = view.toMap({ x: event.x, y: event.y });
 
@@ -526,8 +525,8 @@ customPopup.querySelectorAll(".poi-tag").forEach((tag) => {
             const graphic = response.results[0].graphic;
             if (markerGraphics.includes(graphic)) {
                 // Clone the geometry to store the original position
-                originalPosition = graphic.geometry.clone();
-                console.log("Original position set:", originalPosition);
+                originalPositionMark = graphic.geometry.clone();
+                console.log("Original position set:", originalPositionMark);
 
                 // Assign dragged graphic
                 view.draggedGraphic = graphic;
@@ -579,7 +578,6 @@ customPopup.querySelectorAll(".poi-tag").forEach((tag) => {
 
     // Do not reset view.draggedGraphic immediately
     // Keep it available for the Cancel button logic
-     view.draggedGraphic = graphic;
     console.log("Drag ended. Dragged graphic:", view.draggedGraphic);
 }
     });
@@ -687,17 +685,6 @@ view.on("click", (event) => {
         hideCustomPopup();
     }
 });
-
-    const hitDetectionPolyline = new Graphic({
-    geometry: polylineGraphic.geometry,
-    symbol: {
-        type: "simple-line",
-        color: [0, 0, 0, 0], // Fully transparent line
-        width: 20 // Increase the width for hit detection
-    }
-});
-draggableGraphicsLayer.add(hitDetectionPolyline);
-    
 view.on("click", (event) => {
     view.hitTest(event).then((response) => {
         const graphic = response.results[0]?.graphic;
@@ -716,14 +703,12 @@ view.on("click", (event) => {
 function findClosestSegment(point, coordinates) {
     let closestIndex = -1;
     let minDistance = Infinity;
-    const threshold = 0.002; // Approximate degrees for ~20px, adjust as needed
 
     for (let i = 0; i < coordinates.length - 1; i++) {
         const [x1, y1] = coordinates[i];
         const [x2, y2] = coordinates[i + 1];
         const distance = distanceToSegment(point, { x1, y1, x2, y2 });
-
-        if (distance < minDistance && distance <= threshold) {
+        if (distance < minDistance) {
             minDistance = distance;
             closestIndex = i;
         }
@@ -750,16 +735,24 @@ function distanceToSegment(point, segment) {
     );
     return distance;
 }
+    const hitDetectionPolyline = new Graphic({
+    geometry: polylineGraphic.geometry,
+    symbol: {
+        type: "simple-line",
+        color: [0, 0, 0, 0], // Fully transparent line
+        width: 20 // Increase the width for hit detection
+    }
+});
+draggableGraphicsLayer.add(hitDetectionPolyline);
+    
 
 // Function to add a marker between two existing ones
 function addMarkerBetween(mapPoint, segmentIndex) {
     const newMarkerSymbol = {
-       type: "picture-marker",
+        type: "picture-marker",
         url: "markerdefault.png",
         width: "36px",
-        height: "36px",
-        yoffset: "18px", // Half the height of the marker (moves the anchor point to the bottom)
-        anchor: "bottom-center"
+        height: "36px"
     };
 
     const newMarkerGraphic = new Graphic({
@@ -777,11 +770,8 @@ function addMarkerBetween(mapPoint, segmentIndex) {
 
     // Update the polyline geometry
     polylineGraphic.geometry = { type: "polyline", paths: [...polylineCoordinates] };
-}
-    
+}   
 };
-
-
 
 
 
