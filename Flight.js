@@ -318,9 +318,9 @@ window.addMarkersAndDrawLine = function (data) {
         const markerSymbol = {
             type: "picture-marker",
             url: markerUrl,
-            width: "36px",
-            height: "36px",
-            yoffset: "18px", // Half the height of the marker (moves the anchor point to the bottom)
+            width: "24px",
+            height: "24px",
+            yoffset: "12px", // Half the height of the marker (moves the anchor point to the bottom)
             anchor: "bottom-center"
         };
 
