@@ -725,8 +725,16 @@ function findClosestSegment(point, coordinates) {
     let minDistance = Infinity;
 
     for (let i = 0; i < coordinates.length - 1; i++) {
+        // Ensure coordinates are destructured correctly
         const [x1, y1] = coordinates[i];
         const [x2, y2] = coordinates[i + 1];
+
+        if (x1 === undefined || y1 === undefined || x2 === undefined || y2 === undefined) {
+            console.error("Invalid coordinate format:", coordinates[i], coordinates[i + 1]);
+            continue;
+        }
+
+        // Calculate the distance to the segment
         const distance = distanceToSegment(point, { x1, y1, x2, y2 });
         if (distance < minDistance) {
             minDistance = distance;
