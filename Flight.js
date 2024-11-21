@@ -319,7 +319,9 @@ window.addMarkersAndDrawLine = function (data) {
             type: "picture-marker",
             url: markerUrl,
             width: "36px",
-            height: "36px"
+            height: "36px",
+            yoffset: "18px", // Half the height of the marker (moves the anchor point to the bottom)
+            anchor: "bottom-center"
         };
 
         const markerGraphic = new Graphic({
@@ -752,7 +754,9 @@ function addMarkerBetween(mapPoint, segmentIndex) {
         type: "picture-marker",
         url: "markerdefault.png",
         width: "36px",
-        height: "36px"
+        height: "36px",
+        yoffset: "18px", // Half the height of the marker (moves the anchor point to the bottom)
+        anchor: "bottom-center"
     };
 
     const newMarkerGraphic = new Graphic({
