@@ -426,8 +426,8 @@ function getFeaturesWithinRadius(mapPoint, callback) {
         customPopup.innerHTML = popupHTML;
 
         // Set initial position of the popup
-        customPopup.style.left = ${screenPoint.x}px;
-        customPopup.style.top = ${screenPoint.y}px;
+        customPopup.style.left = `${screenPoint.x}px`;
+        customPopup.style.top = `${screenPoint.y}px`;
         customPopup.style.display = "block";
 
         
