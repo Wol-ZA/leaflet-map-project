@@ -516,7 +516,7 @@ customPopup.querySelectorAll(".poi-tag").forEach((tag) => {
         });
     }
 
-    view.on("drag", (event) => {
+     view.on("drag", (event) => {
         const { action } = event;
         const mapPoint = view.toMap({ x: event.x, y: event.y });
 
@@ -526,8 +526,8 @@ customPopup.querySelectorAll(".poi-tag").forEach((tag) => {
             const graphic = response.results[0].graphic;
             if (markerGraphics.includes(graphic)) {
                 // Clone the geometry to store the original position
-                originalPositionMark = graphic.geometry.clone();
-                console.log("Original position set:", originalPositionMark);
+                originalPosition = graphic.geometry.clone();
+                console.log("Original position set:", originalPosition);
 
                 // Assign dragged graphic
                 view.draggedGraphic = graphic;
@@ -555,13 +555,13 @@ customPopup.querySelectorAll(".poi-tag").forEach((tag) => {
 
                 getFeaturesWithinRadius(mapPoint, (pointsWithinRadius) => {
                     const content = pointsWithinRadius.map(point => 
-                        `<div class="item">
+                        <div class="item">
                             <div class="icon">
                                 <img src="${point.icon}" alt="${point.name}" style="width: 16px; height: 16px; margin-right: 5px;">
                                 ${point.name}
                             </div>
                             <span class="identifier">${point.description}</span>
-                        </div>`
+                        </div>
                     ).join("");  // Join all the individual HTML strings into one
 
                     const screenPoint = view.toScreen(mapPoint);
@@ -579,7 +579,6 @@ customPopup.querySelectorAll(".poi-tag").forEach((tag) => {
 
     // Do not reset view.draggedGraphic immediately
     // Keep it available for the Cancel button logic
-     view.draggedGraphic = null;
     console.log("Drag ended. Dragged graphic:", view.draggedGraphic);
 }
     });
