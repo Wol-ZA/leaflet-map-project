@@ -458,7 +458,6 @@ customPopup.querySelectorAll(".poi-tag").forEach((tag) => {
             }
 
             // Clear dragged graphic to allow polyline interactions
-            view.draggedGraphic = null;
 
             // Hide the popup after updating
             hideCustomPopup();
@@ -703,19 +702,12 @@ view.on("click", (event) => {
     view.hitTest(event).then((response) => {
         const graphic = response.results[0]?.graphic;
 
-        if (graphic) {
-            if (graphic === hitDetectionPolyline) {
-                const clickedPoint = view.toMap(event);
-                const segmentIndex = findClosestSegment(clickedPoint, polylineCoordinates);
-                if (segmentIndex !== -1) {
-                    addMarkerBetween(clickedPoint, segmentIndex);
-                }
-            } else if (markerGraphics.includes(graphic)) {
-                // Handle marker click logic if needed
-                console.log("Marker clicked:", graphic);
+        if (graphic === hitDetectionPolyline) {
+            const clickedPoint = view.toMap(event);
+            const segmentIndex = findClosestSegment(clickedPoint, polylineCoordinates);
+            if (segmentIndex !== -1) {
+                addMarkerBetween(clickedPoint, segmentIndex);
             }
-        } else {
-            console.log("No graphic found at click location.");
         }
     });
 });
