@@ -579,6 +579,7 @@ customPopup.querySelectorAll(".poi-tag").forEach((tag) => {
 
     // Do not reset view.draggedGraphic immediately
     // Keep it available for the Cancel button logic
+     view.draggedGraphic = null;
     console.log("Drag ended. Dragged graphic:", view.draggedGraphic);
 }
     });
