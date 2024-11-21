@@ -438,7 +438,7 @@ function getFeaturesWithinRadius(mapPoint, callback) {
         const screenWidth = window.innerWidth;
         const screenHeight = window.innerHeight;
 
-       customPopup.querySelectorAll(".poi-tag").forEach((tag) => {
+customPopup.querySelectorAll(".poi-tag").forEach((tag) => {
     tag.addEventListener("click", (event) => {
         const latitude = parseFloat(tag.dataset.latitude);
         const longitude = parseFloat(tag.dataset.longitude);
@@ -450,15 +450,15 @@ function getFeaturesWithinRadius(mapPoint, callback) {
             // Update the marker's geometry (location)
             view.draggedGraphic.geometry = newPosition;
 
-            // Set the new position as the "original position" moving forward
-            originalPositionMark = newPosition;
-
             // Update the polyline coordinates to reflect the marker's new position
             const index = markerGraphics.indexOf(view.draggedGraphic);
             if (index !== -1) {
                 polylineCoordinates[index] = [longitude, latitude];
                 polylineGraphic.geometry = { type: "polyline", paths: [...polylineCoordinates] };
             }
+
+            // Clear dragged graphic to allow polyline interactions
+            view.draggedGraphic = null;
 
             // Hide the popup after updating
             hideCustomPopup();
@@ -700,16 +700,20 @@ draggableGraphicsLayer.add(hitDetectionPolyline);
     
 view.on("click", (event) => {
     view.hitTest(event).then((response) => {
-        const graphic = response.results[0]?.graphic;
+        const results = response.results;
+        const polylineGraphicHit = results.some((result) => result.graphic === polylineGraphic);
 
-        if (graphic === hitDetectionPolyline) {
-            const clickedPoint = view.toMap(event);
-            const segmentIndex = findClosestSegment(clickedPoint, polylineCoordinates);
-            if (segmentIndex !== -1) {
-                addMarkerBetween(clickedPoint, segmentIndex);
-            }
+        if (polylineGraphicHit) {
+            // Add marker on polyline logic
+            const mapPoint = view.toMap(event);
+            const nearestSegmentIndex = getNearestSegmentIndex(mapPoint);
+
+            addMarkerBetween(mapPoint, nearestSegmentIndex);
         }
     });
+
+    // Hide popup if it was open
+    hideCustomPopup();
 });
 
 // Function to find the closest segment of the polyline
