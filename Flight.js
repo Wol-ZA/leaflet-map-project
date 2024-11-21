@@ -319,7 +319,9 @@ window.addMarkersAndDrawLine = function (data) {
             type: "picture-marker",
             url: markerUrl,
             width: "36px",
-            height: "36px"
+            height: "36px",
+             yoffset: "18px", // Adjust for anchor at bottom
+            anchor: "bottom-center"
         };
 
         const markerGraphic = new Graphic({
