@@ -580,6 +580,7 @@ customPopup.querySelectorAll(".poi-tag").forEach((tag) => {
 
     // Do not reset view.draggedGraphic immediately
     // Keep it available for the Cancel button logic
+    view.draggedGraphic = null;
     console.log("Drag ended. Dragged graphic:", view.draggedGraphic);
 }
     });
@@ -702,12 +703,19 @@ view.on("click", (event) => {
     view.hitTest(event).then((response) => {
         const graphic = response.results[0]?.graphic;
 
-        if (graphic === hitDetectionPolyline) {
-            const clickedPoint = view.toMap(event);
-            const segmentIndex = findClosestSegment(clickedPoint, polylineCoordinates);
-            if (segmentIndex !== -1) {
-                addMarkerBetween(clickedPoint, segmentIndex);
+        if (graphic) {
+            if (graphic === hitDetectionPolyline) {
+                const clickedPoint = view.toMap(event);
+                const segmentIndex = findClosestSegment(clickedPoint, polylineCoordinates);
+                if (segmentIndex !== -1) {
+                    addMarkerBetween(clickedPoint, segmentIndex);
+                }
+            } else if (markerGraphics.includes(graphic)) {
+                // Handle marker click logic if needed
+                console.log("Marker clicked:", graphic);
             }
+        } else {
+            console.log("No graphic found at click location.");
         }
     });
 });
