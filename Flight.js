@@ -393,20 +393,17 @@ function getFeaturesWithinRadius(mapPoint, callback) {
 }
 
     // Function to generate HTML for the popup
-    function generatePopupHTML(content, pointsWithinRadius) {
+function generatePopupHTML(content, pointsWithinRadius) {
     const poiTags = pointsWithinRadius
-        .map(
-            (point) => 
-                
-                `<span class="poi-tag" data-latitude="${point.latitude}" data-longitude="${point.longitude}">
-                    <img src="${point.icon}" alt="${point.name}" style="width: 16px; height: 16px; margin-right: 5px;">
-                    ${point.name}
-                </span>`
-        )
-        .join(""); 
+        .map(point => `
+            <span class="poi-tag" data-latitude="${point.latitude}" data-longitude="${point.longitude}">
+                <img src="${point.icon}" alt="${point.name}" style="width: 16px; height: 16px; margin-right: 5px;">
+                ${point.name}
+            </span>
+        `).join("");
 
-    return 
-        `<h3>Current Location</h3>
+    return `
+        <h3>Current Location</h3>
         <div class="content">${content}</div>
         <div class="input-group">
             <label>Waypoint Name:</label>
@@ -422,6 +419,7 @@ function getFeaturesWithinRadius(mapPoint, callback) {
             ${poiTags}
         </div>`;
 }
+
     let originalPositionMark = null;
     function showCustomPopup(content, screenPoint, pointsWithinRadius) {
         const popupHTML = generatePopupHTML(content, pointsWithinRadius);
