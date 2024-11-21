@@ -456,6 +456,10 @@ function generatePopupHTML(content, pointsWithinRadius) {
             if (index !== -1) {
                 polylineCoordinates[index] = [longitude, latitude];
                 polylineGraphic.geometry = { type: "polyline", paths: [...polylineCoordinates] };
+                hitDetectionPolyline.geometry = { 
+                    type: "polyline", 
+                    paths: [...polylineCoordinates] 
+                };
             }
 
             // Hide the popup after updating
@@ -547,6 +551,10 @@ function generatePopupHTML(content, pointsWithinRadius) {
             if (index !== -1) {
                 polylineCoordinates[index] = [mapPoint.longitude, mapPoint.latitude];
                 polylineGraphic.geometry = { type: "polyline", paths: [...polylineCoordinates] };
+                hitDetectionPolyline.geometry = { 
+                type: "polyline", 
+                paths: [...polylineCoordinates] 
+};
             }
 
             if (activeCircleGraphic) {
@@ -602,6 +610,10 @@ function generatePopupHTML(content, pointsWithinRadius) {
             if (index !== -1) {
                 polylineCoordinates[index] = [originalPositionMark.longitude, originalPositionMark.latitude];
                 polylineGraphic.geometry = { type: "polyline", paths: [...polylineCoordinates] };
+                hitDetectionPolyline.geometry = { 
+                    type: "polyline", 
+                    paths: [...polylineCoordinates] 
+                };
                 console.log("Polyline reset");
             }
 
@@ -650,6 +662,10 @@ customPopup.addEventListener("click", (event) => {
                         originalPositionMark.latitude,
                     ];
                     polylineGraphic.geometry = { type: "polyline", paths: [...polylineCoordinates] };
+                    hitDetectionPolyline.geometry = { 
+                    type: "polyline", 
+                    paths: [...polylineCoordinates] 
+                    };
                     console.log("Polyline updated");
                 }
 
@@ -678,6 +694,10 @@ view.on("click", (event) => {
         if (index !== -1) {
             polylineCoordinates[index] = [originalPositionMark.longitude, originalPositionMark.latitude];
             polylineGraphic.geometry = { type: "polyline", paths: [...polylineCoordinates] };
+            hitDetectionPolyline.geometry = { 
+             type: "polyline", 
+            paths: [...polylineCoordinates] 
+            };
             console.log("Polyline reset");
         }
 
@@ -772,6 +792,10 @@ function addMarkerBetween(mapPoint, segmentIndex) {
 
     // Update the polyline geometry
     polylineGraphic.geometry = { type: "polyline", paths: [...polylineCoordinates] };
+    hitDetectionPolyline.geometry = { 
+        type: "polyline", 
+        paths: [...polylineCoordinates] 
+    };
 }   
 };
 
