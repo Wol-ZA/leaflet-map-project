@@ -704,16 +704,19 @@ view.on("click", (event) => {
         const polylineGraphicHit = results.some((result) => result.graphic === polylineGraphic);
 
         if (polylineGraphicHit) {
-            // Add marker on polyline logic
             const mapPoint = view.toMap(event);
-            const nearestSegmentIndex = findClosestSegment(mapPoint);
+            const coordinates = polylineCoordinates.map(([longitude, latitude]) => ({ x: longitude, y: latitude }));
 
-            addMarkerBetween(mapPoint, nearestSegmentIndex);
+            // Find the closest segment index
+            const closestSegmentIndex = findClosestSegment({ x: mapPoint.longitude, y: mapPoint.latitude }, coordinates);
+
+            if (closestSegmentIndex !== -1) {
+                addMarkerBetween(mapPoint, closestSegmentIndex);
+            }
         }
     });
 
-    // Hide popup if it was open
-    hideCustomPopup();
+    hideCustomPopup(); // Hide the popup if it was open
 });
 
 // Function to find the closest segment of the polyline
