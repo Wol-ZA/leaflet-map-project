@@ -706,7 +706,7 @@ view.on("click", (event) => {
         if (polylineGraphicHit) {
             // Add marker on polyline logic
             const mapPoint = view.toMap(event);
-            const nearestSegmentIndex = getNearestSegmentIndex(mapPoint);
+            const nearestSegmentIndex = findClosestSegment(mapPoint);
 
             addMarkerBetween(mapPoint, nearestSegmentIndex);
         }
