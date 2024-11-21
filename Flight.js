@@ -700,43 +700,30 @@ draggableGraphicsLayer.add(hitDetectionPolyline);
     
 view.on("click", (event) => {
     view.hitTest(event).then((response) => {
-        const results = response.results;
-        const polylineGraphicHit = results.some((result) => result.graphic === polylineGraphic);
+        const graphic = response.results[0]?.graphic;
 
-        if (polylineGraphicHit) {
-            const mapPoint = view.toMap(event);
-            const coordinates = polylineCoordinates.map(([longitude, latitude]) => ({ x: longitude, y: latitude }));
-
-            // Find the closest segment index
-            const closestSegmentIndex = findClosestSegment({ x: mapPoint.longitude, y: mapPoint.latitude }, coordinates);
-
-            if (closestSegmentIndex !== -1) {
-                addMarkerBetween(mapPoint, closestSegmentIndex);
+        if (graphic === hitDetectionPolyline) {
+            const clickedPoint = view.toMap(event);
+            const segmentIndex = findClosestSegment(clickedPoint, polylineCoordinates);
+            if (segmentIndex !== -1) {
+                addMarkerBetween(clickedPoint, segmentIndex);
             }
         }
     });
-
-    hideCustomPopup(); // Hide the popup if it was open
 });
 
 // Function to find the closest segment of the polyline
 function findClosestSegment(point, coordinates) {
     let closestIndex = -1;
     let minDistance = Infinity;
+    const threshold = 0.002; // Approximate degrees for ~20px, adjust as needed
 
     for (let i = 0; i < coordinates.length - 1; i++) {
-        // Ensure coordinates are destructured correctly
         const [x1, y1] = coordinates[i];
         const [x2, y2] = coordinates[i + 1];
-
-        if (x1 === undefined || y1 === undefined || x2 === undefined || y2 === undefined) {
-            console.error("Invalid coordinate format:", coordinates[i], coordinates[i + 1]);
-            continue;
-        }
-
-        // Calculate the distance to the segment
         const distance = distanceToSegment(point, { x1, y1, x2, y2 });
-        if (distance < minDistance) {
+
+        if (distance < minDistance && distance <= threshold) {
             minDistance = distance;
             closestIndex = i;
         }
