@@ -555,13 +555,13 @@ customPopup.querySelectorAll(".poi-tag").forEach((tag) => {
 
                 getFeaturesWithinRadius(mapPoint, (pointsWithinRadius) => {
                     const content = pointsWithinRadius.map(point => 
-                        <div class="item">
+                        `<div class="item">
                             <div class="icon">
                                 <img src="${point.icon}" alt="${point.name}" style="width: 16px; height: 16px; margin-right: 5px;">
                                 ${point.name}
                             </div>
                             <span class="identifier">${point.description}</span>
-                        </div>
+                        </div>`
                     ).join("");  // Join all the individual HTML strings into one
 
                     const screenPoint = view.toScreen(mapPoint);
