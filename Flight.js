@@ -295,7 +295,7 @@ window.addMarkersAndDrawLine = function (data) {
         helistopsLayer
     ];
 
-    const draggableGraphicsLayer = new GraphicsLayer({ zIndex: 10 });
+    const draggableGraphicsLayer = new GraphicsLayer({ zIndex: 1000 });
     map.add(draggableGraphicsLayer);
     draggableGraphicsLayer.removeAll();
 
