@@ -396,7 +396,7 @@ function getFeaturesWithinRadius(mapPoint, callback) {
 function generatePopupHTML(content, pointsWithinRadius) {
     const poiTags = pointsWithinRadius
         .map(point => `
-            <span class="poi-tag" data-latitude="${point.latitude}" data-longitude="${point.longitude}">
+            <span class="poi-tag" data-latitude="${point.latitude}" data-longitude="${point.longitude}" data-name="${point.name}" data-description="${point.description}">
                 <img src="${point.icon}" alt="${point.name}" style="width: 16px; height: 16px; margin-right: 5px;">
                 ${point.name}
             </span>
@@ -440,6 +440,8 @@ customPopup.querySelectorAll(".poi-tag").forEach((tag) => {
     tag.addEventListener("click", (event) => {
         const latitude = parseFloat(tag.dataset.latitude);
         const longitude = parseFloat(tag.dataset.longitude);
+        const name = tag.dataset.name || "Unnamed POI"; // Fallback if name is not provided
+        const description = tag.dataset.description || "No description available"; // Fallback if description is not provided
 
         if (view.draggedGraphic) {
             // Set the clicked POI tag's location as the new position
@@ -447,6 +449,10 @@ customPopup.querySelectorAll(".poi-tag").forEach((tag) => {
 
             // Update the marker's geometry (location)
             view.draggedGraphic.geometry = newPosition;
+
+            // Update the marker's attributes
+            view.draggedGraphic.attributes.name = name;
+            view.draggedGraphic.attributes.description = description;
 
             // Set the new position as the "original position" moving forward
             originalPositionMark = newPosition;
@@ -461,7 +467,10 @@ customPopup.querySelectorAll(".poi-tag").forEach((tag) => {
                     paths: [...polylineCoordinates] 
                 };
             }
-             WL.Execute("AlertMe", getFlightPlanAsJSON());
+
+            // Notify the backend about the updated flight plan
+            WL.Execute("AlertMe", getFlightPlanAsJSON());
+
             // Hide the popup after updating
             hideCustomPopup();
         }
