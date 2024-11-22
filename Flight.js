@@ -440,24 +440,19 @@ customPopup.querySelectorAll(".poi-tag").forEach((tag) => {
     tag.addEventListener("click", (event) => {
         const latitude = parseFloat(tag.dataset.latitude);
         const longitude = parseFloat(tag.dataset.longitude);
-        const name = tag.dataset.name || "Unnamed POI"; // Fallback if name is not provided
-        const description = tag.dataset.description || "No description available"; // Fallback if description is not provided
+        const name = tag.dataset.name || "Unnamed POI";
+        const description = tag.dataset.description || "No description available";
 
         if (view.draggedGraphic) {
-            // Set the clicked POI tag's location as the new position
+            // Update the dragged marker's geometry
             const newPosition = { type: "point", latitude, longitude };
-
-            // Update the marker's geometry (location)
             view.draggedGraphic.geometry = newPosition;
 
             // Update the marker's attributes
             view.draggedGraphic.attributes.name = name;
             view.draggedGraphic.attributes.description = description;
 
-            // Set the new position as the "original position" moving forward
-            originalPositionMark = newPosition;
-
-            // Update the polyline coordinates to reflect the marker's new position
+            // Update the polyline coordinates
             const index = markerGraphics.indexOf(view.draggedGraphic);
             if (index !== -1) {
                 polylineCoordinates[index] = [longitude, latitude];
@@ -468,8 +463,13 @@ customPopup.querySelectorAll(".poi-tag").forEach((tag) => {
                 };
             }
 
-            // Notify the backend about the updated flight plan
-            WL.Execute("AlertMe", getFlightPlanAsJSON());
+            // Generate JSON for the updated marker
+            const editedMarkerJSON = getEditedMarkerAsJSON(view.draggedGraphic);
+
+            if (editedMarkerJSON) {
+                // Notify the backend about the updated marker
+                WL.Execute("AlertMe", editedMarkerJSON);
+            }
 
             // Hide the popup after updating
             hideCustomPopup();
@@ -807,14 +807,17 @@ function addMarkerBetween(mapPoint, segmentIndex) {
     };
 }  
 
-    function getFlightPlanAsJSON() {
-    const flightPlan = markerGraphics.map((graphic, index) => ({
-        name: graphic.attributes.name || `Waypoint ${index + 1}`,
-        description: graphic.attributes.description || "No description",
-        latitude: graphic.geometry.latitude,
-        longitude: graphic.geometry.longitude
-    }));
-    return JSON.stringify(flightPlan, null, 2); // Pretty-printed JSON
+function getEditedMarkerAsJSON(editedMarker) {
+    if (!editedMarker) {
+        console.warn("No marker provided for JSON conversion.");
+        return null;
+    }
+    return JSON.stringify({
+        name: editedMarker.attributes.name || "Unnamed POI",
+        description: editedMarker.attributes.description || "No description available",
+        latitude: editedMarker.geometry.latitude,
+        longitude: editedMarker.geometry.longitude
+    }, null, 2); // Pretty-printed JSON
 }
 };
 
