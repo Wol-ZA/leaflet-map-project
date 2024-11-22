@@ -463,13 +463,8 @@ customPopup.querySelectorAll(".poi-tag").forEach((tag) => {
                 };
             }
 
-            // Generate JSON for the updated marker
-            const editedMarkerJSON = getEditedMarkerAsJSON(view.draggedGraphic);
-
-            if (editedMarkerJSON) {
-                // Notify the backend about the updated marker
-                WL.Execute("AlertMe", editedMarkerJSON);
-            }
+            // Notify the backend about the updated marker
+            WL.Execute("AlertMe", getFlightPlanAsJSON());
 
             // Hide the popup after updating
             hideCustomPopup();
@@ -807,17 +802,14 @@ function addMarkerBetween(mapPoint, segmentIndex) {
     };
 }  
 
-function getEditedMarkerAsJSON(editedMarker) {
-    if (!editedMarker) {
-        console.warn("No marker provided for JSON conversion.");
-        return null;
-    }
-    return JSON.stringify({
-        name: editedMarker.attributes.name || "Unnamed POI",
-        description: editedMarker.attributes.description || "No description available",
-        latitude: editedMarker.geometry.latitude,
-        longitude: editedMarker.geometry.longitude
-    }, null, 2); // Pretty-printed JSON
+function getFlightPlanAsJSON() {
+    const flightPlan = markerGraphics.map((graphic, index) => ({
+        name: graphic.attributes.name || `Waypoint ${index + 1}`,
+        description: graphic.attributes.description || "No description",
+        latitude: graphic.geometry.latitude,
+        longitude: graphic.geometry.longitude
+    }));
+    return JSON.stringify(flightPlan, null, 2); // Pretty-printed JSON
 }
 };
 
