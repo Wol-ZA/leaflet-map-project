@@ -461,7 +461,7 @@ function generatePopupHTML(content, pointsWithinRadius) {
                     paths: [...polylineCoordinates] 
                 };
             }
-
+             WL.Execute("AlertMe", getFlightPlanAsJSON());
             // Hide the popup after updating
             hideCustomPopup();
         }
@@ -668,7 +668,7 @@ customPopup.addEventListener("click", (event) => {
                     };
                     console.log("Polyline updated");
                 }
-
+                 WL.Execute("AlertMe", getFlightPlanAsJSON());
                 // Hide the popup after saving
                 hideCustomPopup();
             }
@@ -797,7 +797,16 @@ function addMarkerBetween(mapPoint, segmentIndex) {
         paths: [...polylineCoordinates] 
     };
 }  
-    WL.Execute("AlertMe", hitDetectionPolyline.geometry);
+
+    function getFlightPlanAsJSON() {
+    const flightPlan = markerGraphics.map((graphic, index) => ({
+        name: graphic.attributes.name || `Waypoint ${index + 1}`,
+        description: graphic.attributes.description || "No description",
+        latitude: graphic.geometry.latitude,
+        longitude: graphic.geometry.longitude
+    }));
+    return JSON.stringify(flightPlan, null, 2); // Pretty-printed JSON
+}
 };
 
 
