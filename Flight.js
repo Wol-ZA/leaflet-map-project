@@ -65,8 +65,8 @@ window.createGeoJSONLayer = function(url, colorDecimal, alpha) {
                 symbol: {
                     type: "picture-marker",
                     url: iconUrl,
-                    width: "24px",
-                    height: "24px"
+                    width: "12px",
+                    height: "12px"
                 }
             }
         });
