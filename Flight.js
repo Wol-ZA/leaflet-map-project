@@ -343,19 +343,23 @@ window.addMarkersAndDrawLine = function (data) {
     // Custom popup creation
     const customPopup = createPopup();
 
-    function createPopup() {
-        const popup = document.createElement("div");
-        popup.id = "custom-popup";
-        popup.style.position = "absolute";
-        popup.style.background = "white";
-        popup.style.border = "1px solid #ccc";
-        popup.style.padding = "10px";
-        popup.style.display = "none";
-        popup.style.zIndex = "1000";
-        popup.style.boxShadow = "0 2px 10px rgba(0, 0, 0, 0.1)";
-        document.body.appendChild(popup);
-        return popup;
-    }
+   function createPopup() {
+    const popup = document.createElement("div");
+    popup.id = "custom-popup";
+    popup.style.position = "absolute";
+    popup.style.background = "white";
+    popup.style.border = "1px solid #ccc";
+    popup.style.padding = "10px";
+    popup.style.display = "none";
+    popup.style.zIndex = "1000";
+    popup.style.boxShadow = "0 2px 10px rgba(0, 0, 0, 0.1)";
+    popup.style.maxWidth = "90%"; // Prevent the popup from exceeding the screen width
+    popup.style.maxHeight = "90%"; // Prevent the popup from exceeding the screen height
+    popup.style.overflowY = "auto"; // Add scrolling for content that overflows
+    popup.style.wordWrap = "break-word"; // Ensure long text doesn't overflow
+    document.body.appendChild(popup);
+    return popup;
+}
 
     // Function to query features and build popup content
 function getFeaturesWithinRadius(mapPoint, callback) {
