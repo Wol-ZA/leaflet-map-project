@@ -558,12 +558,34 @@ if (action === "start") {
     });
 }
 if (action === "update" && isDraggingMarker && view.draggedGraphic) {
+    // Update the marker's position
     view.draggedGraphic.geometry = mapPoint;
 
+    // Update the corresponding polyline coordinates
+    const index = markerGraphics.indexOf(view.draggedGraphic);
+    if (index !== -1) {
+        polylineCoordinates[index] = [mapPoint.longitude, mapPoint.latitude]; // Update the polyline coordinates array
+
+        // Update the polyline geometry
+        polylineGraphic.geometry = {
+            type: "polyline",
+            paths: [...polylineCoordinates] // Apply the updated paths
+        };
+
+        // Update the hit-detection polyline geometry if applicable
+        hitDetectionPolyline.geometry = {
+            type: "polyline",
+            paths: [...polylineCoordinates]
+        };
+
+        console.log("Polyline updated:", polylineGraphic.geometry);
+    }
+
+    // Update the active circle graphic
     if (activeCircleGraphic) {
         activeCircleGraphic.geometry = createCircle(mapPoint).geometry;
-        console.log("Active circle graphic updated:", activeCircleGraphic);
     }
+
     event.stopPropagation();
 } else if (action === "end") {
     isDraggingMarker = false;
