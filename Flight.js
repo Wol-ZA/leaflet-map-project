@@ -584,6 +584,11 @@ if (action === "start") {
 
     event.stopPropagation();
 } else if (action === "end") {
+    if (!isDraggingMarker) {
+        console.log("Map pan detected. No marker drag to process.");
+        return; // Exit early if it was a map pan
+    }
+
     isDraggingMarker = false;
 
     if (!activeCircleGraphic) {
