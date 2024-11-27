@@ -8,9 +8,54 @@ require([
     "esri/Graphic",
     "esri/geometry/Point",
     "esri/symbols/PictureMarkerSymbol",
-    "esri/layers/GraphicsLayer"
-], function(Circle, Extent, Map, MapView, SceneView, GeoJSONLayer, Graphic, Point, PictureMarkerSymbol, GraphicsLayer) {
+    "esri/layers/GraphicsLayer",
+    "esri/tasks/QueryTask",
+    "esri/tasks/support/Query",
+    "esri/layers/FeatureLayer"
+], function(Circle, Extent, Map, MapView, SceneView, GeoJSONLayer, Graphic, Point, PictureMarkerSymbol, GraphicsLayer, QueryTask, Query,FeatureLayer) {
 
+     function getClosestCities(lat, lon) {
+    // Create a point geometry from the provided latitude and longitude
+    const point = new Point({
+      latitude: lat,
+      longitude: lon,
+      spatialReference: { wkid: 4326 } // WGS84 coordinate system
+    });
+
+    // URL to the FeatureLayer containing city data
+    const citiesLayerUrl = "https://services.arcgis.com/yourServiceUrl/arcgis/rest/services/CityLayer/FeatureServer/0";
+
+    // Create a query to find the closest cities
+    const query = new Query();
+    query.geometry = point;
+    query.distance = 50; // Search within a 50km radius (you can adjust this as needed)
+    query.units = "kilometers"; // Search units in kilometers
+    query.spatialRelationship = Query.SPATIAL_REL_BUFFER;
+    query.outFields = ["CityName", "Population", "SHAPE"]; // Adjust according to your layer's fields
+    query.orderByFields = ["CityName"]; // Optionally order by city name or distance
+
+    // Create a QueryTask to execute the query
+    const queryTask = new QueryTask({
+      url: citiesLayerUrl
+    });
+
+    // Execute the query and handle the results
+    queryTask.execute(query).then(function(result) {
+      // Get the closest cities from the result
+      const closestCities = result.features.slice(0, 3); // Get the top 3 closest cities
+      const cityNames = closestCities.map(function(city) {
+        return city.attributes.CityName; // Modify if you need other attributes
+      });
+
+      console.log("Closest Cities:", cityNames);
+      return cityNames; // Return the city names or other data you need
+    }).catch(function(error) {
+      console.error("Error getting closest cities:", error);
+    });
+  }
+
+  // Example: calling the function with your lat/lon (Los Angeles)
+  getClosestCities(34.0522, -118.2437);
     // Create the map
  window.map = new Map({
     basemap: "topo-vector"
