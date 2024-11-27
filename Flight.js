@@ -362,11 +362,17 @@ window.addMarkersAndDrawLine = function (data) {
 
     // Function to query features and build popup content
 function getFeaturesWithinRadius(mapPoint, callback) {
+    if (!activeCircleGraphic || !activeCircleGraphic.geometry) {
+        console.warn("Active circle graphic or its geometry is null. Cannot query features.");
+        callback([]); // Return an empty array as fallback
+        return;
+    }
+
     const pointsWithinRadius = [];
 
     layers.forEach((layer) => {
         layer.queryFeatures({
-            geometry: activeCircleGraphic.geometry,
+            geometry: activeCircleGraphic.geometry, // Safeguarded earlier
             spatialRelationship: "intersects",
             returnGeometry: true, // Ensure geometry is returned
             outFields: ["*"]
@@ -394,6 +400,7 @@ function getFeaturesWithinRadius(mapPoint, callback) {
         });
     });
 }
+
 
     // Function to generate HTML for the popup
 function generatePopupHTML(content, pointsWithinRadius) {
