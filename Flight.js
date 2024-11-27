@@ -807,7 +807,7 @@ function addMarkerBetween(mapPoint, segmentIndex) {
 
 function getFlightPlanAsJSON() {
     const flightPlan = markerGraphics.map((graphic, index) => ({
-        name: graphic.attributes.name || Waypoint ${index + 1},
+        name: graphic.attributes.name || Waypoint `${index + 1}`,
         description: graphic.attributes.description || "No description",
         latitude: graphic.geometry.latitude,
         longitude: graphic.geometry.longitude
