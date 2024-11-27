@@ -572,16 +572,18 @@ customPopup.querySelectorAll(".poi-tag").forEach((tag) => {
     event.stopPropagation();
 } else if (action === "end") {
     isDraggingMarker = false;
-    view.draggedGraphic.geometry = mapPoint;
+
     if (activeCircleGraphic) {
         draggableGraphicsLayer.remove(activeCircleGraphic);
         activeCircleGraphic = null;
     }
 
-    // Show popup when drag ends
-    if (view.draggedGraphic) {
-        const mapPoint = view.draggedGraphic.geometry;
+    if (view.draggedGraphic && view.draggedGraphic.geometry) {
+        const mapPoint = view.draggedGraphic.geometry; // Ensure geometry is accessible
+
         getFeaturesWithinRadius(mapPoint, (pointsWithinRadius) => {
+            if (!pointsWithinRadius) return; // Safeguard against undefined results
+
             const content = pointsWithinRadius.map(point => 
                 `<div class="item">
                     <div class="icon">
@@ -595,6 +597,8 @@ customPopup.querySelectorAll(".poi-tag").forEach((tag) => {
             const screenPoint = view.toScreen(mapPoint);
             showCustomPopup(content, screenPoint, pointsWithinRadius);
         });
+    } else {
+        console.warn("Dragged graphic or its geometry is null, skipping popup display.");
     }
 
     console.log("Drag ended. Dragged graphic:", view.draggedGraphic);
