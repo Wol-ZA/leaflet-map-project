@@ -570,6 +570,11 @@ customPopup.querySelectorAll(".poi-tag").forEach((tag) => {
             }
             event.stopPropagation();
         } else if (action === "end") {
+      if (view.draggedGraphic) {
+            console.log("Drag ended. Dragged graphic:", view.draggedGraphic);
+        } else {
+            console.warn("Drag ended, but no dragged graphic is set.");
+        }
     isDraggingMarker = false;
 
     if (activeCircleGraphic) {
