@@ -572,7 +572,7 @@ customPopup.querySelectorAll(".poi-tag").forEach((tag) => {
     event.stopPropagation();
 } else if (action === "end") {
     isDraggingMarker = false;
-
+    view.draggedGraphic.geometry = mapPoint;
     if (activeCircleGraphic) {
         draggableGraphicsLayer.remove(activeCircleGraphic);
         activeCircleGraphic = null;
