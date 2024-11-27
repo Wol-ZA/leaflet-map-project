@@ -556,23 +556,19 @@ if (action === "start") {
             }
         }
     });
-}
-if (action === "update" && isDraggingMarker && view.draggedGraphic) {
+} else if (action === "update" && isDraggingMarker && view.draggedGraphic) {
     // Update the marker's position
     view.draggedGraphic.geometry = mapPoint;
 
     // Update the corresponding polyline coordinates
     const index = markerGraphics.indexOf(view.draggedGraphic);
     if (index !== -1) {
-        polylineCoordinates[index] = [mapPoint.longitude, mapPoint.latitude]; // Update the polyline coordinates array
-
-        // Update the polyline geometry
+        polylineCoordinates[index] = [mapPoint.longitude, mapPoint.latitude];
         polylineGraphic.geometry = {
             type: "polyline",
-            paths: [...polylineCoordinates] // Apply the updated paths
+            paths: [...polylineCoordinates]
         };
 
-        // Update the hit-detection polyline geometry if applicable
         hitDetectionPolyline.geometry = {
             type: "polyline",
             paths: [...polylineCoordinates]
@@ -624,6 +620,7 @@ if (action === "update" && isDraggingMarker && view.draggedGraphic) {
 
     console.log("Drag ended. Dragged graphic:", view.draggedGraphic);
 }
+
     });
 
     // Event listener for Cancel button
