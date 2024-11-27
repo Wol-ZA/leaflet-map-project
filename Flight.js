@@ -552,39 +552,25 @@ customPopup.querySelectorAll(".poi-tag").forEach((tag) => {
             }
         }
     });
-        } else if (action === "update" && isDraggingMarker && view.draggedGraphic) {
-            view.draggedGraphic.geometry = mapPoint;
+} else if (action === "update" && isDraggingMarker && view.draggedGraphic) {
+    view.draggedGraphic.geometry = mapPoint;
 
-            const index = markerGraphics.indexOf(view.draggedGraphic);
-            if (index !== -1) {
-                polylineCoordinates[index] = [mapPoint.longitude, mapPoint.latitude];
-                polylineGraphic.geometry = { type: "polyline", paths: [...polylineCoordinates] };
-                hitDetectionPolyline.geometry = { 
-                type: "polyline", 
-                paths: [...polylineCoordinates] 
-};
-            }
+    const index = markerGraphics.indexOf(view.draggedGraphic);
+    if (index !== -1) {
+        polylineCoordinates[index] = [mapPoint.longitude, mapPoint.latitude];
+        polylineGraphic.geometry = { type: "polyline", paths: [...polylineCoordinates] };
+        hitDetectionPolyline.geometry = { 
+            type: "polyline", 
+            paths: [...polylineCoordinates] 
+        };
+    }
 
-            if (activeCircleGraphic) {
-                activeCircleGraphic.geometry = createCircle(mapPoint).geometry;
+    if (activeCircleGraphic) {
+        activeCircleGraphic.geometry = createCircle(mapPoint).geometry;
+    }
 
-                getFeaturesWithinRadius(mapPoint, (pointsWithinRadius) => {
-                    const content = pointsWithinRadius.map(point => 
-                        `<div class="item">
-                            <div class="icon">
-                                <img src="${point.icon}" alt="${point.name}" style="width: 16px; height: 16px; margin-right: 5px;">
-                                ${point.name}
-                            </div>
-                            <span class="identifier">${point.description}</span>
-                        </div>`
-                    ).join("");  // Join all the individual HTML strings into one
-
-                    const screenPoint = view.toScreen(mapPoint);
-                    showCustomPopup(content, screenPoint, pointsWithinRadius);
-                });
-            }
-            event.stopPropagation();
-        } else if (action === "end") {
+    event.stopPropagation();
+} else if (action === "end") {
     isDraggingMarker = false;
 
     if (activeCircleGraphic) {
@@ -592,8 +578,25 @@ customPopup.querySelectorAll(".poi-tag").forEach((tag) => {
         activeCircleGraphic = null;
     }
 
-    // Do not reset view.draggedGraphic immediately
-    // Keep it available for the Cancel button logic
+    // Show popup when drag ends
+    if (view.draggedGraphic) {
+        const mapPoint = view.draggedGraphic.geometry;
+        getFeaturesWithinRadius(mapPoint, (pointsWithinRadius) => {
+            const content = pointsWithinRadius.map(point => 
+                `<div class="item">
+                    <div class="icon">
+                        <img src="${point.icon}" alt="${point.name}" style="width: 16px; height: 16px; margin-right: 5px;">
+                        ${point.name}
+                    </div>
+                    <span class="identifier">${point.description}</span>
+                </div>`
+            ).join("");
+
+            const screenPoint = view.toScreen(mapPoint);
+            showCustomPopup(content, screenPoint, pointsWithinRadius);
+        });
+    }
+
     console.log("Drag ended. Dragged graphic:", view.draggedGraphic);
 }
     });
