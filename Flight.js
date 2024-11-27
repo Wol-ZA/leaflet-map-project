@@ -399,14 +399,14 @@ function getFeaturesWithinRadius(mapPoint, callback) {
 function generatePopupHTML(content, pointsWithinRadius) {
     const poiTags = pointsWithinRadius
         .map(point => 
-            <span class="poi-tag" data-latitude="${point.latitude}" data-longitude="${point.longitude}" data-name="${point.name}" data-description="${point.description}">
+            `<span class="poi-tag" data-latitude="${point.latitude}" data-longitude="${point.longitude}" data-name="${point.name}" data-description="${point.description}">
                 <img src="${point.icon}" alt="${point.name}" style="width: 16px; height: 16px; margin-right: 5px;">
                 ${point.name}
-            </span>
+            </span>`
         ).join("");
 
     return 
-        <h3>Current Location</h3>
+       ` <h3>Current Location</h3>
         <div class="content">${content}</div>
         <div class="input-group">
             <label>Waypoint Name:</label>
@@ -420,7 +420,7 @@ function generatePopupHTML(content, pointsWithinRadius) {
         </div>
         <div class="poi-tags">
             ${poiTags}
-        </div>;
+        </div>`;
 }
 
     let originalPositionMark = null;
@@ -429,8 +429,8 @@ function generatePopupHTML(content, pointsWithinRadius) {
         customPopup.innerHTML = popupHTML;
 
         // Set initial position of the popup
-        customPopup.style.left = ${screenPoint.x}px;
-        customPopup.style.top = ${screenPoint.y}px;
+        customPopup.style.left = `${screenPoint.x}px`;
+        customPopup.style.top = `${screenPoint.y}px`;
         customPopup.style.display = "block";
 
         
@@ -478,25 +478,25 @@ customPopup.querySelectorAll(".poi-tag").forEach((tag) => {
         // Adjust for horizontal overflow (right side)
         if (popupRect.right > screenWidth) {
             const offsetX = popupRect.right - screenWidth;
-            customPopup.style.left = ${screenPoint.x - offsetX - 10}px; // Adjust 10px for margin
+            customPopup.style.left = `${screenPoint.x - offsetX - 10}px`; // Adjust 10px for margin
         }
 
         // Adjust for vertical overflow (bottom side)
         if (popupRect.bottom > screenHeight) {
             const offsetY = popupRect.bottom - screenHeight;
-            customPopup.style.top = ${screenPoint.y - offsetY - 10}px; // Adjust 10px for margin
+            customPopup.style.top = `${screenPoint.y - offsetY - 10}px`; // Adjust 10px for margin
         }
 
         // Optionally: Adjust for overflow on the left side (if it's too far left)
         if (popupRect.left < 0) {
             const offsetX = popupRect.left;
-            customPopup.style.left = ${screenPoint.x - offsetX + 10}px; // Adjust 10px for margin
+            customPopup.style.left = `${screenPoint.x - offsetX + 10}px`; // Adjust 10px for margin
         }
 
         // Optionally: Adjust for overflow on the top side (if it's too far up)
         if (popupRect.top < 0) {
             const offsetY = popupRect.top;
-            customPopup.style.top = ${screenPoint.y - offsetY + 10}px; // Adjust 10px for margin
+            customPopup.style.top = `${screenPoint.y - offsetY + 10}px`; // Adjust 10px for margin
         }
     }
 
@@ -569,13 +569,13 @@ customPopup.querySelectorAll(".poi-tag").forEach((tag) => {
 
                 getFeaturesWithinRadius(mapPoint, (pointsWithinRadius) => {
                     const content = pointsWithinRadius.map(point => 
-                        <div class="item">
+                        `<div class="item">
                             <div class="icon">
                                 <img src="${point.icon}" alt="${point.name}" style="width: 16px; height: 16px; margin-right: 5px;">
                                 ${point.name}
                             </div>
                             <span class="identifier">${point.description}</span>
-                        </div>
+                        </div>`
                     ).join("");  // Join all the individual HTML strings into one
 
                     const screenPoint = view.toScreen(mapPoint);
