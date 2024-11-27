@@ -538,59 +538,45 @@ customPopup.querySelectorAll(".poi-tag").forEach((tag) => {
         const { action } = event;
         const mapPoint = view.toMap({ x: event.x, y: event.y });
 
- if (action === "start") {
+if (action === "start") {
     view.hitTest(event).then((response) => {
         if (response.results.length) {
             const graphic = response.results[0].graphic;
             if (markerGraphics.includes(graphic)) {
-                // Clone the geometry to store the original position
                 originalPositionMark = graphic.geometry.clone();
-                console.log("Original position set:", originalPositionMark);
-
-                // Assign dragged graphic
                 view.draggedGraphic = graphic;
                 isDraggingMarker = true;
 
-                // Create a visual circle if needed
+                // Create activeCircleGraphic
                 activeCircleGraphic = createCircle(mapPoint);
                 draggableGraphicsLayer.add(activeCircleGraphic);
 
+                console.log("Active circle graphic initialized on start:", activeCircleGraphic);
                 event.stopPropagation();
             }
         }
     });
-} else if (action === "update" && isDraggingMarker && view.draggedGraphic) {
+}
+if (action === "update" && isDraggingMarker && view.draggedGraphic) {
     view.draggedGraphic.geometry = mapPoint;
-
-    const index = markerGraphics.indexOf(view.draggedGraphic);
-    if (index !== -1) {
-        polylineCoordinates[index] = [mapPoint.longitude, mapPoint.latitude];
-        polylineGraphic.geometry = { type: "polyline", paths: [...polylineCoordinates] };
-        hitDetectionPolyline.geometry = { 
-            type: "polyline", 
-            paths: [...polylineCoordinates] 
-        };
-    }
 
     if (activeCircleGraphic) {
         activeCircleGraphic.geometry = createCircle(mapPoint).geometry;
+        console.log("Active circle graphic updated:", activeCircleGraphic);
     }
-
     event.stopPropagation();
 } else if (action === "end") {
     isDraggingMarker = false;
 
-    if (activeCircleGraphic) {
-        draggableGraphicsLayer.remove(activeCircleGraphic);
-        activeCircleGraphic = null;
+    if (!activeCircleGraphic) {
+        console.warn("Active circle graphic was null. Recreating it.");
+        activeCircleGraphic = createCircle(view.draggedGraphic.geometry);
     }
 
-    if (view.draggedGraphic && view.draggedGraphic.geometry) {
-        const mapPoint = view.draggedGraphic.geometry; // Ensure geometry is accessible
+    if (activeCircleGraphic && activeCircleGraphic.geometry) {
+        const mapPoint = view.draggedGraphic.geometry;
 
         getFeaturesWithinRadius(mapPoint, (pointsWithinRadius) => {
-            if (!pointsWithinRadius) return; // Safeguard against undefined results
-
             const content = pointsWithinRadius.map(point => 
                 `<div class="item">
                     <div class="icon">
@@ -605,7 +591,13 @@ customPopup.querySelectorAll(".poi-tag").forEach((tag) => {
             showCustomPopup(content, screenPoint, pointsWithinRadius);
         });
     } else {
-        console.warn("Dragged graphic or its geometry is null, skipping popup display.");
+        console.warn("Active circle graphic or its geometry was still null after recreation.");
+    }
+
+    // Clean up
+    if (activeCircleGraphic) {
+        draggableGraphicsLayer.remove(activeCircleGraphic);
+        activeCircleGraphic = null;
     }
 
     console.log("Drag ended. Dragged graphic:", view.draggedGraphic);
