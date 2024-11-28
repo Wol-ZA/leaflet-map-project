@@ -343,13 +343,17 @@ window.addMarkersAndDrawLine = function (data) {
 
 function zoomToFlightPlan(data, view) {
     if (!data || data.length < 2) {
-        console.error("Insufficient data to zoom.");
+        console.error("Insufficient data to zoom. Data:", data);
         return;
     }
 
     // Extract the start and end points
     const start = data[0];
     const end = data[data.length - 1];
+
+    // Log coordinates for debugging
+    console.log("Start point:", start);
+    console.log("End point:", end);
 
     // Create an extent that covers the start and end points
     const extent = {
@@ -360,8 +364,13 @@ function zoomToFlightPlan(data, view) {
         spatialReference: { wkid: 4326 } // WGS 84 spatial reference
     };
 
+    // Log extent for debugging
+    console.log("Calculated extent:", extent);
+
     // Zoom the map view to the extent
-    view.goTo(extent).catch((error) => {
+    view.goTo(extent).then(() => {
+        console.log("Zoom successful!");
+    }).catch((error) => {
         console.error("Error zooming to extent:", error);
     });
 }
