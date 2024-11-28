@@ -356,7 +356,7 @@ function zoomToFlightPlan(data, view) {
     console.log("End point:", end);
 
     // Create an extent that covers the start and end points
-    const extent = {
+    let extent = {
         xmin: Math.min(start[0], end[0]), // Min longitude
         ymin: Math.min(start[1], end[1]), // Min latitude
         xmax: Math.max(start[0], end[0]), // Max longitude
@@ -364,13 +364,13 @@ function zoomToFlightPlan(data, view) {
         spatialReference: { wkid: 4326 } // WGS 84 spatial reference
     };
 
-    // Apply some padding based on the screen size
-    const padding = window.innerWidth < 768 ? 0.1 : 0.05; // Adjust padding for mobile
+    // Apply a padding factor for mobile devices, but make sure not to zoom too far out
+    const padding = window.innerWidth < 768 ? 0.05 : 0.025; // Small padding for mobile, less for larger screens
 
     // Log extent for debugging
     console.log("Calculated extent:", extent);
 
-    // Apply padding to extent for better visibility on mobile screens
+    // Apply padding to the extent to ensure the start and end points are well spaced
     extent.xmin -= padding;
     extent.xmax += padding;
     extent.ymin -= padding;
@@ -388,12 +388,17 @@ function zoomToFlightPlan(data, view) {
 
     // Calculate zoom level based on the distance between start and end
     const distance = Math.sqrt(Math.pow(end[0] - start[0], 2) + Math.pow(end[1] - start[1], 2));
-    let zoomLevel = window.innerWidth < 768 ? 12 : 8; // Increase zoom for mobile
+    let zoomLevel = 8; // Default zoom level for larger screens
+
+    // For mobile screens, zoom a little less intensely
+    if (window.innerWidth < 768) {
+        zoomLevel = 10; // Adjust zoom for mobile screens to ensure more area is visible
+    }
 
     if (distance < 0.5) {
-        zoomLevel = window.innerWidth < 768 ? 14 : 12; // More zoom for small distances on mobile
+        zoomLevel = window.innerWidth < 768 ? 12 : 10; // Zoom in for small distances on mobile
     } else if (distance < 2) {
-        zoomLevel = window.innerWidth < 768 ? 13 : 10; // Moderate zoom for mobile
+        zoomLevel = window.innerWidth < 768 ? 11 : 9; // Moderate zoom for mobile
     }
 
     // Log calculated zoom level
@@ -409,6 +414,7 @@ function zoomToFlightPlan(data, view) {
         console.error("Error with direct zoom:", error);
     });
 }
+
     
 
     // Custom popup creation
