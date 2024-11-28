@@ -339,7 +339,7 @@ window.addMarkersAndDrawLine = function (data) {
         symbol: { type: "simple-line", color: [0, 0, 255, 0.5], width: 2 }
     });
     draggableGraphicsLayer.add(polylineGraphic);
-    zoomToFlightPlan(polylineCoordinates,view);
+    zoomToFlightPlan(polylineCoordinates,map);
 
     function zoomToFlightPlan(polylineCoordinates,view) {
     if (polylineCoordinates.length === 0) return;
@@ -354,7 +354,7 @@ window.addMarkersAndDrawLine = function (data) {
     };
 
     // Use the view's goTo method to zoom to the extent
-    view.goTo({ extent }).catch((err) => console.error("Error zooming to extent:", err));
+    map.goTo({ extent }).catch((err) => console.error("Error zooming to extent:", err));
 }
     
 
