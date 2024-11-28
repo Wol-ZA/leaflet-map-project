@@ -339,7 +339,7 @@ window.addMarkersAndDrawLine = function (data) {
         symbol: { type: "simple-line", color: [0, 0, 255, 0.5], width: 2 }
     });
     draggableGraphicsLayer.add(polylineGraphic);
-    zoomToFlightPlan(polylineCoordinates,map);
+    zoomToFlightPlan(polylineCoordinates,view);
 
     function zoomToFlightPlan(polylineCoordinates,view) {
     if (polylineCoordinates.length === 0) return;
