@@ -341,28 +341,47 @@ window.addMarkersAndDrawLine = function (data) {
     draggableGraphicsLayer.add(polylineGraphic);
     zoomToFlightPlan(polylineCoordinates,window.view);
 
-function zoomToFlightPlan(polylineCoordinates, view) {
-    if (polylineCoordinates.length === 0) return;
+function zoomToFlightPlan(data, view) {
+    if (!data || data.length < 2) {
+        console.error("Insufficient data to zoom. Data:", data);
+        return;
+    }
 
-    // Create an extent from the polyline coordinates
+    // Extract the start and end points
+    const start = data[0];
+    const end = data[data.length - 1];
+
+    // Log coordinates for debugging
+    console.log("Start point:", start);
+    console.log("End point:", end);
+
+    // Create an extent that covers the start and end points
     const extent = {
-        xmin: Math.min(...polylineCoordinates.map(coord => coord[0])), // Min longitude
-        ymin: Math.min(...polylineCoordinates.map(coord => coord[1])), // Min latitude
-        xmax: Math.max(...polylineCoordinates.map(coord => coord[0])), // Max longitude
-        ymax: Math.max(...polylineCoordinates.map(coord => coord[1])), // Max latitude
+        xmin: Math.min(start[0], end[0]), // Min longitude
+        ymin: Math.min(start[1], end[1]), // Min latitude
+        xmax: Math.max(start[0], end[0]), // Max longitude
+        ymax: Math.max(start[1], end[1]), // Max latitude
         spatialReference: { wkid: 4326 } // WGS 84 spatial reference
     };
 
-    // Adjust zoom level based on device type (mobile vs desktop)
-    const isMobile = window.innerWidth <= 768; // Check for mobile devices
-    const zoomLevel = isMobile ? 8 : 10; // Use a wider zoom for mobile, more detailed for desktop
+    // Log extent for debugging
+    console.log("Calculated extent:", extent);
 
-    // Set the extent and zoom level
+    // Attempt to zoom to the extent
+    view.goTo(extent).then(() => {
+        console.log("Zoom to extent successful!");
+    }).catch((error) => {
+        console.error("Error zooming to extent:", error);
+    });
+
+    // Test direct zoom using a center and zoom level (for comparison)
     view.goTo({
-        extent: extent,
-        zoom: zoomLevel
-    }).catch(error => {
-        console.error("Error zooming to flight plan: ", error);
+        center: [(start[0] + end[0]) / 2, (start[1] + end[1]) / 2], // Center the map at midpoint
+        zoom: 8  // Set a reasonable zoom level for the flight path
+    }).then(() => {
+        console.log("Direct zoom successful!");
+    }).catch((error) => {
+        console.error("Error with direct zoom:", error);
     });
 }
     
