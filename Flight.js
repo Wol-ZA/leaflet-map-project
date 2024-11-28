@@ -377,7 +377,7 @@ function zoomToFlightPlan(data, view) {
     // Test direct zoom using a center and zoom level (for comparison)
     view.goTo({
         center: [(start[0] + end[0]) / 2, (start[1] + end[1]) / 2], // Center the map at midpoint
-        zoom: 8  // Set a reasonable zoom level for the flight path
+        zoom: 10  // Set a reasonable zoom level for the flight path
     }).then(() => {
         console.log("Direct zoom successful!");
     }).catch((error) => {
