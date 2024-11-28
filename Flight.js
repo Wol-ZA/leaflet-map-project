@@ -374,10 +374,26 @@ function zoomToFlightPlan(data, view) {
         console.error("Error zooming to extent:", error);
     });
 
-    // Test direct zoom using a center and zoom level (for comparison)
+    // Calculate the center of the map (midpoint between start and end)
+    const center = [(start[0] + end[0]) / 2, (start[1] + end[1]) / 2];
+
+    // Calculate zoom level based on the distance between start and end (optional refinement)
+    const distance = Math.sqrt(Math.pow(end[0] - start[0], 2) + Math.pow(end[1] - start[1], 2));
+    let zoomLevel = 8;  // Default zoom level
+
+    if (distance < 0.5) {
+        zoomLevel = 12;  // Zoom in for small distances
+    } else if (distance < 2) {
+        zoomLevel = 10;  // Moderate zoom for medium distances
+    }
+
+    // Log calculated zoom level
+    console.log("Calculated zoom level:", zoomLevel);
+
+    // Test direct zoom using a center and zoom level
     view.goTo({
-        center: [(start[0] + end[0]) / 2, (start[1] + end[1]) / 2], // Center the map at midpoint
-        zoom: 8  // Set a reasonable zoom level for the flight path
+        center: center, // Center the map at midpoint
+        zoom: zoomLevel  // Adjust zoom level based on distance
     }).then(() => {
         console.log("Direct zoom successful!");
     }).catch((error) => {
