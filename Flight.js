@@ -339,6 +339,24 @@ window.addMarkersAndDrawLine = function (data) {
         symbol: { type: "simple-line", color: [0, 0, 255, 0.5], width: 2 }
     });
     draggableGraphicsLayer.add(polylineGraphic);
+    zoomToFlightPlan(polylineCoordinates);
+
+    function zoomToFlightPlan(polylineCoordinates) {
+    if (polylineCoordinates.length === 0) return;
+
+    // Create an extent from the polyline coordinates
+    const extent = {
+        xmin: Math.min(...polylineCoordinates.map(coord => coord[0])), // Min longitude
+        ymin: Math.min(...polylineCoordinates.map(coord => coord[1])), // Min latitude
+        xmax: Math.max(...polylineCoordinates.map(coord => coord[0])), // Max longitude
+        ymax: Math.max(...polylineCoordinates.map(coord => coord[1])), // Max latitude
+        spatialReference: { wkid: 4326 } // WGS 84 spatial reference
+    };
+
+    // Use the view's goTo method to zoom to the extent
+    mapView.goTo({ extent }).catch((err) => console.error("Error zooming to extent:", err));
+}
+    
 
     // Custom popup creation
     const customPopup = createPopup();
