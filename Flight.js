@@ -849,7 +849,8 @@ function getFlightPlanAsJSON() {
 
 
 window.removeMarkersAndLines = function() {
-    graphicsLayer.removeAll(); // Access graphicsLayer globally and clear all graphics
+    draggableGraphicsLayer.removeAll();
+   // graphicsLayer.removeAll(); // Access graphicsLayer globally and clear all graphics
 };
     
     // Initial layer visibility toggle
