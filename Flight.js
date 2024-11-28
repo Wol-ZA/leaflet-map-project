@@ -17,7 +17,7 @@ require([
 });
 
     // Create the MapView centered on George, South Africa
-    let view = new MapView({
+    window.view = new MapView({
         container: "viewDiv",
         map: map,
         center: [22.4617, -33.9646],
