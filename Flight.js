@@ -354,7 +354,7 @@ window.addMarkersAndDrawLine = function (data) {
     };
 
     // Use the view's goTo method to zoom to the extent
-    mapView.goTo({ extent }).catch((err) => console.error("Error zooming to extent:", err));
+    view.goTo({ extent }).catch((err) => console.error("Error zooming to extent:", err));
 }
     
 
