@@ -364,8 +364,17 @@ function zoomToFlightPlan(data, view) {
         spatialReference: { wkid: 4326 } // WGS 84 spatial reference
     };
 
+    // Apply some padding based on the screen size
+    const padding = window.innerWidth < 768 ? 0.1 : 0.05; // Adjust padding for mobile
+
     // Log extent for debugging
     console.log("Calculated extent:", extent);
+
+    // Apply padding to extent for better visibility on mobile screens
+    extent.xmin -= padding;
+    extent.xmax += padding;
+    extent.ymin -= padding;
+    extent.ymax += padding;
 
     // Attempt to zoom to the extent
     view.goTo(extent).then(() => {
@@ -377,14 +386,14 @@ function zoomToFlightPlan(data, view) {
     // Calculate the center of the map (midpoint between start and end)
     const center = [(start[0] + end[0]) / 2, (start[1] + end[1]) / 2];
 
-    // Calculate zoom level based on the distance between start and end (optional refinement)
+    // Calculate zoom level based on the distance between start and end
     const distance = Math.sqrt(Math.pow(end[0] - start[0], 2) + Math.pow(end[1] - start[1], 2));
-    let zoomLevel = 8;  // Default zoom level
+    let zoomLevel = window.innerWidth < 768 ? 12 : 8; // Increase zoom for mobile
 
     if (distance < 0.5) {
-        zoomLevel = 12;  // Zoom in for small distances
+        zoomLevel = window.innerWidth < 768 ? 14 : 12; // More zoom for small distances on mobile
     } else if (distance < 2) {
-        zoomLevel = 10;  // Moderate zoom for medium distances
+        zoomLevel = window.innerWidth < 768 ? 13 : 10; // Moderate zoom for mobile
     }
 
     // Log calculated zoom level
@@ -393,7 +402,7 @@ function zoomToFlightPlan(data, view) {
     // Test direct zoom using a center and zoom level
     view.goTo({
         center: center, // Center the map at midpoint
-        zoom: zoomLevel  // Adjust zoom level based on distance
+        zoom: zoomLevel  // Adjust zoom level based on distance and device type
     }).then(() => {
         console.log("Direct zoom successful!");
     }).catch((error) => {
