@@ -17,7 +17,7 @@ require([
 });
 
     // Create the MapView centered on George, South Africa
-    let view = new MapView({
+    window.view = new MapView({
         container: "viewDiv",
         map: map,
         center: [22.4617, -33.9646],
@@ -354,7 +354,7 @@ window.addMarkersAndDrawLine = function (data) {
     };
 
     // Use the view's goTo method to zoom to the extent
-    map.goTo({ extent }).catch((err) => console.error("Error zooming to extent:", err));
+    view.goTo({ extent }).catch((err) => console.error("Error zooming to extent:", err));
 }
     
 
