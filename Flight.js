@@ -295,6 +295,7 @@ window.addMarkersAndDrawLine = function (data) {
     ];
 
     const draggableGraphicsLayer = new GraphicsLayer({ zIndex: 1000 });
+    window.draggableGraphicsLayer = draggableGraphicsLayer;
     map.add(draggableGraphicsLayer);
     draggableGraphicsLayer.removeAll();
 
