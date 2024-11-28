@@ -356,7 +356,7 @@ function zoomToFlightPlan(data, view) {
     console.log("End point:", end);
 
     // Create an extent that covers the start and end points
-    let extent = {
+    const extent = {
         xmin: Math.min(start[0], end[0]), // Min longitude
         ymin: Math.min(start[1], end[1]), // Min latitude
         xmax: Math.max(start[0], end[0]), // Max longitude
@@ -364,60 +364,26 @@ function zoomToFlightPlan(data, view) {
         spatialReference: { wkid: 4326 } // WGS 84 spatial reference
     };
 
-    // Apply a larger padding based on the screen size
-    const padding = window.innerWidth < 768 ? 0.1 : 0.05; // Larger padding for mobile
-
     // Log extent for debugging
     console.log("Calculated extent:", extent);
 
-    // Apply padding to the extent to ensure both points have enough space on mobile
-    extent.xmin -= padding;
-    extent.xmax += padding;
-    extent.ymin -= padding;
-    extent.ymax += padding;
-
-    // Zoom to the extent with a fallback for mobile responsiveness
-    view.goTo(extent, { animate: true }).then(() => {
+    // Attempt to zoom to the extent
+    view.goTo(extent).then(() => {
         console.log("Zoom to extent successful!");
     }).catch((error) => {
         console.error("Error zooming to extent:", error);
     });
 
-    // Calculate the center of the map (midpoint between start and end)
-    const center = [(start[0] + end[0]) / 2, (start[1] + end[1]) / 2];
-
-    // Calculate zoom level based on the distance between start and end
-    const distance = Math.sqrt(Math.pow(end[0] - start[0], 2) + Math.pow(end[1] - start[1], 2));
-
-    let zoomLevel = 8; // Default zoom level
-
-    // Adjust zoom based on the screen size and distance
-    if (window.innerWidth < 768) {
-        // Mobile zoom adjustments for more visibility
-        zoomLevel = 12; // Zoom out further on mobile to accommodate the points
-    } else {
-        // Adjust zoom for larger screens based on distance
-        if (distance < 0.5) {
-            zoomLevel = 10;
-        } else if (distance < 2) {
-            zoomLevel = 9;
-        }
-    }
-
-    // Log calculated zoom level for debugging
-    console.log("Calculated zoom level:", zoomLevel);
-
-    // Adjust zoom based on extent
+    // Test direct zoom using a center and zoom level (for comparison)
     view.goTo({
-        center: center,
-        zoom: zoomLevel
+        center: [(start[0] + end[0]) / 2, (start[1] + end[1]) / 2], // Center the map at midpoint
+        zoom: 8  // Set a reasonable zoom level for the flight path
     }).then(() => {
         console.log("Direct zoom successful!");
     }).catch((error) => {
         console.error("Error with direct zoom:", error);
     });
 }
-
 
     
 
