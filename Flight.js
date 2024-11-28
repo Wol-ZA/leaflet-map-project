@@ -341,20 +341,26 @@ window.addMarkersAndDrawLine = function (data) {
     draggableGraphicsLayer.add(polylineGraphic);
     zoomToFlightPlan(polylineCoordinates,view);
 
-    function zoomToFlightPlan(polylineCoordinates,view) {
+function zoomToFlightPlan(polylineCoordinates, view) {
     if (polylineCoordinates.length === 0) return;
 
-    // Create an extent from the polyline coordinates
+    // Calculate extent values
+    const xmin = Math.min(...polylineCoordinates.map(coord => coord[0])); // Min longitude
+    const ymin = Math.min(...polylineCoordinates.map(coord => coord[1])); // Min latitude
+    const xmax = Math.max(...polylineCoordinates.map(coord => coord[0])); // Max longitude
+    const ymax = Math.max(...polylineCoordinates.map(coord => coord[1])); // Max latitude
+
+    // Create an Extent object
     const extent = {
-        xmin: Math.min(...polylineCoordinates.map(coord => coord[0])), // Min longitude
-        ymin: Math.min(...polylineCoordinates.map(coord => coord[1])), // Min latitude
-        xmax: Math.max(...polylineCoordinates.map(coord => coord[0])), // Max longitude
-        ymax: Math.max(...polylineCoordinates.map(coord => coord[1])), // Max latitude
+        xmin: xmin,
+        ymin: ymin,
+        xmax: xmax,
+        ymax: ymax,
         spatialReference: { wkid: 4326 } // WGS 84 spatial reference
     };
 
-    // Use the view's goTo method to zoom to the extent
-    view.goTo({ extent }).catch((err) => console.error("Error zooming to extent:", err));
+    // Use view.goTo to zoom and pan to the extent
+    view.goTo({ target: extent }).catch(err => console.error("Error zooming to extent:", err));
 }
     
 
