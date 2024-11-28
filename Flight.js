@@ -461,6 +461,7 @@ function generatePopupHTML(content, pointsWithinRadius) {
         `).join("");
 
     return `
+        <button class="delete-button">Delete</button>
         <h3>Current Location</h3>
         <div class="content">${content}</div>
         <div class="input-group">
@@ -471,13 +472,13 @@ function generatePopupHTML(content, pointsWithinRadius) {
             <div>
                 <button>Create</button>
                 <button class="cancel">Cancel</button>
-                <button class="delete">Delete</button>
             </div>
         </div>
         <div class="poi-tags">
             ${poiTags}
         </div>`;
 }
+
 
 
     let originalPositionMark = null;
@@ -678,34 +679,38 @@ if (action === "start") {
     });
 
   customPopup.addEventListener("click", (event) => {
-    // Check for the "Delete" button click
-    if (event.target.classList.contains("delete")) {
+    if (event.target.classList.contains("delete-button")) {
         console.log("Delete button clicked");
 
         if (view.draggedGraphic) {
-            // Find the graphic to delete
-            const markerToDelete = view.draggedGraphic;
-
-            // Remove the marker from the layer
-            draggableGraphicsLayer.remove(markerToDelete);
-
-            // Also remove the corresponding polyline point
-            const index = markerGraphics.indexOf(markerToDelete);
+            // Remove the dragged marker
+            const index = markerGraphics.indexOf(view.draggedGraphic);
             if (index !== -1) {
-                markerGraphics.splice(index, 1); // Remove from markerGraphics
-                polylineCoordinates.splice(index, 1); // Remove the corresponding coordinate
+                markerGraphics.splice(index, 1);
+                polylineCoordinates.splice(index, 1);
+
+                // Update the polyline
                 polylineGraphic.geometry = { type: "polyline", paths: [...polylineCoordinates] };
-                hitDetectionPolyline.geometry = { type: "polyline", paths: [...polylineCoordinates] };
+                hitDetectionPolyline.geometry = { 
+                    type: "polyline", 
+                    paths: [...polylineCoordinates] 
+                };
+
+                // Remove from the graphics layer
+                draggableGraphicsLayer.remove(view.draggedGraphic);
+                console.log("Marker deleted:", view.draggedGraphic);
             }
 
-            // Optionally notify the backend or perform any necessary cleanup
+            // Notify the backend (optional)
             WL.Execute("AlertMe", getFlightPlanAsJSON());
 
-            // Hide the popup
+            // Hide popup after deletion
             hideCustomPopup();
+        } else {
+            console.warn("No marker selected for deletion.");
         }
     }
-});  
+});
     // Event listener for Cancel button
  customPopup.addEventListener("click", (event) => {
     if (event.target.classList.contains("cancel")) {
