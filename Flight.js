@@ -471,6 +471,7 @@ function generatePopupHTML(content, pointsWithinRadius) {
             <div>
                 <button>Create</button>
                 <button class="cancel">Cancel</button>
+                <button class="delete">Delete</button>
             </div>
         </div>
         <div class="poi-tags">
@@ -676,6 +677,35 @@ if (action === "start") {
 
     });
 
+  customPopup.addEventListener("click", (event) => {
+    // Check for the "Delete" button click
+    if (event.target.classList.contains("delete")) {
+        console.log("Delete button clicked");
+
+        if (view.draggedGraphic) {
+            // Find the graphic to delete
+            const markerToDelete = view.draggedGraphic;
+
+            // Remove the marker from the layer
+            draggableGraphicsLayer.remove(markerToDelete);
+
+            // Also remove the corresponding polyline point
+            const index = markerGraphics.indexOf(markerToDelete);
+            if (index !== -1) {
+                markerGraphics.splice(index, 1); // Remove from markerGraphics
+                polylineCoordinates.splice(index, 1); // Remove the corresponding coordinate
+                polylineGraphic.geometry = { type: "polyline", paths: [...polylineCoordinates] };
+                hitDetectionPolyline.geometry = { type: "polyline", paths: [...polylineCoordinates] };
+            }
+
+            // Optionally notify the backend or perform any necessary cleanup
+            WL.Execute("AlertMe", getFlightPlanAsJSON());
+
+            // Hide the popup
+            hideCustomPopup();
+        }
+    }
+});  
     // Event listener for Cancel button
  customPopup.addEventListener("click", (event) => {
     if (event.target.classList.contains("cancel")) {
