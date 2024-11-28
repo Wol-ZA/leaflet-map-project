@@ -367,11 +367,21 @@ function zoomToFlightPlan(data, view) {
     // Log extent for debugging
     console.log("Calculated extent:", extent);
 
-    // Zoom the map view to the extent
+    // Attempt to zoom to the extent
     view.goTo(extent).then(() => {
-        console.log("Zoom successful!");
+        console.log("Zoom to extent successful!");
     }).catch((error) => {
         console.error("Error zooming to extent:", error);
+    });
+
+    // Test direct zoom using a center and zoom level (for comparison)
+    view.goTo({
+        center: [(start[0] + end[0]) / 2, (start[1] + end[1]) / 2], // Center the map at midpoint
+        zoom: 8  // Set a reasonable zoom level for the flight path
+    }).then(() => {
+        console.log("Direct zoom successful!");
+    }).catch((error) => {
+        console.error("Error with direct zoom:", error);
     });
 }
     
