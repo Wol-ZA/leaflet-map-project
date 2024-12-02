@@ -679,19 +679,23 @@ if (activeCircleGraphic && activeCircleGraphic.geometry) {
         const limitedPoints = pointsWithinRadius.slice(0, 5);
 
         // Create content for the popup from the limited points
-        const content = limitedPoints.map(point => {
-            console.log("Creating popup content for point:", point); // Debugging: Log each point
+       const content = limitedPoints.map(point => {
+    // Truncate description to 100 characters, and append "..." if it's longer than 100 characters
+    const truncatedDescription = point.description.length > 100
+        ? point.description.slice(0, 100) + "..."
+        : point.description;
 
-            return `
-                <div class="item">
-                    <div class="icon">
-                        <img src="${point.icon}" alt="${point.name}" style="width: 16px; height: 16px; margin-right: 5px;">
-                        ${point.name}
-                    </div>
-                    <span class="identifier">${point.description}</span>
-                </div>
-            `;
-        }).join(""); // Combine all items into one string
+    return `
+        <div class="item">
+            <div class="icon">
+                <img src="${point.icon}" alt="${point.name}" style="width: 16px; height: 16px; margin-right: 5px;">
+                ${point.name}
+            </div>
+            <span class="identifier">${truncatedDescription}</span>
+        </div>
+    `;
+}).join(""); // Combine all items into one string
+
 
         console.log("Popup content:", content); // Debugging: Log the final content string
 
