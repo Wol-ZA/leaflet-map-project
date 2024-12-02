@@ -547,6 +547,7 @@ customPopup.querySelectorAll(".poi-tag").forEach((tag) => {
             }
 
             // Notify the backend about the updated marker
+            console.log(getFlightPlanAsJSON());
             WL.Execute("AlertMe", getFlightPlanAsJSON());
 
             // Hide the popup after updating
@@ -966,7 +967,6 @@ function getFlightPlanAsJSON() {
         latitude: graphic.geometry.latitude,
         longitude: graphic.geometry.longitude
     }));
-    console.log(JSON.stringify(flightPlan, null, 2));
     return JSON.stringify(flightPlan, null, 2); // Pretty-printed JSON
 }
 };
