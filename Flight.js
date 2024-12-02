@@ -966,7 +966,7 @@ function getFlightPlanAsJSON() {
         latitude: graphic.geometry.latitude,
         longitude: graphic.geometry.longitude
     }));
-    console.log(JSON.stringify(flightPlan, null, 2);)
+    console.log(JSON.stringify(flightPlan, null, 2));
     return JSON.stringify(flightPlan, null, 2); // Pretty-printed JSON
 }
 };
