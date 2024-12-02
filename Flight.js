@@ -575,7 +575,7 @@ customPopup.querySelectorAll(".poi-tag").forEach((tag) => {
     function createCircle(mapPoint) {
         const circleGeometry = new Circle({
             center: mapPoint,
-            radius: 37040, // 20 nautical miles in meters
+            radius: 9260, // 20 nautical miles in meters
             geodesic: true
         });
 
