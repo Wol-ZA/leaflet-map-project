@@ -667,40 +667,34 @@ if (action === "start") {
 if (activeCircleGraphic && activeCircleGraphic.geometry) {
     const mapPoint = view.draggedGraphic.geometry;
 
-    // List of layers to check for visibility
-    const layers = [sacaaLayer, aerodromeAipLayer, aerodromeAicLayer, unlicensedLayer, atnsLayer, militaryLayer, helistopsLayer];
+    // Use getFeaturesWithinRadius to get points within the circle radius
+    getFeaturesWithinRadius(mapPoint, (pointsWithinRadius) => {
+        console.log("Points within radius:", pointsWithinRadius); // Debugging: Check the points passed
 
-    // Filter out points that are in invisible layers
-    const visiblePoints = [];
-    layers.forEach(layer => {
-        if (layer.visible) {
-            // Collect points from visible layers
-            getFeaturesWithinRadius(mapPoint, (pointsWithinRadius) => {
-                pointsWithinRadius.forEach(point => {
-                    if (point.layer === layer) {  // Assuming each point has a reference to its layer
-                        visiblePoints.push(point);
-                    }
-                });
-            });
-        }
+        // Limit the number of points to 5
+        const limitedPoints = pointsWithinRadius.slice(0, 5);
+
+        // Create content for the popup from the limited points
+        const content = limitedPoints.map(point => {
+            console.log("Creating popup content for point:", point); // Debugging: Log each point
+
+            return `
+                <div class="item">
+                    <div class="icon">
+                        <img src="${point.icon}" alt="${point.name}" style="width: 16px; height: 16px; margin-right: 5px;">
+                        ${point.name}
+                    </div>
+                    <span class="identifier">${point.description}</span>
+                </div>
+            `;
+        }).join(""); // Combine all items into one string
+
+        console.log("Popup content:", content); // Debugging: Log the final content string
+
+        // Get the screen position for the popup and display it
+        const screenPoint = view.toScreen(mapPoint);
+        showCustomPopup(content, screenPoint, limitedPoints); // Show popup with content
     });
-
-    // Limit the visible points to 5
-    const limitedPoints = visiblePoints.slice(0, 5);
-
-    const content = limitedPoints.map(point => 
-        `<div class="item">
-            <div class="icon">
-                <img src="${point.icon}" alt="${point.name}" style="width: 16px; height: 16px; margin-right: 5px;">
-                ${point.name}
-            </div>
-            <span class="identifier">${point.description}</span>
-        </div>`
-    ).join("");
-
-    const screenPoint = view.toScreen(mapPoint);
-    showCustomPopup(content, screenPoint, limitedPoints);
-
 } else {
     console.warn("Active circle graphic or its geometry was still null after recreation.");
 }
