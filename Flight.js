@@ -429,12 +429,15 @@ function getFeaturesWithinRadius(mapPoint, callback) {
     const layerPromises = layers.map((layer) => {
         return layer.queryFeatures({
             geometry: activeCircleGraphic.geometry,
-            spatialRelationship: "intersects",
+            spatialRelationship: "intersects", // Make sure this spatial relationship is correct for your data
             returnGeometry: true, // Ensure geometry is returned
             outFields: ["*"]
         }).then((result) => {
+            console.log("Query result for layer:", layer, result); // Log the result to see if any features were returned
             result.features.forEach((feature) => {
                 if (feature.geometry) { // Ensure geometry exists
+                    console.log("Feature found:", feature); // Log the feature to inspect its attributes
+
                     const layerName = Object.keys(layerIcons).find(key => layer === eval(key));
                     const iconUrl = layerIcons[layerName];
 
@@ -456,14 +459,13 @@ function getFeaturesWithinRadius(mapPoint, callback) {
 
     // Use Promise.all to wait for all layer queries to complete
     Promise.all(layerPromises).then(() => {
-        // Once all queries are complete, call the callback with the results
-        callback(pointsWithinRadius);
+        console.log("Points within radius:", pointsWithinRadius); // Log the final points array
+        callback(pointsWithinRadius); // Call the callback with the final list of points
     }).catch((error) => {
         console.error("Error with layer queries:", error);
         callback([]); // Fallback to empty array in case of error
     });
 }
-
 
 
     // Function to generate HTML for the popup
