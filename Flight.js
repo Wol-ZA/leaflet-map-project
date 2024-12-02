@@ -653,26 +653,29 @@ if (action === "start") {
         activeCircleGraphic = createCircle(view.draggedGraphic.geometry);
     }
 
-    if (activeCircleGraphic && activeCircleGraphic.geometry) {
-        const mapPoint = view.draggedGraphic.geometry;
+if (activeCircleGraphic && activeCircleGraphic.geometry) {
+    const mapPoint = view.draggedGraphic.geometry;
 
-        getFeaturesWithinRadius(mapPoint, (pointsWithinRadius) => {
-            const content = pointsWithinRadius.map(point => 
-                `<div class="item">
-                    <div class="icon">
-                        <img src="${point.icon}" alt="${point.name}" style="width: 16px; height: 16px; margin-right: 5px;">
-                        ${point.name}
-                    </div>
-                    <span class="identifier">${point.description}</span>
-                </div>`
-            ).join("");
+    getFeaturesWithinRadius(mapPoint, (pointsWithinRadius) => {
+        // Limit the number of features to 5
+        const limitedPoints = pointsWithinRadius.slice(0, 5);
 
-            const screenPoint = view.toScreen(mapPoint);
-            showCustomPopup(content, screenPoint, pointsWithinRadius);
-        });
-    } else {
-        console.warn("Active circle graphic or its geometry was still null after recreation.");
-    }
+        const content = limitedPoints.map(point => 
+            `<div class="item">
+                <div class="icon">
+                    <img src="${point.icon}" alt="${point.name}" style="width: 16px; height: 16px; margin-right: 5px;">
+                    ${point.name}
+                </div>
+                <span class="identifier">${point.description}</span>
+            </div>`
+        ).join("");
+
+        const screenPoint = view.toScreen(mapPoint);
+        showCustomPopup(content, screenPoint, limitedPoints);
+    });
+} else {
+    console.warn("Active circle graphic or its geometry was still null after recreation.");
+}
 
     // Clean up
     if (activeCircleGraphic) {
