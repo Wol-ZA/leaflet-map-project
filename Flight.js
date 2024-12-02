@@ -936,7 +936,13 @@ function getFlightPlanAsJSON() {
     return JSON.stringify(flightPlan, null, 2); // Pretty-printed JSON
 }
 };
-
+    
+view.on("click", function () {
+        if (layerTogglePanel.style.display === "none" || layerTogglePanel.style.display === "") {
+        } else {
+            layerTogglePanel.style.display = "none"; // Hide the panel
+        }
+    });
 
 window.removeMarkersAndLines = function() {
     draggableGraphicsLayer.removeAll();
