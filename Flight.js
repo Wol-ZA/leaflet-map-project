@@ -46,14 +46,21 @@ window.createGeoJSONLayer = function(url, colorHTML, alpha) {
                 type: "simple-fill",
                 color: htmlToRGBA(colorHTML, alpha),  // Convert HTML color to RGBA
                 outline: {
-                    color: htmlToRGBA(colorHTML, 1),  // Full opacity for outline
+                    color: darkenColor(colorHTML, 0.7),  // Darken the fill color for outline
                     width: 2,
                     style: "solid"
-                }
+                    }
             }
         },
         opacity: 0.15
     });
+}
+function darkenColor(colorHTML, factor) {
+    const hex = colorHTML.startsWith('#') ? colorHTML.slice(1) : colorHTML;
+    const r = Math.max(0, parseInt(hex.slice(0, 2), 16) * factor);
+    const g = Math.max(0, parseInt(hex.slice(2, 4), 16) * factor);
+    const b = Math.max(0, parseInt(hex.slice(4, 6), 16) * factor);
+    return [r, g, b, 1];
 }
 
  // Function to create a GeoJSONLayer with a specific icon for points
