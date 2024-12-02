@@ -656,23 +656,40 @@ if (action === "start") {
 if (activeCircleGraphic && activeCircleGraphic.geometry) {
     const mapPoint = view.draggedGraphic.geometry;
 
-    getFeaturesWithinRadius(mapPoint, (pointsWithinRadius) => {
-        // Limit the number of features to 5
-        const limitedPoints = pointsWithinRadius.slice(0, 5);
+    // List of layers to check for visibility
+    const layers = [sacaaLayer, aerodromeAipLayer, aerodromeAicLayer, unlicensedLayer, atnsLayer, militaryLayer, helistopsLayer];
 
-        const content = limitedPoints.map(point => 
-            `<div class="item">
-                <div class="icon">
-                    <img src="${point.icon}" alt="${point.name}" style="width: 16px; height: 16px; margin-right: 5px;">
-                    ${point.name}
-                </div>
-                <span class="identifier">${point.description}</span>
-            </div>`
-        ).join("");
-
-        const screenPoint = view.toScreen(mapPoint);
-        showCustomPopup(content, screenPoint, limitedPoints);
+    // Filter out points that are in invisible layers
+    const visiblePoints = [];
+    layers.forEach(layer => {
+        if (layer.visible) {
+            // Collect points from visible layers
+            getFeaturesWithinRadius(mapPoint, (pointsWithinRadius) => {
+                pointsWithinRadius.forEach(point => {
+                    if (point.layer === layer) {  // Assuming each point has a reference to its layer
+                        visiblePoints.push(point);
+                    }
+                });
+            });
+        }
     });
+
+    // Limit the visible points to 5
+    const limitedPoints = visiblePoints.slice(0, 5);
+
+    const content = limitedPoints.map(point => 
+        `<div class="item">
+            <div class="icon">
+                <img src="${point.icon}" alt="${point.name}" style="width: 16px; height: 16px; margin-right: 5px;">
+                ${point.name}
+            </div>
+            <span class="identifier">${point.description}</span>
+        </div>`
+    ).join("");
+
+    const screenPoint = view.toScreen(mapPoint);
+    showCustomPopup(content, screenPoint, limitedPoints);
+
 } else {
     console.warn("Active circle graphic or its geometry was still null after recreation.");
 }
