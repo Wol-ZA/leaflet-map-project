@@ -681,8 +681,8 @@ if (activeCircleGraphic && activeCircleGraphic.geometry) {
         // Create content for the popup from the limited points
        const content = limitedPoints.map(point => {
     // Truncate description to 100 characters, and append "..." if it's longer than 100 characters
-    const truncatedDescription = point.description.length > 100
-        ? point.description.slice(0, 100) + "..."
+    const truncatedDescription = point.description.length > 25
+        ? point.description.slice(0, 25) + "..."
         : point.description;
 
     return `
