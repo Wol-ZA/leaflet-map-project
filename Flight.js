@@ -46,7 +46,7 @@ window.createGeoJSONLayer = function(url, colorHTML, alpha) {
                 type: "simple-fill",
                 color: htmlToRGBA(colorHTML, alpha),  // Convert HTML color to RGBA
                 outline: {
-                    color: darkenColor(colorHTML, 0.7),  // Darken the fill color for outline
+                    color: darkenColor(colorHTML, 1),  // Darken the fill color for outline
                     width: 2,
                     style: "solid"
                     }
