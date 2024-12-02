@@ -25,9 +25,9 @@ require([
         ui: { components: [] }
     });
 
-function decimalToRGBA(colorDecimal, alpha) {
-    // Convert decimal to hexadecimal and pad with leading zeros if necessary
-    const hex = colorDecimal.toString(16).padStart(6, "0");
+function htmlToRGBA(colorHTML, alpha) {
+    // Remove the '#' from the start if it exists
+    const hex = colorHTML.startsWith('#') ? colorHTML.slice(1) : colorHTML;
 
     // Extract the red, green, and blue components
     const r = parseInt(hex.slice(0, 2), 16);
@@ -37,16 +37,16 @@ function decimalToRGBA(colorDecimal, alpha) {
     return [r, g, b, alpha];
 }
 
-window.createGeoJSONLayer = function(url, colorDecimal, alpha) {
+window.createGeoJSONLayer = function(url, colorHTML, alpha) {
     return new GeoJSONLayer({
         url: url,
         renderer: {
             type: "simple",
             symbol: {
                 type: "simple-fill",
-                color: decimalToRGBA(colorDecimal, alpha),  // Convert decimal to RGBA
+                color: htmlToRGBA(colorHTML, alpha),  // Convert HTML color to RGBA
                 outline: {
-                    color: decimalToRGBA(colorDecimal, 1),  // Full opacity for outline
+                    color: htmlToRGBA(colorHTML, 1),  // Full opacity for outline
                     width: 2,
                     style: "solid"
                 }
