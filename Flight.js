@@ -61,6 +61,7 @@ window.createGeoJSONLayer = async function(url, colorHTML, alpha, uniqueField = 
         // Map unique values to colors in the colorSequence with cycling
         const uniqueValueInfos = uniqueValues.map((value, index) => {
             const color = colorSequence[index % colorSequence.length];
+            console.log(`Assigning color ${color} to value: ${value}`);  // Debug log
             return {
                 value: value,
                 symbol: {
@@ -77,7 +78,7 @@ window.createGeoJSONLayer = async function(url, colorHTML, alpha, uniqueField = 
 
         renderer = {
             type: "unique-value",
-            field: `properties.${uniqueField}`,
+            field: `properties.${uniqueField}`,  // Ensure this points to the correct field in properties
             uniqueValueInfos,
             defaultSymbol: {
                 type: "simple-fill",
@@ -89,6 +90,7 @@ window.createGeoJSONLayer = async function(url, colorHTML, alpha, uniqueField = 
             }
         };
     } else {
+        // Fallback color if no uniqueField or colorSequence
         renderer = {
             type: "simple",
             symbol: {
@@ -102,6 +104,8 @@ window.createGeoJSONLayer = async function(url, colorHTML, alpha, uniqueField = 
             }
         };
     }
+
+    console.log("Renderer:", renderer);  // Debug log to see the final renderer
 
     return new GeoJSONLayer({
         url: url,
