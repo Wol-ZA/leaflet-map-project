@@ -41,7 +41,7 @@ function darkenColor(colorHTML, factor) {
     return [r, g, b, 1];
 }
 
-function createGeoJSONLayer(url, colorHTML, alpha, uniqueField = null, colorSequence = []) {
+window.createGeoJSONLayer = function(url, colorHTML, alpha, uniqueField = null, colorSequence = []) {
     let renderer;
     if (uniqueField && colorSequence.length > 0) {
         // Create a unique value renderer if uniqueField and colorSequence are provided
