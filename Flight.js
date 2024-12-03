@@ -41,83 +41,24 @@ function darkenColor(colorHTML, factor) {
     return [r, g, b, 1];
 }
 
-window.createGeoJSONLayer = async function(url, colorHTML, alpha, uniqueField = null, colorSequence = []) {
-    let renderer;
-
-    if (uniqueField && colorSequence.length > 0) {
-        // Fetch and parse the GeoJSON file
-        const response = await fetch(url);
-        const geoJsonData = await response.json();
-
-        // Log the uniqueField to check its value
-        console.log("Using unique field:", uniqueField);
-
-        // Extract unique values from the specified field
-        const uniqueValues = [...new Set(geoJsonData.features.map(feature => feature.properties[uniqueField]))];
-
-        // Log the unique values found in the GeoJSON
-        console.log("Unique values for field", uniqueField, ":", uniqueValues);
-
-        // Map unique values to colors in the colorSequence with cycling
-        const uniqueValueInfos = uniqueValues.map((value, index) => {
-            const color = colorSequence[index % colorSequence.length];
-            console.log(`Assigning color ${color} to value: ${value}`);  // Debug log
-            return {
-                value: value,
-                symbol: {
-                    type: "simple-fill",
-                    color: htmlToRGBA(color, alpha),
-                    outline: {
-                        color: darkenColor(color, 1),
-                        width: 2,
-                        style: "solid"
-                    }
-                }
-            };
-        });
-
-        // Debug: Check the uniqueValueInfos
-        console.log("Unique Value Infos:", uniqueValueInfos);
-
-        renderer = {
-            type: "unique-value",
-            field: `properties.${uniqueField}`,  // Ensure this points to the correct field in properties
-            uniqueValueInfos,
-            defaultSymbol: {
-                type: "simple-fill",
-                color: [200, 200, 200, 0.5], // Fallback gray color
-                outline: {
-                    color: [100, 100, 100, 1],
-                    width: 2
-                }
-            }
-        };
-    } else {
-        // Fallback color if no uniqueField or colorSequence
-        renderer = {
+window.createGeoJSONLayer = function(url, colorHTML, alpha) {
+    return new GeoJSONLayer({
+        url: url,
+        renderer: {
             type: "simple",
             symbol: {
                 type: "simple-fill",
-                color: htmlToRGBA(colorHTML, alpha),
+                color: htmlToRGBA(colorHTML, alpha),  // Convert HTML color to RGBA
                 outline: {
-                    color: darkenColor(colorHTML, 1),
+                    color: darkenColor(colorHTML, 1),  // Darken the fill color for outline
                     width: 2,
                     style: "solid"
-                }
+                    }
             }
-        };
-    }
-
-    // Debug: Log the final renderer before returning
-    console.log("Final Renderer:", renderer);
-
-    return new GeoJSONLayer({
-        url: url,
-        renderer: renderer,  // Make sure this renderer is passed correctly
-        opacity: alpha
+        },
+        opacity: 0.5
     });
-};
-
+}
  // Function to create a GeoJSONLayer with a specific icon for points
     function createIconGeoJSONLayer(url, iconUrl) {
         return new GeoJSONLayer({
