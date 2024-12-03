@@ -76,27 +76,45 @@ window.createGeoJSONLayer = function(url, colorHTML, alpha) {
         });
     }
 
+     function convertGeoJSONGeometry(geometry) {
+        if (geometry.type === "Polygon") {
+            return new Polygon({
+                rings: geometry.coordinates,
+                spatialReference: SpatialReference.WGS84
+            });
+        }
+        // Handle other geometry types as necessary (e.g., Point, Polyline, etc.)
+        throw new Error(`Unsupported geometry type: ${geometry.type}`);
+    }
+
+    // Function to create the GeoJSON graphic for each polygon
+    function createGeoJSONGraphic(feature, colorHTML, alpha) {
+        // Here, alpha is applied directly to the RGBA color array for the polygon's fill
+        const color = htmlToRGBA(colorHTML, alpha);  // Color with transparency
+        const outlineColor = darkenColor(colorHTML, 1);  // Darken for outline
+        const geometry = convertGeoJSONGeometry(feature.geometry);
+
+        return new Graphic({
+            geometry: geometry,
+            symbol: {
+                type: "simple-fill",
+                color: color,  // Apply color with alpha transparency
+                outline: {
+                    color: outlineColor,  // Darken for outline
+                    width: 2
+                }
+            }
+        });
+    }
+
     window.loadGeoJSONAndDisplay = function(url, opacity = 0.7) {
         fetch(url)
             .then(response => response.json())
             .then(geojson => {
-                // Map and View Setup
-                const map = new Map({
-                    basemap: 'streets-navigation-vector'
-                });
-
-                const view = new MapView({
-                    container: 'viewDiv',
-                    map: map,
-                    center: [0, 0], // Adjust to the center of your area
-                    zoom: 3 // Adjust zoom level
-                });
-
                 // Iterate through the GeoJSON features and create individual graphics
                 geojson.features.forEach((feature, index) => {
                     const color = colorSequences[index % colorSequences.length];  // Cycle color
                     const graphic = createGeoJSONGraphic(feature, color, opacity);  // Apply color with alpha and opacity
-
                     // Add the graphic to the view
                     view.graphics.add(graphic);
                 });
