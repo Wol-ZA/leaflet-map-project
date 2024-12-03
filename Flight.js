@@ -28,6 +28,22 @@ require([
         ui: { components: [] }
     });
 
+window.removeRoute = function() {
+    // Stop watching the user's location
+    if (locationWatchId) {
+        navigator.geolocation.clearWatch(locationWatchId);
+        locationWatchId = null; // Reset the watch ID
+    }
+
+    // Remove the polyline graphic from the map view
+    if (polylineGraphic) {
+        view.graphics.remove(polylineGraphic);
+        polylineGraphic = null; // Reset the polyline graphic
+    }
+
+    console.log("Route removed and location updates stopped.");
+}    
+
 function htmlToRGBA(colorHTML, alpha) {
     const hex = colorHTML.startsWith('#') ? colorHTML.slice(1) : colorHTML;
     const r = parseInt(hex.slice(0, 2), 16);
