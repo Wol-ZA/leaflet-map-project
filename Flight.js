@@ -44,15 +44,16 @@ function darkenColor(colorHTML, factor) {
     return [r, g, b, 1];
 }
 
+// Initialize global variables
 let polylineGraphic;
 let watchId;
 
 // Function to draw a line from current location to a destination
-function drawRoute(mapView, destinationLat, destinationLong) {
+function drawRoute(destinationLat, destinationLong) {
     require(["esri/geometry/Polyline", "esri/Graphic"], function(Polyline, Graphic) {
         // Clear any existing polyline
         if (polylineGraphic) {
-            mapView.graphics.remove(polylineGraphic);
+            view.graphics.remove(polylineGraphic);
         }
 
         // Function to update the line dynamically
@@ -79,10 +80,10 @@ function drawRoute(mapView, destinationLat, destinationLong) {
 
             // Add the new graphic to the map view
             if (polylineGraphic) {
-                mapView.graphics.remove(polylineGraphic);
+                view.graphics.remove(polylineGraphic);
             }
             polylineGraphic = newPolylineGraphic;
-            mapView.graphics.add(polylineGraphic);
+            view.graphics.add(polylineGraphic);
         }
 
         // Watch the user's location and update the line
@@ -97,7 +98,8 @@ function drawRoute(mapView, destinationLat, destinationLong) {
             console.error("Geolocation is not supported by this browser.");
         }
     });
-}    
+}
+
 
 window.createGeoJSONLayer = function(url, colorHTML, alpha) {
     return new GeoJSONLayer({
