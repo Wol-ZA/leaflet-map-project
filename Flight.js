@@ -46,8 +46,8 @@ window.createGeoJSONLayer = function(url, colorHTML, alpha, uniqueField = null, 
 
     if (uniqueField && colorSequence.length > 0) {
         // Fetch and parse the GeoJSON file
-        const response = await fetch(url);
-        const geoJsonData = await response.json();
+        const response = fetch(url);
+        const geoJsonData = response.json();
 
         // Extract unique values from the specified field
         const uniqueValues = [...new Set(geoJsonData.features.map(feature => feature.properties[uniqueField]))];
