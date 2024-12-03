@@ -42,40 +42,33 @@ function darkenColor(colorHTML, factor) {
 }
 
 window.createGeoJSONLayer = async function(url, colorHTML, alpha, uniqueField = null, colorSequence = []) {
-    const GeoJSONLayer = await import("esri/layers/GeoJSONLayer");
-
-    // Fetch and parse the GeoJSON file
-    const response = await fetch(url);
-    const geoJsonData = await response.json();
-
     let renderer;
 
     if (uniqueField && colorSequence.length > 0) {
+        // Fetch and parse the GeoJSON file
+        const response = await fetch(url);
+        const geoJsonData = await response.json();
+
         // Extract unique values from the specified field
         const uniqueValues = [...new Set(geoJsonData.features.map(feature => feature.properties[uniqueField]))];
-        console.log("Unique values found in GeoJSON:", uniqueValues);  // Debug log
 
-        // Map each unique value to a color from the color sequence
-        const uniqueValueInfos = uniqueValues.map((value, index) => {
-            const color = colorSequence[index % colorSequence.length]; // Cycle through colorSequence
-            console.log(`Assigning color ${color} to value: ${value}`);  // Debug log
-            return {
-                value: value,
-                symbol: {
-                    type: "simple-fill",
-                    color: htmlToRGBA(color, alpha),
-                    outline: {
-                        color: darkenColor(color, 1),
-                        width: 2,
-                        style: "solid"
-                    }
+        // Map unique values to colors in the colorSequence
+        const uniqueValueInfos = uniqueValues.map((value, index) => ({
+            value: value,
+            symbol: {
+                type: "simple-fill",
+                color: htmlToRGBA(colorSequence[index % colorSequence.length], alpha),
+                outline: {
+                    color: darkenColor(colorSequence[index % colorSequence.length], 1),
+                    width: 2,
+                    style: "solid"
                 }
-            };
-        });
+            }
+        }));
 
         renderer = {
             type: "unique-value",
-            field: `properties.${uniqueField}`, // Reference the field properly in the renderer
+            field: `properties.${uniqueField}`,
             uniqueValueInfos,
             defaultSymbol: {
                 type: "simple-fill",
@@ -107,7 +100,6 @@ window.createGeoJSONLayer = async function(url, colorHTML, alpha, uniqueField = 
         opacity: alpha
     });
 };
-
 
 
  // Function to create a GeoJSONLayer with a specific icon for points
