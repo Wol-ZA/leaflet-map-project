@@ -41,13 +41,13 @@ function darkenColor(colorHTML, factor) {
     return [r, g, b, 1];
 }
 
-window.createGeoJSONLayer = function(url, colorHTML, alpha, uniqueField = null, colorSequence = []) {
+window.createGeoJSONLayer = async function(url, colorHTML, alpha, uniqueField = null, colorSequence = []) {
     let renderer;
 
     if (uniqueField && colorSequence.length > 0) {
         // Fetch and parse the GeoJSON file
-        const response = fetch(url);
-        const geoJsonData = response.json();
+        const response = await fetch(url);
+        const geoJsonData = await response.json();
 
         // Extract unique values from the specified field
         const uniqueValues = [...new Set(geoJsonData.features.map(feature => feature.properties[uniqueField]))];
