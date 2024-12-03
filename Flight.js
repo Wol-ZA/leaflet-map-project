@@ -76,6 +76,34 @@ window.createGeoJSONLayer = function(url, colorHTML, alpha) {
         });
     }
 
+    window.loadGeoJSONAndDisplay = function(url, opacity = 0.7) {
+        fetch(url)
+            .then(response => response.json())
+            .then(geojson => {
+                // Map and View Setup
+                const map = new Map({
+                    basemap: 'streets-navigation-vector'
+                });
+
+                const view = new MapView({
+                    container: 'viewDiv',
+                    map: map,
+                    center: [0, 0], // Adjust to the center of your area
+                    zoom: 3 // Adjust zoom level
+                });
+
+                // Iterate through the GeoJSON features and create individual graphics
+                geojson.features.forEach((feature, index) => {
+                    const color = colorSequences[index % colorSequences.length];  // Cycle color
+                    const graphic = createGeoJSONGraphic(feature, color, opacity);  // Apply color with alpha and opacity
+
+                    // Add the graphic to the view
+                    view.graphics.add(graphic);
+                });
+            })
+            .catch(error => console.error('Error loading GeoJSON:', error));
+    };
+
     // Define point layers and add to the map
     const sacaaLayer = createIconGeoJSONLayer("SACAA.geojson", "sacaa.png");
     const aerodromeAipLayer = createIconGeoJSONLayer("Aerodrome_AIP.geojson", "aip.png");
