@@ -8,8 +8,10 @@ require([
     "esri/Graphic",
     "esri/geometry/Point",
     "esri/symbols/PictureMarkerSymbol",
-    "esri/layers/GraphicsLayer"
-], function(Circle, Extent, Map, MapView, SceneView, GeoJSONLayer, Graphic, Point, PictureMarkerSymbol, GraphicsLayer) {
+    "esri/layers/GraphicsLayer",
+    "esri/geometry/Polygon",
+     "esri/geometry/SpatialReference"
+], function(Circle, Extent, Map, MapView, SceneView, GeoJSONLayer, Graphic, Point, PictureMarkerSymbol, GraphicsLayer,Polygon,SpatialReference) {
 
     // Create the map
    window.map = new Map({
