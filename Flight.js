@@ -46,7 +46,7 @@ function darkenColor(colorHTML, factor) {
 
 // Initialize global variables
 let polylineGraphic;
-let watchId;
+let locationWatchId; // Renamed from watchId
 
 // Function to draw a line from current location to a destination
 function drawRoute(destinationLat, destinationLong) {
@@ -88,10 +88,10 @@ function drawRoute(destinationLat, destinationLong) {
 
         // Watch the user's location and update the line
         if (navigator.geolocation) {
-            if (watchId) {
-                navigator.geolocation.clearWatch(watchId);
+            if (locationWatchId) {
+                navigator.geolocation.clearWatch(locationWatchId);
             }
-            watchId = navigator.geolocation.watchPosition(updateLine, (error) => {
+            locationWatchId = navigator.geolocation.watchPosition(updateLine, (error) => {
                 console.error("Error watching position:", error);
             });
         } else {
