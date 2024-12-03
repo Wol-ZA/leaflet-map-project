@@ -44,6 +44,61 @@ function darkenColor(colorHTML, factor) {
     return [r, g, b, 1];
 }
 
+let polylineGraphic;
+let watchId;
+
+// Function to draw a line from current location to a destination
+function drawRoute(mapView, destinationLat, destinationLong) {
+    require(["esri/geometry/Polyline", "esri/Graphic"], function(Polyline, Graphic) {
+        // Clear any existing polyline
+        if (polylineGraphic) {
+            mapView.graphics.remove(polylineGraphic);
+        }
+
+        // Function to update the line dynamically
+        function updateLine(position) {
+            const userLocation = [position.coords.longitude, position.coords.latitude];
+
+            // Create a polyline geometry
+            const polyline = new Polyline({
+                paths: [userLocation, [destinationLong, destinationLat]],
+                spatialReference: { wkid: 4326 } // WGS84
+            });
+
+            // Create a graphic for the polyline
+            const lineSymbol = {
+                type: "simple-line", // autocasts as new SimpleLineSymbol()
+                color: [226, 119, 40], // Orange
+                width: 4
+            };
+
+            const newPolylineGraphic = new Graphic({
+                geometry: polyline,
+                symbol: lineSymbol
+            });
+
+            // Add the new graphic to the map view
+            if (polylineGraphic) {
+                mapView.graphics.remove(polylineGraphic);
+            }
+            polylineGraphic = newPolylineGraphic;
+            mapView.graphics.add(polylineGraphic);
+        }
+
+        // Watch the user's location and update the line
+        if (navigator.geolocation) {
+            if (watchId) {
+                navigator.geolocation.clearWatch(watchId);
+            }
+            watchId = navigator.geolocation.watchPosition(updateLine, (error) => {
+                console.error("Error watching position:", error);
+            });
+        } else {
+            console.error("Geolocation is not supported by this browser.");
+        }
+    });
+}    
+
 window.createGeoJSONLayer = function(url, colorHTML, alpha) {
     return new GeoJSONLayer({
         url: url,
