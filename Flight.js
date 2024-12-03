@@ -26,35 +26,13 @@ require([
     });
 
 function htmlToRGBA(colorHTML, alpha) {
-    // Remove the '#' from the start if it exists
     const hex = colorHTML.startsWith('#') ? colorHTML.slice(1) : colorHTML;
-
-    // Extract the red, green, and blue components
     const r = parseInt(hex.slice(0, 2), 16);
     const g = parseInt(hex.slice(2, 4), 16);
     const b = parseInt(hex.slice(4, 6), 16);
-
     return [r, g, b, alpha];
 }
 
-window.createGeoJSONLayer = function(url, colorHTML, alpha) {
-    return new GeoJSONLayer({
-        url: url,
-        renderer: {
-            type: "simple",
-            symbol: {
-                type: "simple-fill",
-                color: htmlToRGBA(colorHTML, alpha),  // Convert HTML color to RGBA
-                outline: {
-                    color: darkenColor(colorHTML, 1),  // Darken the fill color for outline
-                    width: 2,
-                    style: "solid"
-                    }
-            }
-        },
-        opacity: 0.5
-    });
-}
 function darkenColor(colorHTML, factor) {
     const hex = colorHTML.startsWith('#') ? colorHTML.slice(1) : colorHTML;
     const r = Math.max(0, parseInt(hex.slice(0, 2), 16) * factor);
@@ -62,6 +40,63 @@ function darkenColor(colorHTML, factor) {
     const b = Math.max(0, parseInt(hex.slice(4, 6), 16) * factor);
     return [r, g, b, 1];
 }
+
+function createGeoJSONLayer(url, colorHTML, alpha, uniqueField = null, colorSequence = []) {
+    let renderer;
+    if (uniqueField && colorSequence.length > 0) {
+        // Create a unique value renderer if uniqueField and colorSequence are provided
+        const uniqueValueInfos = colorSequence.map((color, index) => ({
+            value: index.toString(),
+            symbol: {
+                type: "simple-fill",
+                color: htmlToRGBA(color, alpha),
+                outline: {
+                    color: darkenColor(color, 1),
+                    width: 2,
+                    style: "solid"
+                }
+            }
+        }));
+
+        renderer = {
+            type: "unique-value",
+            field: uniqueField,
+            uniqueValueInfos
+        };
+    } else {
+        // Default simple renderer
+        renderer = {
+            type: "simple",
+            symbol: {
+                type: "simple-fill",
+                color: htmlToRGBA(colorHTML, alpha),
+                outline: {
+                    color: darkenColor(colorHTML, 1),
+                    width: 2,
+                    style: "solid"
+                }
+            }
+        };
+    }
+
+    // Return the GeoJSONLayer with the specified opacity
+    return new GeoJSONLayer({
+        url: url,
+        renderer: renderer,
+        opacity: alpha // Use alpha for layer opacity
+    });
+}
+
+
+// Define the color sequence for TMA
+const colorSequences = [
+    '#FF0000', // Red
+    '#00FF00', // Green
+    '#0000FF', // Blue
+    '#FFFF00', // Yellow
+    '#FF00FF', // Magenta
+    '#00FFFF'  // Cyan
+];
 
  // Function to create a GeoJSONLayer with a specific icon for points
     function createIconGeoJSONLayer(url, iconUrl) {
