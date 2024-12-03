@@ -49,7 +49,7 @@ let polylineGraphic;
 let locationWatchId; // Renamed from watchId
 
 // Function to draw a line from current location to a destination
-function drawRoute(destinationLat, destinationLong) {
+window.drawRoute = function(destinationLat, destinationLong) {
     require(["esri/geometry/Polyline", "esri/Graphic"], function(Polyline, Graphic) {
         // Clear any existing polyline
         if (polylineGraphic) {
