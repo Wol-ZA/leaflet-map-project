@@ -52,27 +52,31 @@ window.createGeoJSONLayer = async function(url, colorHTML, alpha, uniqueField = 
         // Extract unique values from the specified field
         const uniqueValues = [...new Set(geoJsonData.features.map(feature => feature.properties[uniqueField]))];
 
-        // Map unique values to colors in the colorSequence
-        const uniqueValueInfos = uniqueValues.map((value, index) => ({
-            value: value,
-            symbol: {
-                type: "simple-fill",
-                color: htmlToRGBA(colorSequence[index % colorSequence.length], alpha),
-                outline: {
-                    color: darkenColor(colorSequence[index % colorSequence.length], 1),
-                    width: 2,
-                    style: "solid"
+        // Map unique values to colors in the colorSequence with cycling
+        const uniqueValueInfos = uniqueValues.map((value, index) => {
+            // Use modulo to cycle through the colorSequence
+            const color = colorSequence[index % colorSequence.length];
+            return {
+                value: value,
+                symbol: {
+                    type: "simple-fill",
+                    color: htmlToRGBA(color, alpha),
+                    outline: {
+                        color: darkenColor(color, 1),
+                        width: 2,
+                        style: "solid"
+                    }
                 }
-            }
-        }));
+            };
+        });
 
         renderer = {
             type: "unique-value",
-            field: `properties.${uniqueField}`,
+            field: `properties.${uniqueField}`, // Ensure correct reference to the field
             uniqueValueInfos,
             defaultSymbol: {
                 type: "simple-fill",
-                color: [200, 200, 200, 0.5], // Fallback gray
+                color: [200, 200, 200, 0.5], // Fallback gray color
                 outline: {
                     color: [100, 100, 100, 1],
                     width: 2
@@ -80,6 +84,7 @@ window.createGeoJSONLayer = async function(url, colorHTML, alpha, uniqueField = 
             }
         };
     } else {
+        // If no unique field is provided, fallback to simple color
         renderer = {
             type: "simple",
             symbol: {
@@ -100,7 +105,6 @@ window.createGeoJSONLayer = async function(url, colorHTML, alpha, uniqueField = 
         opacity: alpha
     });
 };
-
 
  // Function to create a GeoJSONLayer with a specific icon for points
     function createIconGeoJSONLayer(url, iconUrl) {
