@@ -88,15 +88,6 @@ function createGeoJSONLayer(url, colorHTML, alpha, uniqueField = null, colorSequ
 }
 
 
-// Define the color sequence for TMA
-const colorSequences = [
-    '#FF0000', // Red
-    '#00FF00', // Green
-    '#0000FF', // Blue
-    '#FFFF00', // Yellow
-    '#FF00FF', // Magenta
-    '#00FFFF'  // Cyan
-];
 
  // Function to create a GeoJSONLayer with a specific icon for points
     function createIconGeoJSONLayer(url, iconUrl) {
