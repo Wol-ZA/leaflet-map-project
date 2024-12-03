@@ -12,17 +12,17 @@ require([
 ], function(Circle, Extent, Map, MapView, SceneView, GeoJSONLayer, Graphic, Point, PictureMarkerSymbol, GraphicsLayer) {
 
     // Create the map
- window.map = new Map({
-    basemap: "topo-vector"
-});
+   const map = new Map({
+        basemap: "topo-vector",
+        ground: "world-elevation"
+    });
 
     // Create the MapView centered on George, South Africa
-    window.view = new MapView({
+    const view = new MapView({
         container: "viewDiv",
         map: map,
         center: [22.4617, -33.9646],
-        zoom: 12,
-        ui: { components: [] }
+        zoom: 12
     });
 
 function htmlToRGBA(colorHTML, alpha) {
