@@ -52,7 +52,7 @@ window.createGeoJSONLayer = function(url, colorHTML, alpha) {
                     }
             }
         },
-        opacity: alpha
+        opacity: 0.5
     });
 }
 function darkenColor(colorHTML, factor) {
