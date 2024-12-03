@@ -76,6 +76,9 @@ window.createGeoJSONLayer = async function(url, colorHTML, alpha, uniqueField = 
             };
         });
 
+        // Debug: Check the uniqueValueInfos
+        console.log("Unique Value Infos:", uniqueValueInfos);
+
         renderer = {
             type: "unique-value",
             field: `properties.${uniqueField}`,  // Ensure this points to the correct field in properties
@@ -105,11 +108,12 @@ window.createGeoJSONLayer = async function(url, colorHTML, alpha, uniqueField = 
         };
     }
 
-    console.log("Renderer:", renderer);  // Debug log to see the final renderer
+    // Debug: Log the final renderer before returning
+    console.log("Final Renderer:", renderer);
 
     return new GeoJSONLayer({
         url: url,
-        renderer: renderer,
+        renderer: renderer,  // Make sure this renderer is passed correctly
         opacity: alpha
     });
 };
