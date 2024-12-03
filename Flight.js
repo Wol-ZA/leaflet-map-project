@@ -42,9 +42,9 @@ function darkenColor(colorHTML, factor) {
 }
 
 window.createGeoJSONLayer = function(url, colorHTML, alpha, uniqueField = null, colorSequence = []) {
-    let renderer;
+   let renderer;
+
     if (uniqueField && colorSequence.length > 0) {
-        // Create a unique value renderer if uniqueField and colorSequence are provided
         const uniqueValueInfos = colorSequence.map((color, index) => ({
             value: index.toString(),
             symbol: {
@@ -61,10 +61,17 @@ window.createGeoJSONLayer = function(url, colorHTML, alpha, uniqueField = null, 
         renderer = {
             type: "unique-value",
             field: uniqueField,
-            uniqueValueInfos
+            uniqueValueInfos,
+            defaultSymbol: {
+                type: "simple-fill",
+                color: [200, 200, 200, 0.5], // Fallback gray
+                outline: {
+                    color: [100, 100, 100, 1],
+                    width: 2
+                }
+            }
         };
     } else {
-        // Default simple renderer
         renderer = {
             type: "simple",
             symbol: {
@@ -79,11 +86,10 @@ window.createGeoJSONLayer = function(url, colorHTML, alpha, uniqueField = null, 
         };
     }
 
-    // Return the GeoJSONLayer with the specified opacity
     return new GeoJSONLayer({
         url: url,
         renderer: renderer,
-        opacity: alpha // Use alpha for layer opacity
+        opacity: alpha
     });
 }
 
