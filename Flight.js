@@ -42,49 +42,56 @@ function darkenColor(colorHTML, factor) {
 }
 
 window.createGeoJSONLayer = function(url, colorHTML, alpha, uniqueField = null, colorSequence = []) {
-     return fetch(url)
-        .then(response => response.json())
-        .then(data => {
-            // Add an index field to each feature
-            data.features.forEach((feature, index) => {
-                feature.properties.index = index % colorSequence.length;
-            });
+        let renderer;
 
-            const uniqueValueInfos = colorSequence.map((color, index) => ({
-                value: index.toString(),
-                symbol: {
-                    type: "simple-fill",
-                    color: htmlToRGBA(color, alpha),
-                    outline: {
-                        color: darkenColor(color, 1),
-                        width: 2,
-                        style: "solid"
-                    }
+    if (uniqueField && colorSequence.length > 0) {
+        const uniqueValueInfos = colorSequence.map((color, index) => ({
+            value: index.toString(),
+            symbol: {
+                type: "simple-fill",
+                color: htmlToRGBA(color, alpha),
+                outline: {
+                    color: darkenColor(color, 1),
+                    width: 2,
+                    style: "solid"
                 }
-            }));
+            }
+        }));
 
-            const renderer = {
-                type: "unique-value",
-                field: "index",
-                uniqueValueInfos,
-                defaultSymbol: {
-                    type: "simple-fill",
-                    color: [200, 200, 200, 0.5], // Fallback gray
-                    outline: {
-                        color: [100, 100, 100, 1],
-                        width: 2
-                    }
+        renderer = {
+            type: "unique-value",
+            field: uniqueField,
+            uniqueValueInfos,
+            defaultSymbol: {
+                type: "simple-fill",
+                color: [200, 200, 200, 0.5], // Fallback gray
+                outline: {
+                    color: [100, 100, 100, 1],
+                    width: 2
                 }
-            };
+            }
+        };
+    } else {
+        renderer = {
+            type: "simple",
+            symbol: {
+                type: "simple-fill",
+                color: htmlToRGBA(colorHTML, alpha),
+                outline: {
+                    color: darkenColor(colorHTML, 1),
+                    width: 2,
+                    style: "solid"
+                }
+            }
+        };
+    }
 
-            return new GeoJSONLayer({
-                source: data,
-                renderer: renderer,
-                opacity: alpha
-            });
-        });
+    return new GeoJSONLayer({
+        url: url,
+        renderer: renderer,
+        opacity: alpha
+    });
 }
-
 
 
  // Function to create a GeoJSONLayer with a specific icon for points
