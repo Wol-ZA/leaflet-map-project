@@ -49,12 +49,17 @@ window.createGeoJSONLayer = async function(url, colorHTML, alpha, uniqueField = 
         const response = await fetch(url);
         const geoJsonData = await response.json();
 
+        // Log the uniqueField to check its value
+        console.log("Using unique field:", uniqueField);
+
         // Extract unique values from the specified field
         const uniqueValues = [...new Set(geoJsonData.features.map(feature => feature.properties[uniqueField]))];
 
+        // Log the unique values found in the GeoJSON
+        console.log("Unique values for field", uniqueField, ":", uniqueValues);
+
         // Map unique values to colors in the colorSequence with cycling
         const uniqueValueInfos = uniqueValues.map((value, index) => {
-            // Use modulo to cycle through the colorSequence
             const color = colorSequence[index % colorSequence.length];
             return {
                 value: value,
@@ -72,7 +77,7 @@ window.createGeoJSONLayer = async function(url, colorHTML, alpha, uniqueField = 
 
         renderer = {
             type: "unique-value",
-            field: `properties.${uniqueField}`, // Ensure correct reference to the field
+            field: `properties.${uniqueField}`,
             uniqueValueInfos,
             defaultSymbol: {
                 type: "simple-fill",
@@ -84,7 +89,6 @@ window.createGeoJSONLayer = async function(url, colorHTML, alpha, uniqueField = 
             }
         };
     } else {
-        // If no unique field is provided, fallback to simple color
         renderer = {
             type: "simple",
             symbol: {
