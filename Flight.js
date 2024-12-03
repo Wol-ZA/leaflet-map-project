@@ -110,6 +110,10 @@ window.createGeoJSONLayer = function(url, colorHTML, alpha) {
     }
 
     window.loadGeoJSONAndDisplay = function(url, opacity = 0.7) {
+         const graphicsLayer = new GraphicsLayer({
+            title: "GeoJSON Layer"
+        });
+
         fetch(url)
             .then(response => response.json())
             .then(geojson => {
@@ -117,11 +121,15 @@ window.createGeoJSONLayer = function(url, colorHTML, alpha) {
                 geojson.features.forEach((feature, index) => {
                     const color = colorSequences[index % colorSequences.length];  // Cycle color
                     const graphic = createGeoJSONGraphic(feature, color, opacity);  // Apply color with alpha and opacity
-                    // Add the graphic to the view
-                    view.graphics.add(graphic);
+
+                    // Add the graphic to the layer
+                    graphicsLayer.add(graphic);
                 });
             })
             .catch(error => console.error('Error loading GeoJSON:', error));
+
+        // Return the newly created GraphicsLayer
+        return graphicsLayer;
     };
 
     // Define point layers and add to the map
