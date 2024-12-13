@@ -673,7 +673,6 @@ customPopup.querySelectorAll(".poi-tag").forEach((tag) => {
             }
 
             // Notify the backend about the updated marker
-            console.log(getFlightPlanAsJSON());
             WL.Execute("AlertMe", getFlightPlanAsJSON());
 
             // Hide the popup after updating
