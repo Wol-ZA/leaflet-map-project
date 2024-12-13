@@ -601,12 +601,16 @@ function getFeaturesWithinRadius(mapPoint, callback) {
     // Function to generate HTML for the popup
 function generatePopupHTML(content, pointsWithinRadius) {
     const poiTags = pointsWithinRadius
-        .map(point => `
-            <span class="poi-tag" data-latitude="${point.latitude}" data-longitude="${point.longitude}">
-                <img src="${point.icon}" alt="${point.name}" style="width: 16px; height: 16px; margin-right: 5px;">
-                ${point.name}
-            </span>
-        `).join("");
+    .map(point => `
+        <span class="poi-tag" 
+              data-latitude="${point.latitude}" 
+              data-longitude="${point.longitude}" 
+              data-name="${point.name}" 
+              data-description="${point.description}">
+            <img src="${point.icon}" alt="${point.name}" style="width: 16px; height: 16px; margin-right: 5px;">
+            ${point.name}
+        </span>
+    `).join("");
 
     return `
         <button class="delete-button">Delete</button>
