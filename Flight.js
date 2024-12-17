@@ -428,18 +428,25 @@ function checkUpcomingSectors(userLocation, heading) {
 }
 
 function createForecastLine(startPoint, heading, distanceNM) {
-    // Project the point to create a line in the heading direction
-    const endPoint = geometryEngine.geodesicMove(startPoint, distanceNM, heading, "nautical-miles");
+    const distanceMeters = distanceNM * 1852; // Convert nautical miles to meters
 
-    // Return a Polyline that connects the start and end points
+    // Calculate the destination point using a geodesic buffer workaround
+    const geodesicBuffer = geometryEngine.geodesicBuffer(startPoint, distanceMeters, "meters", {
+        geodesic: true,
+    });
+
+    const endPoint = geodesicBuffer.extent.center; // Approximate end point using center of the buffer
+
+    // Return a Polyline from start point to calculated end point
     return new Polyline({
         paths: [
             [startPoint.longitude, startPoint.latitude],
-            [endPoint.longitude, endPoint.latitude],
+            [endPoint.longitude, endPoint.latitude]
         ],
-        spatialReference: { wkid: 4326 },
+        spatialReference: { wkid: 4326 }
     });
-}    
+}
+   
 
     // Function to stop tracking
 window.EndTracking = function() {
