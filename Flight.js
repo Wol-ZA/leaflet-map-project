@@ -11,7 +11,9 @@ require([
     "esri/layers/GraphicsLayer",
     "esri/geometry/Polygon",
      "esri/geometry/SpatialReference"
-], function(Circle, Extent, Map, MapView, SceneView, GeoJSONLayer, Graphic, Point, PictureMarkerSymbol, GraphicsLayer,Polygon,SpatialReference) {
+    "esri/geometry/geometryEngine",
+    "esri/geometry/Polyline"
+], function(Circle, Extent, Map, MapView, SceneView, GeoJSONLayer, Graphic, Point, PictureMarkerSymbol, GraphicsLayer,Polygon,SpatialReference,geometryEngine,Polyline) {
 
     // Create the map
    window.map = new Map({
