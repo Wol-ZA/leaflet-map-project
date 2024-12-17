@@ -353,27 +353,93 @@ function createDirectionalPolyline(userPoint, heading) {
     document.getElementById("helistopsLayerToggle").addEventListener("change", toggleLayerVisibility);
 
     // Function to start tracking
-window.StartTracking = function() {
+window.StartTracking = function () {
     if (!tracking) {
         tracking = true;
-        watchId = navigator.geolocation.watchPosition(function(position) {
-            if (position && position.coords) {
-                const userLocation = [position.coords.longitude, position.coords.latitude];
-                const heading = position.coords.heading || 0; // Default to 0 if heading is unavailable
-                addUserLocationMarker(userLocation, heading); // Pass heading for rotation
-            } else {
-                console.error("Position is undefined or does not have coordinates.");
+
+        watchId = navigator.geolocation.watchPosition(
+            function (position) {
+                if (position && position.coords) {
+                    const userLocation = [position.coords.longitude, position.coords.latitude];
+                    const heading = position.coords.heading || 0; // Default heading to 0 if unavailable
+
+                    // Add user location marker (you already have this implemented)
+                    addUserLocationMarker(userLocation, heading);
+
+                    // Check upcoming sectors
+                    checkUpcomingSectors(userLocation, heading);
+                } else {
+                    console.error("Position is undefined or does not have coordinates.");
+                }
+            },
+            function (error) {
+                console.error("Geolocation error: ", error);
+            },
+            {
+                enableHighAccuracy: true,
+                maximumAge: 0,
+                timeout: 5000,
             }
-        }, function(error) {
-            console.error("Geolocation error: ", error);
-        }, {
-            enableHighAccuracy: true,
-            maximumAge: 0,
-            timeout: 5000
-        });
+        );
+    }
+};
+
+function checkUpcomingSectors(userLocation, heading) {
+    const [currentLng, currentLat] = userLocation;
+
+    // 1. Create a Point for the user's current position
+    const currentPosition = new Point({
+        longitude: currentLng,
+        latitude: currentLat,
+        spatialReference: { wkid: 4326 }
+    });
+
+    // 2. Generate a forecast line 20 nm ahead
+    const forecastLine = createForecastLine(currentPosition, heading, 20); // Creates line extending 20 nm
+
+    // 3. Iterate through the graphics in the graphicsLayer
+    let closestSector = null;
+    let minDistance = Number.MAX_VALUE;
+
+    graphicsLayer.graphics.forEach((sectorGraphic) => {
+        const sectorGeometry = sectorGraphic.geometry;
+
+        // Check if the forecast line intersects with the sector geometry
+        const intersection = geometryEngine.intersect(forecastLine, sectorGeometry);
+
+        if (intersection) {
+            // Calculate the distance to the intersection
+            const distance = geometryEngine.distance(currentPosition, intersection, "nautical-miles");
+
+            if (distance < minDistance) {
+                minDistance = distance;
+                closestSector = sectorGraphic;
+            }
+        }
+    });
+
+    // 4. Display result
+    if (closestSector) {
+        console.log("Upcoming Sector:", closestSector.attributes.name || "Unnamed Sector");
+        console.log("Distance to Sector:", minDistance.toFixed(2), "nautical miles");
+    } else {
+        console.log("No upcoming sectors detected within 20 nm.");
     }
 }
 
+function createForecastLine(startPoint, heading, distanceNM) {
+    // Project the point to create a line in the heading direction
+    const endPoint = geometryEngine.geodesicMove(startPoint, distanceNM, heading, "nautical-miles");
+
+    // Return a Polyline that connects the start and end points
+    return new Polyline({
+        paths: [
+            [startPoint.longitude, startPoint.latitude],
+            [endPoint.longitude, endPoint.latitude],
+        ],
+        spatialReference: { wkid: 4326 },
+    });
+}    
 
     // Function to stop tracking
 window.EndTracking = function() {
