@@ -354,107 +354,26 @@ function createDirectionalPolyline(userPoint, heading) {
     document.getElementById("helistopsLayerToggle").addEventListener("change", toggleLayerVisibility);
 
     // Function to start tracking
-window.StartTracking = function () {
+window.StartTracking = function() {
     if (!tracking) {
         tracking = true;
-
-        watchId = navigator.geolocation.watchPosition(
-            function (position) {
-                if (position && position.coords) {
-                    const userLocation = [position.coords.longitude, position.coords.latitude];
-                    const heading = position.coords.heading || 0; // Default heading to 0 if unavailable
-
-                    // Add user location marker (you already have this implemented)
-                    addUserLocationMarker(userLocation, heading);
-
-                    // Check upcoming sectors
-                    checkUpcomingSectors(userLocation, heading);
-                } else {
-                    console.error("Position is undefined or does not have coordinates.");
-                }
-            },
-            function (error) {
-                console.error("Geolocation error: ", error);
-            },
-            {
-                enableHighAccuracy: true,
-                maximumAge: 0,
-                timeout: 5000,
+        watchId = navigator.geolocation.watchPosition(function(position) {
+            if (position && position.coords) {
+                const userLocation = [position.coords.longitude, position.coords.latitude];
+                const heading = position.coords.heading || 0; // Default to 0 if heading is unavailable
+                addUserLocationMarker(userLocation, heading); // Pass heading for rotation
+            } else {
+                console.error("Position is undefined or does not have coordinates.");
             }
-        );
-    }
-};
-
-function checkUpcomingSectors(userLocation, heading) {
-    const [currentLng, currentLat] = userLocation;
-
-    // 1. Create a Point for the user's current position
-    const currentPosition = new Point({
-        longitude: currentLng,
-        latitude: currentLat,
-        spatialReference: { wkid: 4326 }
-    });
-
-    // 2. Generate a forecast line 20 nm ahead
-    const forecastLine = createForecastLine(currentPosition, heading, 20); // Creates line extending 20 nm
-
-    // 3. Iterate through the graphics in the graphicsLayer
-    let closestSector = null;
-    let minDistance = Number.MAX_VALUE;
-
-    graphicsLayer.graphics.forEach((sectorGraphic) => {
-        const sectorGeometry = sectorGraphic.geometry;
-
-        // Check if the forecast line intersects with the sector geometry
-        const intersection = geometryEngine.intersect(forecastLine, sectorGeometry);
-
-        if (intersection) {
-            // Calculate the distance to the intersection
-            const distance = geometryEngine.distance(currentPosition, intersection, "nautical-miles");
-
-            if (distance < minDistance) {
-                minDistance = distance;
-                closestSector = sectorGraphic;
-            }
-        }
-    });
-
-    // 4. Display result
-    if (closestSector) {
-        console.log("Upcoming Sector:", closestSector.attributes.name || "Unnamed Sector");
-        console.log("Distance to Sector:", minDistance.toFixed(2), "nautical miles");
-    } else {
-        console.log("No upcoming sectors detected within 20 nm.");
+        }, function(error) {
+            console.error("Geolocation error: ", error);
+        }, {
+            enableHighAccuracy: true,
+            maximumAge: 0,
+            timeout: 5000
+        });
     }
 }
-
-function createForecastLine(startPoint, heading, distanceNM) {
-    const distanceMeters = distanceNM * 1852; // Convert nautical miles to meters
-    
-    // Ensure the start point is in Web Mercator for accurate distance calculation
-    const startPointProjected = projection.project(startPoint, { wkid: 3857 }); // Project to Web Mercator (linear units)
-
-    // Use geometryEngine to create a geodesic buffer from the projected point
-    const buffer = geometryEngine.geodesicBuffer(startPointProjected, distanceMeters, "meters", { geodesic: true });
-
-    // The approximate endpoint from the center of the buffer's extent
-    const endPointProjected = buffer.extent.center;
-
-    // Now, project the endpoint back to WGS84 (angular units) for the map display
-    const endPoint = projection.project(endPointProjected, { wkid: 4326 }); // Reproject back to WGS84 (lat/long)
-
-    // Return a Polyline between the start and end points
-    return new Polyline({
-        paths: [
-            [startPoint.longitude, startPoint.latitude], // Start point in WGS84 (angular)
-            [endPoint.longitude, endPoint.latitude]      // End point in WGS84 (angular)
-        ],
-        spatialReference: { wkid: 4326 } // Ensure it's returned in WGS84 (latitude/longitude)
-    });
-}
-
-
-   
 
     // Function to stop tracking
 window.EndTracking = function() {
