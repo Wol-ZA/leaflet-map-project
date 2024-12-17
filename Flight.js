@@ -431,29 +431,30 @@ function checkUpcomingSectors(userLocation, heading) {
 function createForecastLine(startPoint, heading, distanceNM) {
     const distanceMeters = distanceNM * 1852; // Convert nautical miles to meters
 
-    // Project the start point to Web Mercator for linear calculations
-    const webMercatorSpatialRef = { wkid: 3857 };
+    // Project the start point to Web Mercator (linear, meters)
+    const webMercatorSpatialRef = { wkid: 3857 }; // Web Mercator Spatial Reference
     const startPointProjected = projection.project(startPoint, webMercatorSpatialRef);
 
-    // Create a geodesic buffer around the projected point to simulate movement
-    const buffer = geometryEngine.geodesicBuffer(startPointProjected, distanceMeters, "meters");
+    // Now generate the geodesic line using geodesicBuffer in meters (since projected to Web Mercator)
+    const buffer = geometryEngine.geodesicBuffer(startPointProjected, distanceMeters, "meters", { geodesic: true });
 
-    // Use the center of the buffer as an approximate end point
+    // Approximate endpoint as the center of the buffer (Buffer center point)
     const endPointProjected = buffer.extent.center;
 
-    // Project back to WGS84 for map display
-    const wgs84SpatialRef = { wkid: 4326 };
-    const endPoint = projection.project(endPointProjected, wgs84SpatialRef);
+    // Project back to WGS84 (the map display system, angular units)
+    const wgs84SpatialRef = { wkid: 4326 }; // WGS84 Spatial Reference
+    const endPoint = projection.project(endPointProjected, wgs84SpatialRef); // Re-project back to WGS84 for map usage
 
     // Return a Polyline between the start and end points
     return new Polyline({
         paths: [
-            [startPoint.longitude, startPoint.latitude], // Original start point
-            [endPoint.longitude, endPoint.latitude]     // Projected endpoint
+            [startPoint.longitude, startPoint.latitude],  // Original start point in WGS84 (degrees)
+            [endPoint.longitude, endPoint.latitude]       // Projected end point in WGS84 (degrees)
         ],
         spatialReference: wgs84SpatialRef
     });
 }
+
    
 
     // Function to stop tracking
