@@ -183,26 +183,29 @@ window.createGeoJSONLayer = function(url, colorHTML, alpha) {
     }
 
     window.loadGeoJSONAndDisplay = function(url, opacity = 0.7) {
-         const graphicsLayer = new GraphicsLayer({
-            title: "GeoJSON Layer"
-        });
+           const graphicsLayer = new GraphicsLayer({
+        title: "GeoJSON Layer"
+    });
 
-        fetch(url)
-            .then(response => response.json())
-            .then(geojson => {
-                // Iterate through the GeoJSON features and create individual graphics
-                geojson.features.forEach((feature, index) => {
-                    const color = colorSequences[index % colorSequences.length];  // Cycle color
-                    const graphic = createGeoJSONGraphic(feature, color, opacity);  // Apply color with alpha and opacity
+    const sectors = []; // Array to store sector graphics
 
-                    // Add the graphic to the layer
-                    graphicsLayer.add(graphic);
-                });
-            })
-            .catch(error => console.error('Error loading GeoJSON:', error));
+    fetch(url)
+        .then(response => response.json())
+        .then(geojson => {
+            geojson.features.forEach((feature, index) => {
+                const color = colorSequences[index % colorSequences.length];
+                const graphic = createGeoJSONGraphic(feature, color, opacity);
 
-        // Return the newly created GraphicsLayer
-        return graphicsLayer;
+                // Store the graphic (sector) for detection
+                sectors.push(graphic);
+                graphicsLayer.add(graphic);
+            });
+
+            console.log("Sectors loaded:", sectors.length); // Verify loading
+        })
+        .catch(error => console.error("Error loading GeoJSON:", error));
+
+    return { graphicsLayer, sectors };
     };
 
     // Define point layers and add to the map
