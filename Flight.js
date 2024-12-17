@@ -431,25 +431,27 @@ function checkUpcomingSectors(userLocation, heading) {
 function createForecastLine(startPoint, heading, distanceNM) {
     const distanceMeters = distanceNM * 1852; // Convert nautical miles to meters
 
-    // Project the point to Web Mercator (a linear projection)
-    const projectedPoint = geometryEngine.project(startPoint, { wkid: 3857 });
+    // Project the start point to Web Mercator for linear calculations
+    const webMercatorSpatialRef = { wkid: 3857 };
+    const startPointProjected = projection.project(startPoint, webMercatorSpatialRef);
 
-    // Generate the end point using geodesicBuffer in meters
-    const buffer = geometryEngine.geodesicBuffer(projectedPoint, distanceMeters, "meters");
-    
-    // Approximate endpoint as center of the buffer
-    const endPoint = buffer.extent.center;
+    // Create a geodesic buffer around the projected point to simulate movement
+    const buffer = geometryEngine.geodesicBuffer(startPointProjected, distanceMeters, "meters");
 
-    // Project back to WGS84 for use with map
-    const endPointWGS84 = geometryEngine.project(endPoint, { wkid: 4326 });
+    // Use the center of the buffer as an approximate end point
+    const endPointProjected = buffer.extent.center;
 
-    // Create a Polyline between the start point and the calculated end point
+    // Project back to WGS84 for map display
+    const wgs84SpatialRef = { wkid: 4326 };
+    const endPoint = projection.project(endPointProjected, wgs84SpatialRef);
+
+    // Return a Polyline between the start and end points
     return new Polyline({
         paths: [
-            [startPoint.longitude, startPoint.latitude], 
-            [endPointWGS84.longitude, endPointWGS84.latitude]
+            [startPoint.longitude, startPoint.latitude], // Original start point
+            [endPoint.longitude, endPoint.latitude]     // Projected endpoint
         ],
-        spatialReference: { wkid: 4326 }
+        spatialReference: wgs84SpatialRef
     });
 }
    
