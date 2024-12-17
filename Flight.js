@@ -184,32 +184,27 @@ window.createGeoJSONLayer = function(url, colorHTML, alpha) {
         });
     }
 
-    window.loadGeoJSONAndDisplay = function(url, opacity = 0.7) {
-           const graphicsLayer = new GraphicsLayer({
-        title: "GeoJSON Layer"
-    });
+ window.loadGeoJSONAndDisplay = function(url, opacity = 0.7) {
+         const graphicsLayer = new GraphicsLayer({
+            title: "GeoJSON Layer"
+        });
 
-    const sectors = []; // Array to store sector graphics
+        fetch(url)
+            .then(response => response.json())
+            .then(geojson => {
+                // Iterate through the GeoJSON features and create individual graphics
+                geojson.features.forEach((feature, index) => {
+                    const color = colorSequences[index % colorSequences.length];  // Cycle color
+                    const graphic = createGeoJSONGraphic(feature, color, opacity);  // Apply color with alpha and opacity
 
-    fetch(url)
-        .then(response => response.json())
-        .then(geojson => {
-            geojson.features.forEach((feature, index) => {
-                const color = colorSequences[index % colorSequences.length];
-                const graphic = createGeoJSONGraphic(feature, color, opacity);
+                    // Add the graphic to the layer
+                    graphicsLayer.add(graphic);
+                });
+            })
+            .catch(error => console.error('Error loading GeoJSON:', error));
 
-                // Store the graphic (sector) for detection
-                sectors.push(graphic);
-                graphicsLayer.add(graphic);
-            });
-
-            console.log("Sectors loaded:", sectors.length); // Verify loading
-            console.log("z type:", z);
-            console.log("z is loadable?", typeof z.load === "function");
-        })
-        .catch(error => console.error("Error loading GeoJSON:", error));
-
-    return { graphicsLayer, sectors };
+        // Return the newly created GraphicsLayer
+        return graphicsLayer;
     };
 
     // Define point layers and add to the map
@@ -358,89 +353,26 @@ function createDirectionalPolyline(userPoint, heading) {
     document.getElementById("helistopsLayerToggle").addEventListener("change", toggleLayerVisibility);
 
     // Function to start tracking
-window.StartTracking = function () {
+window.StartTracking = function() {
     if (!tracking) {
         tracking = true;
-
-        watchId = navigator.geolocation.watchPosition(
-            function (position) {
-                if (position && position.coords) {
-                    const userLocation = [position.coords.longitude, position.coords.latitude];
-                    const heading = position.coords.heading || 0; // Default heading if unavailable
-                    addUserLocationMarker(userLocation, heading); // Pass heading for marker rotation
-
-                    // Call sector detection logic
-                    checkUpcomingSector(userLocation, heading);
-                } else {
-                    console.error("Position is undefined or does not have coordinates.");
-                }
-            },
-            function (error) {
-                console.error("Geolocation error: ", error);
-            },
-            {
-                enableHighAccuracy: true,
-                maximumAge: 0,
-                timeout: 5000,
+        watchId = navigator.geolocation.watchPosition(function(position) {
+            if (position && position.coords) {
+                const userLocation = [position.coords.longitude, position.coords.latitude];
+                const heading = position.coords.heading || 0; // Default to 0 if heading is unavailable
+                addUserLocationMarker(userLocation, heading); // Pass heading for rotation
+            } else {
+                console.error("Position is undefined or does not have coordinates.");
             }
-        );
+        }, function(error) {
+            console.error("Geolocation error: ", error);
+        }, {
+            enableHighAccuracy: true,
+            maximumAge: 0,
+            timeout: 5000
+        });
     }
-};
-
-function checkUpcomingSector(userLocation, heading) {
-    const [currentLng, currentLat] = userLocation;
-
-    // 1. Create a Point for the user's current location
-    const currentPosition = new Point({
-        longitude: currentLng,
-        latitude: currentLat,
-        spatialReference: { wkid: 4326 }
-    });
-
-    // 2. Generate a forecast line 20 nm ahead using the heading
-    const forecastPoint = geometryEngine.geodesicMove(currentPosition, 20, heading, "nautical-miles");
-
-    const flightForecastLine = new Polyline({
-        paths: [
-            [currentLng, currentLat],
-            [forecastPoint.longitude, forecastPoint.latitude],
-        ],
-        spatialReference: { wkid: 4326 },
-    });
-
-    // 3. Check for intersections with sector polygons
-    let closestSector = null;
-    let minDistance = Number.MAX_VALUE;
-
-    sectors.forEach((sector) => {
-        const polygon = sector.geometry;
-
-        // Check for intersection between the line and sector polygon
-        const intersection = geometryEngine.intersect(flightForecastLine, polygon);
-
-        if (intersection) {
-            // Calculate the distance to the intersection
-            const distance = geometryEngine.distance(currentPosition, intersection, "nautical-miles");
-
-            if (distance < minDistance) {
-                minDistance = distance;
-                closestSector = sector;
-            }
-        }
-    });
-
-    // 4. Display the result
-    if (closestSector) {
-        console.log("Upcoming Sector:", closestSector.attributes.name);
-        console.log("Distance to Sector:", minDistance.toFixed(2), "nautical miles");
-
-        // Optionally highlight the sector on the map
-        highlightUpcomingSector(closestSector);
-    } else {
-        console.log("No sectors intersected within 20 nm.");
-    }
-}    
-
+}
 
 
     // Function to stop tracking
