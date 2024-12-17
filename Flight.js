@@ -430,30 +430,29 @@ function checkUpcomingSectors(userLocation, heading) {
 
 function createForecastLine(startPoint, heading, distanceNM) {
     const distanceMeters = distanceNM * 1852; // Convert nautical miles to meters
+    
+    // Ensure the start point is in Web Mercator for accurate distance calculation
+    const startPointProjected = projection.project(startPoint, { wkid: 3857 }); // Project to Web Mercator (linear units)
 
-    // Project the start point to Web Mercator (linear, meters)
-    const webMercatorSpatialRef = { wkid: 3857 }; // Web Mercator Spatial Reference
-    const startPointProjected = projection.project(startPoint, webMercatorSpatialRef);
-
-    // Now generate the geodesic line using geodesicBuffer in meters (since projected to Web Mercator)
+    // Use geometryEngine to create a geodesic buffer from the projected point
     const buffer = geometryEngine.geodesicBuffer(startPointProjected, distanceMeters, "meters", { geodesic: true });
 
-    // Approximate endpoint as the center of the buffer (Buffer center point)
+    // The approximate endpoint from the center of the buffer's extent
     const endPointProjected = buffer.extent.center;
 
-    // Project back to WGS84 (the map display system, angular units)
-    const wgs84SpatialRef = { wkid: 4326 }; // WGS84 Spatial Reference
-    const endPoint = projection.project(endPointProjected, wgs84SpatialRef); // Re-project back to WGS84 for map usage
+    // Now, project the endpoint back to WGS84 (angular units) for the map display
+    const endPoint = projection.project(endPointProjected, { wkid: 4326 }); // Reproject back to WGS84 (lat/long)
 
     // Return a Polyline between the start and end points
     return new Polyline({
         paths: [
-            [startPoint.longitude, startPoint.latitude],  // Original start point in WGS84 (degrees)
-            [endPoint.longitude, endPoint.latitude]       // Projected end point in WGS84 (degrees)
+            [startPoint.longitude, startPoint.latitude], // Start point in WGS84 (angular)
+            [endPoint.longitude, endPoint.latitude]      // End point in WGS84 (angular)
         ],
-        spatialReference: wgs84SpatialRef
+        spatialReference: { wkid: 4326 } // Ensure it's returned in WGS84 (latitude/longitude)
     });
 }
+
 
    
 
