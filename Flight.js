@@ -10,7 +10,7 @@ require([
     "esri/symbols/PictureMarkerSymbol",
     "esri/layers/GraphicsLayer",
     "esri/geometry/Polygon",
-     "esri/geometry/SpatialReference"
+     "esri/geometry/SpatialReference",
     "esri/geometry/geometryEngine",
     "esri/geometry/Polyline"
 ], function(Circle, Extent, Map, MapView, SceneView, GeoJSONLayer, Graphic, Point, PictureMarkerSymbol, GraphicsLayer,Polygon,SpatialReference,geometryEngine,Polyline) {
