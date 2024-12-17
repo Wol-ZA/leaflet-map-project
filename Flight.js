@@ -12,8 +12,9 @@ require([
     "esri/geometry/Polygon",
      "esri/geometry/SpatialReference",
     "esri/geometry/geometryEngine",
-    "esri/geometry/Polyline"
-], function(Circle, Extent, Map, MapView, SceneView, GeoJSONLayer, Graphic, Point, PictureMarkerSymbol, GraphicsLayer,Polygon,SpatialReference,geometryEngine,Polyline) {
+    "esri/geometry/Polyline",
+    "esri/geometry/projection"
+], function(Circle, Extent, Map, MapView, SceneView, GeoJSONLayer, Graphic, Point, PictureMarkerSymbol, GraphicsLayer,Polygon,SpatialReference,geometryEngine,Polyline,projection) {
 
     // Create the map
    window.map = new Map({
@@ -430,18 +431,23 @@ function checkUpcomingSectors(userLocation, heading) {
 function createForecastLine(startPoint, heading, distanceNM) {
     const distanceMeters = distanceNM * 1852; // Convert nautical miles to meters
 
-    // Calculate the destination point using a geodesic buffer workaround
-    const geodesicBuffer = geometryEngine.geodesicBuffer(startPoint, distanceMeters, "meters", {
-        geodesic: true,
-    });
+    // Project the point to Web Mercator (a linear projection)
+    const projectedPoint = geometryEngine.project(startPoint, { wkid: 3857 });
 
-    const endPoint = geodesicBuffer.extent.center; // Approximate end point using center of the buffer
+    // Generate the end point using geodesicBuffer in meters
+    const buffer = geometryEngine.geodesicBuffer(projectedPoint, distanceMeters, "meters");
+    
+    // Approximate endpoint as center of the buffer
+    const endPoint = buffer.extent.center;
 
-    // Return a Polyline from start point to calculated end point
+    // Project back to WGS84 for use with map
+    const endPointWGS84 = geometryEngine.project(endPoint, { wkid: 4326 });
+
+    // Create a Polyline between the start point and the calculated end point
     return new Polyline({
         paths: [
-            [startPoint.longitude, startPoint.latitude],
-            [endPoint.longitude, endPoint.latitude]
+            [startPoint.longitude, startPoint.latitude], 
+            [endPointWGS84.longitude, endPointWGS84.latitude]
         ],
         spatialReference: { wkid: 4326 }
     });
