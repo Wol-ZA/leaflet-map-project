@@ -204,6 +204,8 @@ window.createGeoJSONLayer = function(url, colorHTML, alpha) {
             });
 
             console.log("Sectors loaded:", sectors.length); // Verify loading
+            console.log("z type:", z);
+            console.log("z is loadable?", typeof z.load === "function");
         })
         .catch(error => console.error("Error loading GeoJSON:", error));
 
