@@ -351,26 +351,88 @@ function createDirectionalPolyline(userPoint, heading) {
     document.getElementById("helistopsLayerToggle").addEventListener("change", toggleLayerVisibility);
 
     // Function to start tracking
-window.StartTracking = function() {
+window.StartTracking = function () {
     if (!tracking) {
         tracking = true;
-        watchId = navigator.geolocation.watchPosition(function(position) {
-            if (position && position.coords) {
-                const userLocation = [position.coords.longitude, position.coords.latitude];
-                const heading = position.coords.heading || 0; // Default to 0 if heading is unavailable
-                addUserLocationMarker(userLocation, heading); // Pass heading for rotation
-            } else {
-                console.error("Position is undefined or does not have coordinates.");
+
+        watchId = navigator.geolocation.watchPosition(
+            function (position) {
+                if (position && position.coords) {
+                    const userLocation = [position.coords.longitude, position.coords.latitude];
+                    const heading = position.coords.heading || 0; // Default heading if unavailable
+                    addUserLocationMarker(userLocation, heading); // Pass heading for marker rotation
+
+                    // Call sector detection logic
+                    checkUpcomingSector(userLocation, heading);
+                } else {
+                    console.error("Position is undefined or does not have coordinates.");
+                }
+            },
+            function (error) {
+                console.error("Geolocation error: ", error);
+            },
+            {
+                enableHighAccuracy: true,
+                maximumAge: 0,
+                timeout: 5000,
             }
-        }, function(error) {
-            console.error("Geolocation error: ", error);
-        }, {
-            enableHighAccuracy: true,
-            maximumAge: 0,
-            timeout: 5000
-        });
+        );
     }
-}
+};
+
+function checkUpcomingSector(userLocation, heading) {
+    const [currentLng, currentLat] = userLocation;
+
+    // 1. Create a Point for the user's current location
+    const currentPosition = new Point({
+        longitude: currentLng,
+        latitude: currentLat,
+        spatialReference: { wkid: 4326 }
+    });
+
+    // 2. Generate a forecast line 20 nm ahead using the heading
+    const forecastPoint = geometryEngine.geodesicMove(currentPosition, 20, heading, "nautical-miles");
+
+    const flightForecastLine = new Polyline({
+        paths: [
+            [currentLng, currentLat],
+            [forecastPoint.longitude, forecastPoint.latitude],
+        ],
+        spatialReference: { wkid: 4326 },
+    });
+
+    // 3. Check for intersections with sector polygons
+    let closestSector = null;
+    let minDistance = Number.MAX_VALUE;
+
+    sectors.forEach((sector) => {
+        const polygon = sector.geometry;
+
+        // Check for intersection between the line and sector polygon
+        const intersection = geometryEngine.intersect(flightForecastLine, polygon);
+
+        if (intersection) {
+            // Calculate the distance to the intersection
+            const distance = geometryEngine.distance(currentPosition, intersection, "nautical-miles");
+
+            if (distance < minDistance) {
+                minDistance = distance;
+                closestSector = sector;
+            }
+        }
+    });
+
+    // 4. Display the result
+    if (closestSector) {
+        console.log("Upcoming Sector:", closestSector.attributes.name);
+        console.log("Distance to Sector:", minDistance.toFixed(2), "nautical miles");
+
+        // Optionally highlight the sector on the map
+        highlightUpcomingSector(closestSector);
+    } else {
+        console.log("No sectors intersected within 20 nm.");
+    }
+}    
 
 
 
@@ -403,6 +465,20 @@ window.EndTracking = function() {
         view = mapView; // Update the view variable
     }
 };
+
+function highlightUpcomingSector(sector) {
+    const highlightedSymbol = {
+        type: "simple-fill",
+        color: [255, 0, 0, 0.5], // Semi-transparent red fill
+        outline: { color: [255, 0, 0], width: 2 }
+    };
+
+    // Update the sector's symbol
+    sector.symbol = highlightedSymbol;
+
+    // Optionally add it back to the layer to reflect the change
+    graphicsLayer.add(sector);
+}    
 
 
     
