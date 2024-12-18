@@ -310,14 +310,12 @@ function addUserLocationMarker(location, heading) {
 function checkIfInsidePolygon(userPoint) {
     let insideAnyPolygon = false;
 
-    geoJSONPolygonData.forEach((polygonData, index) => {
+    geoJSONPolygons .forEach((polygonData, index) => {
         const { geometry: polygonGeometry, feature } = polygonData;
 
         // Check if the point is inside the polygon
         if (geometryEngine.contains(polygonGeometry, userPoint)) {
             insideAnyPolygon = true;
-            console.log(`User is inside Polygon at Index: ${index}`);
-            console.log("Containing Feature Object:", feature); // Log the full feature object
         }
     });
 
@@ -326,23 +324,23 @@ function checkIfInsidePolygon(userPoint) {
     }
 }
     
-function checkIntersectionWithPolygons(polylineGeometry) {
+function checkIntersectionWithPolygons(polylineGeometry, userPoint) {
     geoJSONPolygons.forEach((polygonData, index) => {
         const { geometry: polygonGeometry, feature } = polygonData;
 
         // Check if the polyline intersects the polygon
         const intersects = geometryEngine.intersects(polylineGeometry, polygonGeometry);
 
-      if (intersects) {
-            console.log(`Polyline intersects with Polygon at Index: ${index}`);
-            console.log("Intersected Feature Object:", feature); // Log full feature object
+        // Check if the user is currently inside this polygon
+        const containsUser = geometryEngine.contains(polygonGeometry, userPoint);
 
-            // Optionally, log intersection geometry details
-            const intersection = geometryEngine.intersect(polylineGeometry, polygonGeometry);
-            console.log(`Intersection details for Feature:`, intersection);
+        // Log only polygons that intersect but do not contain the user
+        if (intersects && !containsUser) {
+            console.log(`Polyline intersects with Polygon at Index: ${index}`);
+            console.log("Intersected Feature Object:", feature);
         }
     });
-}    
+}
 
 function createDirectionalPolyline(userPoint, heading) {
     const nauticalMilesToMeters = 20 * 1852; // 20 nautical miles in meters
