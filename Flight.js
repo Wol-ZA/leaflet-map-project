@@ -148,7 +148,7 @@ window.createGeoJSONLayer = function(url, colorHTML, alpha) {
             });
         })
         .catch(error => console.error("Error fetching GeoJSON:", error));
-
+    console.log(geoJSONPolygons)
     return layer;
 }
  // Function to create a GeoJSONLayer with a specific icon for points
