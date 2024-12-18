@@ -119,7 +119,7 @@ window.drawRoute = function(destinationLat, destinationLong) {
     });
 }
 
-
+let geoJSONPolygons = [];
 window.createGeoJSONLayer = function(url, colorHTML, alpha) {
     return new GeoJSONLayer({
         url: url,
@@ -152,6 +152,20 @@ window.createGeoJSONLayer = function(url, colorHTML, alpha) {
                 }
             }
         });
+         // Fetch GeoJSON data to populate geoJSONPolygons
+    fetch(url)
+        .then(response => response.json())
+        .then(geojson => {
+            geojson.features.forEach((feature, index) => {
+                if (feature.geometry.type === "Polygon" || feature.geometry.type === "MultiPolygon") {
+                    const polygonGeometry = convertGeoJSONGeometry(feature.geometry);
+                    geoJSONPolygons.push({ geometry: polygonGeometry, feature }); // Add to the shared array
+                }
+            });
+        })
+        .catch(error => console.error("Error fetching GeoJSON:", error));
+
+    return layer;
     }
 
      function convertGeoJSONGeometry(geometry) {
@@ -185,7 +199,7 @@ window.createGeoJSONLayer = function(url, colorHTML, alpha) {
         });
     }
 
-let geoJSONPolygons = [];
+
     
  window.loadGeoJSONAndDisplay = function(url, opacity = 0.7) {
          const graphicsLayer = new GraphicsLayer({
