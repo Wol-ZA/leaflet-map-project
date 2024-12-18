@@ -263,16 +263,17 @@ view.on("pointer-move", () => isUserInteracting = true);
 setInterval(() => isUserInteracting = false, 3000); // Adjust timing as needed
 
 function addUserLocationMarker(location, heading) {
-    const userPoint = {
+    const userPoint = new Point({
         type: "point",
         longitude: location[0],
-        latitude: location[1]
-    };
+        latitude: location[1],
+        spatialReference: { wkid: 4326 } // Use WGS84 spatial reference
+    });
 
     const markerSymbol = new PictureMarkerSymbol({
         url: "plane_1.png",
         width: "32px",
-        height: "32px",
+        height: "32px"
     });
 
     if (userGraphic) {
@@ -294,11 +295,8 @@ function addUserLocationMarker(location, heading) {
         userGraphic.polylineGraphic.geometry = polylineGraphic.geometry;
     }
 
-    // Check intersections with polygons
-    checkIntersectionWithPolygons(polylineGraphic.geometry);
-
-    // Check if user is within any polygon
-    checkIfInsidePolygon(userPoint);
+    // Check intersections, excluding the polygon the user is currently in
+    checkIntersectionWithPolygons(polylineGraphic.geometry, userPoint);
 
     if (!isUserInteracting) {
         const adjustedHeading = (heading + view.rotation) % 360;
