@@ -120,38 +120,39 @@ window.drawRoute = function(destinationLat, destinationLong) {
 }
 
 let geoJSONPolygons = [];
-window.createGeoJSONLayer = function(url, colorHTML, alpha) {
-    return new GeoJSONLayer({
+window.createGeoJSONLayer = function (url, colorHTML, alpha) {
+    const layer = new GeoJSONLayer({
         url: url,
         renderer: {
             type: "simple",
             symbol: {
                 type: "simple-fill",
-                color: htmlToRGBA(colorHTML, alpha),  // Convert HTML color to RGBA
+                color: htmlToRGBA(colorHTML, alpha),
                 outline: {
-                    color: darkenColor(colorHTML, 1),  // Darken the fill color for outline
+                    color: darkenColor(colorHTML, 1),
                     width: 2,
                     style: "solid"
-                    }
+                }
             }
         },
         opacity: 0.5
     });
-     fetch(url)
+
+    // Fetch GeoJSON data to populate geoJSONPolygons
+    fetch(url)
         .then(response => response.json())
         .then(geojson => {
             geojson.features.forEach((feature, index) => {
                 if (feature.geometry.type === "Polygon" || feature.geometry.type === "MultiPolygon") {
                     const polygonGeometry = convertGeoJSONGeometry(feature.geometry);
                     geoJSONPolygons.push({ geometry: polygonGeometry, feature }); // Add to the shared array
-                    console.log(geoJSONPolygons)
                 }
             });
         })
         .catch(error => console.error("Error fetching GeoJSON:", error));
-    console.log(geoJSONPolygons)
+
     return layer;
-}
+};
  // Function to create a GeoJSONLayer with a specific icon for points
     function createIconGeoJSONLayer(url, iconUrl) {
         return new GeoJSONLayer({
