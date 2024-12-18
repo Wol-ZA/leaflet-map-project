@@ -285,10 +285,8 @@ function addUserLocationMarker(location, heading) {
         graphicsLayer.add(userGraphic);
     }
 
-    const adjustedHeading = (heading + view.rotation) % 360;
     const polylineGraphic = createDirectionalPolyline(location, heading);
 
-    // Add or update the polyline graphic on the map
     if (!userGraphic.polylineGraphic) {
         userGraphic.polylineGraphic = polylineGraphic;
         graphicsLayer.add(userGraphic.polylineGraphic);
@@ -296,8 +294,11 @@ function addUserLocationMarker(location, heading) {
         userGraphic.polylineGraphic.geometry = polylineGraphic.geometry;
     }
 
-    // Check for intersection with loaded polygons
+    // Check intersections with polygons
     checkIntersectionWithPolygons(polylineGraphic.geometry);
+
+    // Check if user is within any polygon
+    checkIfInsidePolygon(userPoint);
 
     if (!isUserInteracting) {
         const adjustedHeading = (heading + view.rotation) % 360;
@@ -306,6 +307,25 @@ function addUserLocationMarker(location, heading) {
     }
 }
 
+function checkIfInsidePolygon(userPoint) {
+    let insideAnyPolygon = false;
+
+    geoJSONPolygonData.forEach((polygonData, index) => {
+        const { geometry: polygonGeometry, feature } = polygonData;
+
+        // Check if the point is inside the polygon
+        if (geometryEngine.contains(polygonGeometry, userPoint)) {
+            insideAnyPolygon = true;
+            console.log(`User is inside Polygon at Index: ${index}`);
+            console.log("Containing Feature Object:", feature); // Log the full feature object
+        }
+    });
+
+    if (!insideAnyPolygon) {
+        console.log("User is not inside any polygon.");
+    }
+}
+    
 function checkIntersectionWithPolygons(polylineGeometry) {
     geoJSONPolygons.forEach((polygonData, index) => {
         const { geometry: polygonGeometry, feature } = polygonData;
