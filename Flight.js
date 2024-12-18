@@ -296,11 +296,10 @@ function addUserLocationMarker(location, heading) {
     }
 
     // Get JSON of intersecting polygon names
-    const intersectionsJSON = checkIntersectionWithPolygons(polylineGraphic.geometry, userPoint);
+    const intersections = checkIntersectionWithPolygons(polylineGraphic.geometry, userPoint);
 
     // Optionally do something with the JSON (e.g., send it to a server or log it)
-    WL.Execute("ClosingIn", JSON.stringify(intersectionsJSON, null, 2));
-    console.log(JSON.stringify(intersectionsJSON, null, 2));
+    WL.Execute("ClosingIn", JSON.stringify(intersections, null, 2));
     if (!isUserInteracting) {
         const adjustedHeading = (heading + view.rotation) % 360;
         view.rotation = 360 - adjustedHeading;
@@ -326,9 +325,9 @@ function checkIfInsidePolygon(userPoint) {
 }
     
 function checkIntersectionWithPolygons(polylineGeometry, userPoint) {
- const intersectingPolygons = []; // Array to store names of intersecting polygons
+    const intersectingPolygons = []; // Array to store names of intersecting polygons
 
-    geoJSONPolygons.forEach((polygonData, index) => {
+    geoJSONPolygons.forEach((polygonData) => {
         const { geometry: polygonGeometry, feature } = polygonData;
 
         // Check if the polyline intersects the polygon
@@ -337,14 +336,14 @@ function checkIntersectionWithPolygons(polylineGeometry, userPoint) {
         // Check if the user is currently inside this polygon
         const containsUser = geometryEngine.contains(polygonGeometry, userPoint);
 
-        // Add the name to the array if it intersects and does not contain the user
+        // Add to the array if it intersects and does not contain the user
         if (intersects && !containsUser && feature.properties && feature.properties.name) {
-            intersectingPolygons.push(feature.properties.name);
+            intersectingPolygons.push({ name: feature.properties.name });
         }
     });
 
-    // Return JSON with all intersecting polygon names
-    return { intersectingPolygons };
+    // Return the array of JSON objects
+    return intersectingPolygons;
 }
 
 function createDirectionalPolyline(userPoint, heading) {
