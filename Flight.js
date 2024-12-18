@@ -185,6 +185,8 @@ window.createGeoJSONLayer = function(url, colorHTML, alpha) {
         });
     }
 
+let geoJSONPolygons = [];
+    
  window.loadGeoJSONAndDisplay = function(url, opacity = 0.7) {
          const graphicsLayer = new GraphicsLayer({
             title: "GeoJSON Layer"
@@ -197,7 +199,10 @@ window.createGeoJSONLayer = function(url, colorHTML, alpha) {
                 geojson.features.forEach((feature, index) => {
                     const color = colorSequences[index % colorSequences.length];  // Cycle color
                     const graphic = createGeoJSONGraphic(feature, color, opacity);  // Apply color with alpha and opacity
-
+                    
+                    if (feature.geometry.type === "Polygon" || feature.geometry.type === "MultiPolygon") {
+                    geoJSONPolygons.push(graphic.geometry); // Save polygon geometry
+                    }
                     // Add the graphic to the layer
                     graphicsLayer.add(graphic);
                 });
@@ -263,31 +268,38 @@ function addUserLocationMarker(location, heading) {
         graphicsLayer.add(userGraphic);
     }
 
-    // Adjust heading for map rotation
     const adjustedHeading = (heading + view.rotation) % 360;
-    // Create the polyline graphic
     const polylineGraphic = createDirectionalPolyline(location, heading);
-    console.log(heading);
-    console.log(adjustedHeading);
+
     // Add or update the polyline graphic on the map
     if (!userGraphic.polylineGraphic) {
         userGraphic.polylineGraphic = polylineGraphic;
         graphicsLayer.add(userGraphic.polylineGraphic);
     } else {
-        userGraphic.polylineGraphic.geometry = polylineGraphic.geometry; // Update existing polyline
+        userGraphic.polylineGraphic.geometry = polylineGraphic.geometry;
     }
 
-    // Rotate the map view based on heading
+    // Check for intersection with loaded polygons
+    checkIntersectionWithPolygons(polylineGraphic.geometry);
 
-  if (!isUserInteracting) {
+    if (!isUserInteracting) {
         const adjustedHeading = (heading + view.rotation) % 360;
         view.rotation = 360 - adjustedHeading;
-          if (typeof heading === "number") {
-        view.rotation = 360 - heading;
-        }// Rotate the map based on heading
-        view.center = userPoint;               // Center map on user location
+        view.center = userPoint;
     }
 }
+
+function checkIntersectionWithPolygons(polylineGeometry) {
+    geoJSONPolygons.forEach((polygonGeometry, index) => {
+        const intersects = geometryEngine.intersects(polylineGeometry, polygonGeometry);
+
+        if (intersects) {
+            console.log(`Polyline intersects with Polygon ${index}`);
+            const intersection = geometryEngine.intersect(polylineGeometry, polygonGeometry);
+            console.log("Intersection details:", intersection);
+        }
+    });
+}    
 
 function createDirectionalPolyline(userPoint, heading) {
     const nauticalMilesToMeters = 20 * 1852; // 20 nautical miles in meters
