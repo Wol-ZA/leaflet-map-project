@@ -137,6 +137,19 @@ window.createGeoJSONLayer = function(url, colorHTML, alpha) {
         },
         opacity: 0.5
     });
+     fetch(url)
+        .then(response => response.json())
+        .then(geojson => {
+            geojson.features.forEach((feature, index) => {
+                if (feature.geometry.type === "Polygon" || feature.geometry.type === "MultiPolygon") {
+                    const polygonGeometry = convertGeoJSONGeometry(feature.geometry);
+                    geoJSONPolygons.push({ geometry: polygonGeometry, feature }); // Add to the shared array
+                }
+            });
+        })
+        .catch(error => console.error("Error fetching GeoJSON:", error));
+
+    return layer;
 }
  // Function to create a GeoJSONLayer with a specific icon for points
     function createIconGeoJSONLayer(url, iconUrl) {
@@ -153,19 +166,6 @@ window.createGeoJSONLayer = function(url, colorHTML, alpha) {
             }
         });
          // Fetch GeoJSON data to populate geoJSONPolygons
-    fetch(url)
-        .then(response => response.json())
-        .then(geojson => {
-            geojson.features.forEach((feature, index) => {
-                if (feature.geometry.type === "Polygon" || feature.geometry.type === "MultiPolygon") {
-                    const polygonGeometry = convertGeoJSONGeometry(feature.geometry);
-                    geoJSONPolygons.push({ geometry: polygonGeometry, feature }); // Add to the shared array
-                }
-            });
-        })
-        .catch(error => console.error("Error fetching GeoJSON:", error));
-
-    return layer;
     }
 
      function convertGeoJSONGeometry(geometry) {
