@@ -144,6 +144,7 @@ window.createGeoJSONLayer = function(url, colorHTML, alpha) {
                 if (feature.geometry.type === "Polygon" || feature.geometry.type === "MultiPolygon") {
                     const polygonGeometry = convertGeoJSONGeometry(feature.geometry);
                     geoJSONPolygons.push({ geometry: polygonGeometry, feature }); // Add to the shared array
+                    console.log(geoJSONPolygons)
                 }
             });
         })
