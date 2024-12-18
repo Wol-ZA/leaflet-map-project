@@ -202,7 +202,7 @@ let geoJSONPolygons = [];
                     
                     if (feature.geometry.type === "Polygon" || feature.geometry.type === "MultiPolygon") {
                     const name = feature.properties.name || `Polygon ${index + 1}`; // Use `name` property or a default name
-                     geoJSONPolygonData.push({ geometry: graphic.geometry, feature });
+                     geoJSONPolygons.push({ geometry: graphic.geometry, feature });
                 }
                     // Add the graphic to the layer
                     graphicsLayer.add(graphic);
