@@ -295,8 +295,11 @@ function addUserLocationMarker(location, heading) {
         userGraphic.polylineGraphic.geometry = polylineGraphic.geometry;
     }
 
-    // Check intersections, excluding the polygon the user is currently in
-    checkIntersectionWithPolygons(polylineGraphic.geometry, userPoint);
+    // Get JSON of intersecting polygon names
+    const intersectionsJSON = checkIntersectionWithPolygons(polylineGraphic.geometry, userPoint);
+
+    // Optionally do something with the JSON (e.g., send it to a server or log it)
+    console.log("Intersecting Polygons JSON:", JSON.stringify(intersectionsJSON));
 
     if (!isUserInteracting) {
         const adjustedHeading = (heading + view.rotation) % 360;
@@ -341,7 +344,6 @@ function checkIntersectionWithPolygons(polylineGeometry, userPoint) {
     });
 
     // Return JSON with all intersecting polygon names
-    console.log(intersectingPolygons);
     return { intersectingPolygons };
 }
 
