@@ -202,7 +202,7 @@ let geoJSONPolygons = [];
                     
                     if (feature.geometry.type === "Polygon" || feature.geometry.type === "MultiPolygon") {
                     const name = feature.properties.name || `Polygon ${index + 1}`; // Use `name` property or a default name
-                    geoJSONPolygons.push({ geometry: graphic.geometry, name });
+                     geoJSONPolygonData.push({ geometry: graphic.geometry, feature });
                 }
                     // Add the graphic to the layer
                     graphicsLayer.add(graphic);
@@ -292,17 +292,18 @@ function addUserLocationMarker(location, heading) {
 
 function checkIntersectionWithPolygons(polylineGeometry) {
     geoJSONPolygons.forEach((polygonData, index) => {
-        const { geometry: polygonGeometry, name } = polygonData;
+        const { geometry: polygonGeometry, feature } = polygonData;
 
         // Check if the polyline intersects the polygon
         const intersects = geometryEngine.intersects(polylineGeometry, polygonGeometry);
 
-        if (intersects) {
-            console.log(`Polyline intersects with Polygon: ${name} (Index: ${index})`);
+      if (intersects) {
+            console.log(`Polyline intersects with Polygon at Index: ${index}`);
+            console.log("Intersected Feature Object:", feature); // Log full feature object
 
             // Optionally, log intersection geometry details
             const intersection = geometryEngine.intersect(polylineGeometry, polygonGeometry);
-            console.log(`Intersection details with ${name}:`, intersection);
+            console.log(`Intersection details for Feature:`, intersection);
         }
     });
 }    
