@@ -291,7 +291,7 @@ function addUserLocationMarker(location, heading) {
 }
 
 function checkIntersectionWithPolygons(polylineGeometry) {
-    geoJSONPolygonData.forEach((polygonData, index) => {
+    geoJSONPolygons.forEach((polygonData, index) => {
         const { geometry: polygonGeometry, name } = polygonData;
 
         // Check if the polyline intersects the polygon
