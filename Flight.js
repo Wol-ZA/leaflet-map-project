@@ -323,6 +323,8 @@ function checkIfInsidePolygon(userPoint) {
 }
     
 function checkIntersectionWithPolygons(polylineGeometry, userPoint) {
+ const intersectingPolygons = []; // Array to store names of intersecting polygons
+
     geoJSONPolygons.forEach((polygonData, index) => {
         const { geometry: polygonGeometry, feature } = polygonData;
 
@@ -332,12 +334,15 @@ function checkIntersectionWithPolygons(polylineGeometry, userPoint) {
         // Check if the user is currently inside this polygon
         const containsUser = geometryEngine.contains(polygonGeometry, userPoint);
 
-        // Log only polygons that intersect but do not contain the user
-        if (intersects && !containsUser) {
-            console.log(`Polyline intersects with Polygon at Index: ${index}`);
-            console.log("Intersected Feature Object:", feature);
+        // Add the name to the array if it intersects and does not contain the user
+        if (intersects && !containsUser && feature.properties && feature.properties.name) {
+            intersectingPolygons.push(feature.properties.name);
         }
     });
+
+    // Return JSON with all intersecting polygon names
+    console.log(intersectingPolygons);
+    return { intersectingPolygons };
 }
 
 function createDirectionalPolyline(userPoint, heading) {
