@@ -10,14 +10,24 @@ require([
     "esri/geometry/Extent"
 ], function(Map, SceneView, Graphic, GraphicsLayer, Point, Polyline, SimpleMarkerSymbol, SimpleLineSymbol, Extent) {
     
-    const map = new Map({
+const map = new Map({
         basemap: "topo-vector",
         ground: "world-elevation"
+    });
+
+    // Define the extent for South Africa
+    const southAfricaExtent = new Extent({
+        xmin: 16.0, // minimum longitude
+        ymin: -35.0, // minimum latitude
+        xmax: 33.0, // maximum longitude
+        ymax: -22.0, // maximum latitude
+        spatialReference: 4326 // WGS84 spatial reference
     });
     
     const view = new SceneView({
         container: "viewDiv",
         map: map,
+        extent: southAfricaExtent, // Set the initial extent to South Africa
         camera: {
             position: { latitude: -31.548, longitude: 24.34, z: 30000 },
             tilt: 75
