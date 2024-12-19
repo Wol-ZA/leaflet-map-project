@@ -143,6 +143,7 @@ window.simulateFlight = function(flightData) {
         height: "32px",
     };
 
+    // Start plane at the first waypoint
     const planeGraphic = new Graphic({
         geometry: new Point({
             longitude: flightData[0].longitude,
@@ -158,6 +159,24 @@ window.simulateFlight = function(flightData) {
     // Animate the plane
     let currentIndex = 0;
 
+    // Function to interpolate between two points
+    function interpolatePoints(start, end, steps) {
+        const deltaLongitude = (end.longitude - start.longitude) / steps;
+        const deltaLatitude = (end.latitude - start.latitude) / steps;
+        const deltaAltitude = (end.altitude - start.altitude) / steps;
+
+        const interpolatedPoints = [];
+        for (let i = 0; i <= steps; i++) {
+            const point = {
+                longitude: start.longitude + deltaLongitude * i,
+                latitude: start.latitude + deltaLatitude * i,
+                altitude: start.altitude + deltaAltitude * i
+            };
+            interpolatedPoints.push(point);
+        }
+        return interpolatedPoints;
+    }
+
     function movePlane() {
         if (currentIndex >= flightData.length - 1) {
             console.log("Flight simulation complete.");
@@ -167,34 +186,30 @@ window.simulateFlight = function(flightData) {
         const start = flightData[currentIndex];
         const end = flightData[currentIndex + 1];
 
-        // Create an interpolator for smooth animation
-        const steps = 2; // Number of steps between points
-        let step = 0;
-        const delay = 10; // Delay in milliseconds between steps
+        // Interpolate between two waypoints
+        const steps = 100;  // More steps for smoother animation
+        const interpolatedPoints = interpolatePoints(start, end, steps);
 
-        const deltaLongitude = (end.longitude - start.longitude) / steps;
-        const deltaLatitude = (end.latitude - start.latitude) / steps;
-        const deltaAltitude = (end.altitude - start.altitude) / steps;
+        let step = 0;
+
+        // Smooth animation with a delay
+        const delay = 50; // Adjust the delay for speed
 
         const animateStep = () => {
-            if (step <= steps) {
-                // Update plane's position
-                const newLongitude = start.longitude + deltaLongitude * step;
-                const newLatitude = start.latitude + deltaLatitude * step;
-                const newAltitude = start.altitude + deltaAltitude * step;
-
+            if (step < steps) {
+                const point = interpolatedPoints[step];
                 planeGraphic.geometry = new Point({
-                    longitude: newLongitude,
-                    latitude: newLatitude,
-                    z: newAltitude,
-                    spatialReference: { wkid: 4326 },
+                    longitude: point.longitude,
+                    latitude: point.latitude,
+                    z: point.altitude,
+                    spatialReference: { wkid: 4326 }
                 });
 
                 step++;
-                setTimeout(animateStep, delay); // Add delay for slower animation
+                setTimeout(animateStep, delay);  // Use setTimeout for controlling speed
             } else {
                 currentIndex++;
-                movePlane(); // Move to the next segment
+                movePlane();  // Move to the next segment
             }
         };
 
@@ -203,5 +218,4 @@ window.simulateFlight = function(flightData) {
 
     movePlane();
 };
-
 });
