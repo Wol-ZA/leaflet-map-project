@@ -168,7 +168,7 @@ window.simulateFlight = function(flightData) {
         const end = flightData[currentIndex + 1];
 
         // Create an interpolator for smooth animation
-        const steps = 50; // Number of steps between points
+        const steps = 2; // Number of steps between points
         let step = 0;
         const delay = 10; // Delay in milliseconds between steps
 
