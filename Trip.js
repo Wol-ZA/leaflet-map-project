@@ -143,7 +143,6 @@ window.simulateFlight = function(flightData) {
         height: "32px",
     };
 
-    // Start plane at the first waypoint
     const planeGraphic = new Graphic({
         geometry: new Point({
             longitude: flightData[0].longitude,
@@ -156,66 +155,73 @@ window.simulateFlight = function(flightData) {
 
     planeGraphicLayer.add(planeGraphic);
 
-    // Animate the plane
-    let currentIndex = 0;
+    // Create the polyline from flight data
+    const pathCoordinates = flightData.map((dataPoint) => [
+        dataPoint.longitude,
+        dataPoint.latitude,
+        dataPoint.altitude,
+    ]);
 
-    // Function to interpolate between two points
-    function interpolatePoints(start, end, steps) {
-        const deltaLongitude = (end.longitude - start.longitude) / steps;
-        const deltaLatitude = (end.latitude - start.latitude) / steps;
-        const deltaAltitude = (end.altitude - start.altitude) / steps;
+    const polyline = new Polyline({
+        paths: [pathCoordinates],
+    });
 
-        const interpolatedPoints = [];
-        for (let i = 0; i <= steps; i++) {
-            const point = {
-                longitude: start.longitude + deltaLongitude * i,
-                latitude: start.latitude + deltaLatitude * i,
-                altitude: start.altitude + deltaAltitude * i
-            };
-            interpolatedPoints.push(point);
-        }
-        return interpolatedPoints;
-    }
+    // Length of the polyline
+    const pathLength = polyline.paths[0].length;
+    let currentIndex = 0; // Start at the beginning of the polyline
 
     function movePlane() {
-        if (currentIndex >= flightData.length - 1) {
+        if (currentIndex >= pathLength - 1) {
             console.log("Flight simulation complete.");
             return;
         }
 
-        const start = flightData[currentIndex];
-        const end = flightData[currentIndex + 1];
+        // Move along the polyline, interpolating position
+        const fromPoint = new Point({
+            longitude: polyline.paths[0][currentIndex][0],
+            latitude: polyline.paths[0][currentIndex][1],
+            z: polyline.paths[0][currentIndex][2],
+        });
+        const toPoint = new Point({
+            longitude: polyline.paths[0][currentIndex + 1][0],
+            latitude: polyline.paths[0][currentIndex + 1][1],
+            z: polyline.paths[0][currentIndex + 1][2],
+        });
 
-        // Interpolate between two waypoints
-        const steps = 100;  // More steps for smoother animation
-        const interpolatedPoints = interpolatePoints(start, end, steps);
-
-        let step = 0;
-
-        // Smooth animation with a delay
-        const delay = 50; // Adjust the delay for speed
+        const segmentLength = Math.hypot(
+            toPoint.longitude - fromPoint.longitude,
+            toPoint.latitude - fromPoint.latitude
+        );
+        const steps = 100; // Number of steps to make smoother movement
+        let currentStep = 0;
 
         const animateStep = () => {
-            if (step < steps) {
-                const point = interpolatedPoints[step];
+            if (currentStep <= steps) {
+                const progress = currentStep / steps;
+
+                const interpolatedLongitude = fromPoint.longitude + (toPoint.longitude - fromPoint.longitude) * progress;
+                const interpolatedLatitude = fromPoint.latitude + (toPoint.latitude - fromPoint.latitude) * progress;
+                const interpolatedAltitude = fromPoint.z + (toPoint.z - fromPoint.z) * progress;
+
+                // Update plane position
                 planeGraphic.geometry = new Point({
-                    longitude: point.longitude,
-                    latitude: point.latitude,
-                    z: point.altitude,
-                    spatialReference: { wkid: 4326 }
+                    longitude: interpolatedLongitude,
+                    latitude: interpolatedLatitude,
+                    z: interpolatedAltitude,
                 });
 
-                step++;
-                setTimeout(animateStep, delay);  // Use setTimeout for controlling speed
+                currentStep++;
+                setTimeout(animateStep, 50); // Use timeout to control speed
             } else {
                 currentIndex++;
-                movePlane();  // Move to the next segment
+                movePlane(); // Move to the next segment
             }
         };
 
         animateStep();
     }
 
-    movePlane();
+    movePlane(); // Start moving the plane
 };
+
 });
