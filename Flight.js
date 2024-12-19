@@ -262,18 +262,17 @@ view.on("pointer-move", () => isUserInteracting = true);
 // Reset interaction flag after a delay to allow map updates
 setInterval(() => isUserInteracting = false, 3000); // Adjust timing as needed
 
-function addUserLocationMarker(location, heading) {
-    const userPoint = new Point({
+ function addUserLocationMarker(location, heading) {
+    const userPoint = {
         type: "point",
         longitude: location[0],
-        latitude: location[1],
-        spatialReference: { wkid: 4326 } // Use WGS84 spatial reference
-    });
+        latitude: location[1]
+    };
 
     const markerSymbol = new PictureMarkerSymbol({
         url: "plane_1.png",
         width: "32px",
-        height: "32px"
+        height: "32px",
     });
 
     if (userGraphic) {
@@ -286,26 +285,76 @@ function addUserLocationMarker(location, heading) {
         graphicsLayer.add(userGraphic);
     }
 
+    // Adjust heading for map rotation
+    const adjustedHeading = (heading + view.rotation) % 360;
+    // Create the polyline graphic
     const polylineGraphic = createDirectionalPolyline(location, heading);
-
+    console.log(heading);
+    console.log(adjustedHeading);
+    // Add or update the polyline graphic on the map
     if (!userGraphic.polylineGraphic) {
         userGraphic.polylineGraphic = polylineGraphic;
         graphicsLayer.add(userGraphic.polylineGraphic);
     } else {
-        userGraphic.polylineGraphic.geometry = polylineGraphic.geometry;
+        userGraphic.polylineGraphic.geometry = polylineGraphic.geometry; // Update existing polyline
     }
 
-    // Get JSON of intersecting polygon names
-    const intersections = checkIntersectionWithPolygons(polylineGraphic.geometry, userPoint);
+    // Rotate the map view based on heading
 
-    // Optionally do something with the JSON (e.g., send it to a server or log it)
-    WL.Execute("ClosingIn", JSON.stringify(intersections, null, 2));
-    if (!isUserInteracting) {
+  if (!isUserInteracting) {
         const adjustedHeading = (heading + view.rotation) % 360;
         view.rotation = 360 - adjustedHeading;
-        view.center = userPoint;
+          if (typeof heading === "number") {
+        view.rotation = 360 - heading;
+        }// Rotate the map based on heading
+        view.center = userPoint;               // Center map on user location
     }
-}
+}   
+
+//function addUserLocationMarker(location, heading) {
+//    const userPoint = new Point({
+//        type: "point",
+//        longitude: location[0],
+ //       latitude: location[1],
+ //       spatialReference: { wkid: 4326 } // Use WGS84 spatial reference
+ //   });
+
+ //   const markerSymbol = new PictureMarkerSymbol({
+ //       url: "plane_1.png",
+  //      width: "32px",
+  //      height: "32px"
+  //  });
+
+  //  if (userGraphic) {
+ //       userGraphic.geometry = userPoint;
+  //  } else {
+  //      userGraphic = new Graphic({
+  //          geometry: userPoint,
+   //         symbol: markerSymbol
+   //     });
+   //     graphicsLayer.add(userGraphic);
+   // }
+
+  //  const polylineGraphic = createDirectionalPolyline(location, heading);
+
+   // if (!userGraphic.polylineGraphic) {
+   //     userGraphic.polylineGraphic = polylineGraphic;
+   //     graphicsLayer.add(userGraphic.polylineGraphic);
+   // } else {
+   //     userGraphic.polylineGraphic.geometry = polylineGraphic.geometry;
+   // }
+
+    // Get JSON of intersecting polygon names
+   // const intersections = checkIntersectionWithPolygons(polylineGraphic.geometry, userPoint);
+
+    // Optionally do something with the JSON (e.g., send it to a server or log it)
+   // WL.Execute("ClosingIn", JSON.stringify(intersections, null, 2));
+   // if (!isUserInteracting) {
+   //     const adjustedHeading = (heading + view.rotation) % 360;
+   //     view.rotation = 360 - adjustedHeading;
+   //     view.center = userPoint;
+   // }
+//}
 
 function checkIfInsidePolygon(userPoint) {
     let insideAnyPolygon = false;
