@@ -299,10 +299,7 @@ setInterval(() => isUserInteracting = false, 3000); // Adjust timing as needed
 
     // Rotate the map view based on heading
     // Get JSON of intersecting polygon names
-   const intersections = checkIntersectionWithPolygons(polylineGraphic.geometry, userPoint);
-
-    // Optionally do something with the JSON (e.g., send it to a server or log it)
-   WL.Execute("ClosingIn", JSON.stringify(intersections, null, 2));
+ 
 
   if (!isUserInteracting) {
         const adjustedHeading = (heading + view.rotation) % 360;
@@ -312,6 +309,10 @@ setInterval(() => isUserInteracting = false, 3000); // Adjust timing as needed
         }// Rotate the map based on heading
         view.center = userPoint;               // Center map on user location
     }
+    const intersections = checkIntersectionWithPolygons(polylineGraphic.geometry, userPoint);
+
+    // Optionally do something with the JSON (e.g., send it to a server or log it)
+   WL.Execute("ClosingIn", JSON.stringify(intersections, null, 2));
 }   
 
 //function addUserLocationMarker(location, heading) {
