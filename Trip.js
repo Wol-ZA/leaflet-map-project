@@ -37,67 +37,83 @@ const map = new Map({
     const graphicsLayer = new GraphicsLayer();
     map.add(graphicsLayer);
     
-    window.loadFlightPath = function(flightData) {
-        const pathCoordinates = flightData.map((dataPoint) => {
-            const point = new Point({
-                latitude: dataPoint.latitude,
-                longitude: dataPoint.longitude,
-                z: dataPoint.altitude
-            });
-            
-            const markerSymbol = new SimpleMarkerSymbol({
-                color: [0, 0, 255, 0.6],
-                size: 8,
-                outline: { color: "white", width: 2 }
-            });
-            
-            const pointGraphic = new Graphic({
-                geometry: point,
-                symbol: markerSymbol
-            });
-            graphicsLayer.add(pointGraphic);
-            
-            // Create a vertical line from each waypoint to the ground
-            const verticalLine = new Polyline({
-                paths: [
-                    [dataPoint.longitude, dataPoint.latitude, dataPoint.altitude],
-                    [dataPoint.longitude, dataPoint.latitude, 0]
-                ]
-            });
-            
-            const verticalLineSymbol = new SimpleLineSymbol({
-                color: [0, 0, 0, 0.3], // Semi-transparent black
-                width: 1,
-                style: "dash"
-            });
-            
-            const verticalLineGraphic = new Graphic({
-                geometry: verticalLine,
-                symbol: verticalLineSymbol
-            });
-            graphicsLayer.add(verticalLineGraphic);
-            
-            return [dataPoint.longitude, dataPoint.latitude, dataPoint.altitude];
+window.loadFlightPath = function(flightData) {
+    graphicsLayer.removeAll(); // Clear previous graphics
+
+    const pathCoordinates = flightData.map((dataPoint) => {
+        const point = new Point({
+            latitude: dataPoint.latitude,
+            longitude: dataPoint.longitude,
+            z: dataPoint.altitude
         });
-        
-        const polyline = new Polyline({
-            paths: [pathCoordinates]
+
+        const markerSymbol = new SimpleMarkerSymbol({
+            color: [0, 0, 255, 0.6],
+            size: 8,
+            outline: { color: "white", width: 2 }
         });
-        
-        const lineSymbol = new SimpleLineSymbol({
-            color: [255, 0, 0, 0.7],
-            width: 3,
-            style: "solid"
+
+        const pointGraphic = new Graphic({
+            geometry: point,
+            symbol: markerSymbol
         });
-        
-        const lineGraphic = new Graphic({
-            geometry: polyline,
-            symbol: lineSymbol
+        graphicsLayer.add(pointGraphic);
+
+        // Create a vertical line from each waypoint to the ground
+        const verticalLine = new Polyline({
+            paths: [
+                [dataPoint.longitude, dataPoint.latitude, dataPoint.altitude],
+                [dataPoint.longitude, dataPoint.latitude, 0]
+            ]
         });
-        
-        graphicsLayer.add(lineGraphic);
-        
-        if (flightData.length > 0) {
+
+        const verticalLineSymbol = new SimpleLineSymbol({
+            color: [0, 0, 0, 0.3], // Semi-transparent black
+            width: 1,
+            style: "dash"
+        });
+
+        const verticalLineGraphic = new Graphic({
+            geometry: verticalLine,
+            symbol: verticalLineSymbol
+        });
+        graphicsLayer.add(verticalLineGraphic);
+
+        return [dataPoint.longitude, dataPoint.latitude, dataPoint.altitude];
+    });
+
+    const polyline = new Polyline({
+        paths: [pathCoordinates]
+    });
+
+    const lineSymbol = new SimpleLineSymbol({
+        color: [255, 0, 0, 0.7],
+        width: 3,
+        style: "solid"
+    });
+
+    const lineGraphic = new Graphic({
+        geometry: polyline,
+        symbol: lineSymbol
+    });
+
+    graphicsLayer.add(lineGraphic);
+
+    if (graphicsLayer.graphics.length > 0) {
+        // Dynamically adjust the view to the extent of the trip
+        const fullExtent = graphicsLayer.fullExtent;
+
+        if (fullExtent) {
+            view.goTo({
+                target: fullExtent.expand(1.2), // Expand the extent slightly for better visibility
+                easing: "ease-in-out"
+            }).catch((error) => {
+                if (error.name !== "AbortError") {
+                    console.error("Error:", error);
+                }
+            });
+        } else if (flightData.length > 0) {
+            // Fallback to first point if extent calculation fails
             const firstPoint = flightData[0];
             view.goTo({
                 target: [firstPoint.longitude, firstPoint.latitude],
@@ -105,15 +121,6 @@ const map = new Map({
                 tilt: 75
             });
         }
-
-        const extent = graphicsLayer.fullExtent;
-        view.goTo({
-            target: extent,
-            easing: "ease-in-out"
-        }).catch((error) => {
-            if (error.name !== "AbortError") {
-                console.error("Error:", error);
-            }
-        });
-    };
+    }
+};
 });
