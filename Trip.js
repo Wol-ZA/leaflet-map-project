@@ -114,35 +114,16 @@ window.loadFlightPath = function(flightData) {
 
     graphicsLayer.add(lineGraphic);
 
-    // Dynamically calculate center point and zoom level
-    const centerLongitude = (xmin + xmax) / 2;
-    const centerLatitude = (ymin + ymax) / 2;
-
-    // Calculate distance between farthest points to determine zoom
-    const distance = Math.max(xmax - xmin, ymax - ymin);
-    let zoomLevel;
-
-    if (distance < 1) {
-        zoomLevel = 12; // Close zoom for small trips
-    } else if (distance < 5) {
-        zoomLevel = 10; // Medium zoom
-    } else if (distance < 20) {
-        zoomLevel = 8; // Zoom out for larger trips
-    } else if (distance < 100) {
-        zoomLevel = 6; // Regional zoom
-    } else {
-        zoomLevel = 4; // National or larger trips
-    }
-
-    view.goTo({
-        target: [centerLongitude, centerLatitude],
-        zoom: zoomLevel,
-        tilt: 50 // Optional tilt for a 3D view
-    }).catch((error) => {
-        if (error.name !== "AbortError") {
-            console.error("Error:", error);
-        }
+    // Dynamically calculate and set extent
+    const extent = new Extent({
+        xmin,
+        ymin,
+        xmax,
+        ymax,
+        spatialReference: { wkid: 4326 } // Ensure geographic spatial reference
     });
+
+    view.extent = extent.expand(1.2); // Add margin for better visualization
 };
 
 });
