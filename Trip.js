@@ -136,6 +136,7 @@ window.simulateFlight = function(flightData) {
     const planeGraphicLayer = new GraphicsLayer();
     map.add(planeGraphicLayer);
 
+    // Plane symbol
     const planeSymbol = {
         type: "picture-marker",
         url: "plane_1.png",
@@ -155,7 +156,7 @@ window.simulateFlight = function(flightData) {
 
     planeGraphicLayer.add(planeGraphic);
 
-    // Create the polyline from flight data
+    // Create the polyline from flight data (latitude, longitude, and altitude)
     const pathCoordinates = flightData.map((dataPoint) => [
         dataPoint.longitude,
         dataPoint.latitude,
@@ -168,7 +169,8 @@ window.simulateFlight = function(flightData) {
 
     // Length of the polyline
     const pathLength = polyline.paths[0].length;
-    let currentIndex = 0; // Start at the beginning of the polyline
+
+    let currentIndex = 0;
 
     function movePlane() {
         if (currentIndex >= pathLength - 1) {
@@ -176,45 +178,38 @@ window.simulateFlight = function(flightData) {
             return;
         }
 
-        // Move along the polyline, interpolating position
-        const fromPoint = new Point({
-            longitude: polyline.paths[0][currentIndex][0],
-            latitude: polyline.paths[0][currentIndex][1],
-            z: polyline.paths[0][currentIndex][2],
-        });
-        const toPoint = new Point({
-            longitude: polyline.paths[0][currentIndex + 1][0],
-            latitude: polyline.paths[0][currentIndex + 1][1],
-            z: polyline.paths[0][currentIndex + 1][2],
-        });
+        const fromPoint = polyline.paths[0][currentIndex];
+        const toPoint = polyline.paths[0][currentIndex + 1];
 
         const segmentLength = Math.hypot(
-            toPoint.longitude - fromPoint.longitude,
-            toPoint.latitude - fromPoint.latitude
+            toPoint[0] - fromPoint[0], // longitude difference
+            toPoint[1] - fromPoint[1]  // latitude difference
         );
-        const steps = 100; // Number of steps to make smoother movement
+
+        const steps = 100; // Number of steps to smooth the motion
         let currentStep = 0;
 
         const animateStep = () => {
             if (currentStep <= steps) {
                 const progress = currentStep / steps;
 
-                const interpolatedLongitude = fromPoint.longitude + (toPoint.longitude - fromPoint.longitude) * progress;
-                const interpolatedLatitude = fromPoint.latitude + (toPoint.latitude - fromPoint.latitude) * progress;
-                const interpolatedAltitude = fromPoint.z + (toPoint.z - fromPoint.z) * progress;
+                // Interpolating position and altitude
+                const interpolatedLongitude = fromPoint[0] + (toPoint[0] - fromPoint[0]) * progress;
+                const interpolatedLatitude = fromPoint[1] + (toPoint[1] - fromPoint[1]) * progress;
+                const interpolatedAltitude = fromPoint[2] + (toPoint[2] - fromPoint[2]) * progress;
 
                 // Update plane position
                 planeGraphic.geometry = new Point({
                     longitude: interpolatedLongitude,
                     latitude: interpolatedLatitude,
-                    z: interpolatedAltitude,
+                    z: interpolatedAltitude, // Match altitude with path
                 });
 
                 currentStep++;
                 setTimeout(animateStep, 50); // Use timeout to control speed
             } else {
                 currentIndex++;
-                movePlane(); // Move to the next segment
+                movePlane(); // Continue moving to the next segment
             }
         };
 
@@ -223,5 +218,4 @@ window.simulateFlight = function(flightData) {
 
     movePlane(); // Start moving the plane
 };
-
 });
