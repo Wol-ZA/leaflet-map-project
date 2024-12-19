@@ -168,8 +168,9 @@ window.simulateFlight = function(flightData) {
         const end = flightData[currentIndex + 1];
 
         // Create an interpolator for smooth animation
-        const steps = 50; // Higher number for smoother animation
+        const steps = 50; // Number of steps between points
         let step = 0;
+        const delay = 100; // Delay in milliseconds between steps
 
         const deltaLongitude = (end.longitude - start.longitude) / steps;
         const deltaLatitude = (end.latitude - start.latitude) / steps;
@@ -190,7 +191,7 @@ window.simulateFlight = function(flightData) {
                 });
 
                 step++;
-                requestAnimationFrame(animateStep); // Continue animation
+                setTimeout(animateStep, delay); // Add delay for slower animation
             } else {
                 currentIndex++;
                 movePlane(); // Move to the next segment
@@ -201,6 +202,6 @@ window.simulateFlight = function(flightData) {
     }
 
     movePlane();
-};    
+};
 
 });
