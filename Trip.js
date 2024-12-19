@@ -170,7 +170,7 @@ window.simulateFlight = function(flightData) {
         // Create an interpolator for smooth animation
         const steps = 50; // Number of steps between points
         let step = 0;
-        const delay = 100; // Delay in milliseconds between steps
+        const delay = 10; // Delay in milliseconds between steps
 
         const deltaLongitude = (end.longitude - start.longitude) / steps;
         const deltaLatitude = (end.latitude - start.latitude) / steps;
