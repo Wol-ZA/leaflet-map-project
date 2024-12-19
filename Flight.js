@@ -299,7 +299,7 @@ function addUserLocationMarker(location, heading) {
     const intersections = checkIntersectionWithPolygons(polylineGraphic.geometry, userPoint);
 
     // Optionally do something with the JSON (e.g., send it to a server or log it)
-    //WL.Execute("ClosingIn", JSON.stringify(intersections, null, 2));
+    WL.Execute("ClosingIn", JSON.stringify(intersections, null, 2));
     if (!isUserInteracting) {
         const adjustedHeading = (heading + view.rotation) % 360;
         view.rotation = 360 - adjustedHeading;
