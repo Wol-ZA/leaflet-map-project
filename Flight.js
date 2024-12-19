@@ -289,8 +289,6 @@ setInterval(() => isUserInteracting = false, 3000); // Adjust timing as needed
     const adjustedHeading = (heading + view.rotation) % 360;
     // Create the polyline graphic
     const polylineGraphic = createDirectionalPolyline(location, heading);
-    console.log(heading);
-    console.log(adjustedHeading);
     // Add or update the polyline graphic on the map
     if (!userGraphic.polylineGraphic) {
         userGraphic.polylineGraphic = polylineGraphic;
@@ -300,6 +298,11 @@ setInterval(() => isUserInteracting = false, 3000); // Adjust timing as needed
     }
 
     // Rotate the map view based on heading
+    // Get JSON of intersecting polygon names
+   const intersections = checkIntersectionWithPolygons(polylineGraphic.geometry, userPoint);
+
+    // Optionally do something with the JSON (e.g., send it to a server or log it)
+   WL.Execute("ClosingIn", JSON.stringify(intersections, null, 2));
 
   if (!isUserInteracting) {
         const adjustedHeading = (heading + view.rotation) % 360;
