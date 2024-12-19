@@ -123,7 +123,84 @@ window.loadFlightPath = function(flightData) {
         spatialReference: { wkid: 4326 } // Ensure geographic spatial reference
     });
 
-    view.extent = extent.expand(1.2); // Add margin for better visualization
+    view.extent = extent.expand(1.2);
+    simulateFlight(flightData);// Add margin for better visualization
 };
+
+window.simulateFlight = function(flightData) {
+    if (flightData.length === 0) {
+        console.warn("No flight data provided.");
+        return;
+    }
+
+    const planeGraphicLayer = new GraphicsLayer();
+    map.add(planeGraphicLayer);
+
+    const planeSymbol = {
+        type: "picture-marker",
+        url: "plane_1.png",
+        width: "32px",
+        height: "32px",
+    };
+
+    const planeGraphic = new Graphic({
+        geometry: new Point({
+            longitude: flightData[0].longitude,
+            latitude: flightData[0].latitude,
+            z: flightData[0].altitude,
+            spatialReference: { wkid: 4326 },
+        }),
+        symbol: planeSymbol,
+    });
+
+    planeGraphicLayer.add(planeGraphic);
+
+    // Animate the plane
+    let currentIndex = 0;
+
+    function movePlane() {
+        if (currentIndex >= flightData.length - 1) {
+            console.log("Flight simulation complete.");
+            return;
+        }
+
+        const start = flightData[currentIndex];
+        const end = flightData[currentIndex + 1];
+
+        // Create an interpolator for smooth animation
+        const steps = 50; // Higher number for smoother animation
+        let step = 0;
+
+        const deltaLongitude = (end.longitude - start.longitude) / steps;
+        const deltaLatitude = (end.latitude - start.latitude) / steps;
+        const deltaAltitude = (end.altitude - start.altitude) / steps;
+
+        const animateStep = () => {
+            if (step <= steps) {
+                // Update plane's position
+                const newLongitude = start.longitude + deltaLongitude * step;
+                const newLatitude = start.latitude + deltaLatitude * step;
+                const newAltitude = start.altitude + deltaAltitude * step;
+
+                planeGraphic.geometry = new Point({
+                    longitude: newLongitude,
+                    latitude: newLatitude,
+                    z: newAltitude,
+                    spatialReference: { wkid: 4326 },
+                });
+
+                step++;
+                requestAnimationFrame(animateStep); // Continue animation
+            } else {
+                currentIndex++;
+                movePlane(); // Move to the next segment
+            }
+        };
+
+        animateStep();
+    }
+
+    movePlane();
+};    
 
 });
