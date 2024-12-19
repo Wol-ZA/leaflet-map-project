@@ -309,7 +309,7 @@ setInterval(() => isUserInteracting = false, 3000); // Adjust timing as needed
         }// Rotate the map based on heading
         view.center = userPoint;               // Center map on user location
     }
-    const intersections = checkIntersectionWithPolygons(polylineGraphic.geometry, userPoint);
+    //const intersections = checkIntersectionWithPolygons(polylineGraphic.geometry, userPoint);
 
     // Optionally do something with the JSON (e.g., send it to a server or log it)
    WL.Execute("ClosingIn", JSON.stringify(intersections, null, 2));
