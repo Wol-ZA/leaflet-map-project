@@ -40,11 +40,26 @@ const map = new Map({
 window.loadFlightPath = function(flightData) {
     graphicsLayer.removeAll(); // Clear previous graphics
 
+    if (flightData.length === 0) {
+        console.warn("No flight data provided.");
+        return;
+    }
+
+    let xmin = Infinity, ymin = Infinity, xmax = -Infinity, ymax = -Infinity;
+
     const pathCoordinates = flightData.map((dataPoint) => {
+        const { latitude, longitude, altitude } = dataPoint;
+
+        // Update bounds for extent
+        xmin = Math.min(xmin, longitude);
+        ymin = Math.min(ymin, latitude);
+        xmax = Math.max(xmax, longitude);
+        ymax = Math.max(ymax, latitude);
+
         const point = new Point({
-            latitude: dataPoint.latitude,
-            longitude: dataPoint.longitude,
-            z: dataPoint.altitude
+            latitude,
+            longitude,
+            z: altitude
         });
 
         const markerSymbol = new SimpleMarkerSymbol({
@@ -62,13 +77,13 @@ window.loadFlightPath = function(flightData) {
         // Create a vertical line from each waypoint to the ground
         const verticalLine = new Polyline({
             paths: [
-                [dataPoint.longitude, dataPoint.latitude, dataPoint.altitude],
-                [dataPoint.longitude, dataPoint.latitude, 0]
+                [longitude, latitude, altitude],
+                [longitude, latitude, 0]
             ]
         });
 
         const verticalLineSymbol = new SimpleLineSymbol({
-            color: [0, 0, 0, 0.3], // Semi-transparent black
+            color: [0, 0, 0, 0.3],
             width: 1,
             style: "dash"
         });
@@ -79,7 +94,7 @@ window.loadFlightPath = function(flightData) {
         });
         graphicsLayer.add(verticalLineGraphic);
 
-        return [dataPoint.longitude, dataPoint.latitude, dataPoint.altitude];
+        return [longitude, latitude, altitude];
     });
 
     const polyline = new Polyline({
@@ -99,28 +114,22 @@ window.loadFlightPath = function(flightData) {
 
     graphicsLayer.add(lineGraphic);
 
-    if (graphicsLayer.graphics.length > 0) {
-        // Dynamically adjust the view to the extent of the trip
-        const fullExtent = graphicsLayer.fullExtent;
+    // Dynamically calculate extent
+    const calculatedExtent = new Extent({
+        xmin,
+        ymin,
+        xmax,
+        ymax,
+        spatialReference: 4326
+    });
 
-        if (fullExtent) {
-            view.goTo({
-                target: fullExtent.expand(1.2), // Expand the extent slightly for better visibility
-                easing: "ease-in-out"
-            }).catch((error) => {
-                if (error.name !== "AbortError") {
-                    console.error("Error:", error);
-                }
-            });
-        } else if (flightData.length > 0) {
-            // Fallback to first point if extent calculation fails
-            const firstPoint = flightData[0];
-            view.goTo({
-                target: [firstPoint.longitude, firstPoint.latitude],
-                zoom: 10,
-                tilt: 75
-            });
+    view.goTo({
+        target: calculatedExtent.expand(1.1), // Expand for some margin
+        easing: "ease-in-out"
+    }).catch((error) => {
+        if (error.name !== "AbortError") {
+            console.error("Error:", error);
         }
-    }
+    });
 };
 });
