@@ -189,33 +189,35 @@ window.simulateFlight = function(flightData) {
         const steps = 50; // Number of steps to smooth the motion
         let currentStep = 0;
 
-        const animateStep = () => {
-            if (currentStep <= steps) {
-                const progress = currentStep / steps;
+const animateStep = () => {
+    if (currentStep <= steps) {
+        const progress = currentStep / steps;
 
-                // Interpolating position and altitude
-                const interpolatedLongitude = fromPoint[0] + (toPoint[0] - fromPoint[0]) * progress;
-                const interpolatedLatitude = fromPoint[1] + (toPoint[1] - fromPoint[1]) * progress;
-                const interpolatedAltitude = fromPoint[2] + (toPoint[2] - fromPoint[2]) * progress;
+        // Interpolating position and altitude
+        const interpolatedLongitude = fromPoint[0] + (toPoint[0] - fromPoint[0]) * progress;
+        const interpolatedLatitude = fromPoint[1] + (toPoint[1] - fromPoint[1]) * progress;
+        const interpolatedAltitude = fromPoint[2] + (toPoint[2] - fromPoint[2]) * progress;
 
-                // Update plane position
-                planeGraphic.geometry = new Point({
-                    longitude: interpolatedLongitude,
-                    latitude: interpolatedLatitude,
-                    z: interpolatedAltitude, // Match altitude with path
-                });
+        // Update plane position
+        const currentPlanePosition = new Point({
+            longitude: interpolatedLongitude,
+            latitude: interpolatedLatitude,
+            z: interpolatedAltitude, // Match altitude with path
+        });
 
-                currentStep++;
-                setTimeout(animateStep, 20); // Use timeout to control speed
-            } else {
-                currentIndex++;
-                movePlane(); // Continue moving to the next segment
-            }
-        };
+        planeGraphic.geometry = currentPlanePosition;
 
-        animateStep();
+        // Update the map view center to follow the plane
+        view.goTo({
+            target: currentPlanePosition,
+            zoom: view.zoom // Maintain the current zoom level
+        }, { animate: false }); // Disable map view animation to prevent lag
+
+        currentStep++;
+        setTimeout(animateStep, 20); // Use timeout to control speed
+    } else {
+        currentIndex++;
+        movePlane(); // Continue moving to the next segment
     }
-
-    movePlane(); // Start moving the plane
 };
 });
