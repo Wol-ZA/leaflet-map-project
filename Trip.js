@@ -222,7 +222,7 @@ const animateStep = () => {
             position: {
                 latitude: interpolatedLatitude,
                 longitude: interpolatedLongitude,
-                z: interpolatedAltitude + 3000, // Extra buffer for overhead
+                z: interpolatedAltitude + 500, // Extra buffer for overhead
             },
             tilt: adjustedTilt,
             zoom: Math.max(view.zoom - zoomOutFactor, 10), // Prevent over-zooming in
