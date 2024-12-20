@@ -220,4 +220,4 @@ const animateStep = () => {
         movePlane(); // Continue moving to the next segment
     }
 };
-});
+};
