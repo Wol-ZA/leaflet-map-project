@@ -207,11 +207,16 @@ const animateStep = () => {
 
         planeGraphic.geometry = currentPlanePosition;
 
-        // Update the map view center to follow the plane
+        // Update the camera to follow the plane with a tilt and dynamic position
         view.goTo({
-            target: currentPlanePosition,
-            zoom: view.zoom // Maintain the current zoom level
-        }, { animate: false }); // Disable map view animation to prevent lag
+            position: { // Keep dynamic position updates
+                longitude: interpolatedLongitude,
+                latitude: interpolatedLatitude,
+                z: interpolatedAltitude + 5000, // Adjust Z for an overhead view
+            },
+            tilt: view.camera.tilt, // Maintain current tilt
+            heading: view.camera.heading // Maintain current heading
+        }, { animate: false });
 
         currentStep++;
         setTimeout(animateStep, 20); // Use timeout to control speed
