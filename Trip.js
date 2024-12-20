@@ -186,7 +186,7 @@ window.simulateFlight = function(flightData) {
             toPoint[1] - fromPoint[1]  // latitude difference
         );
 
-        const steps = 100; // Number of steps to smooth the motion
+        const steps = 50; // Number of steps to smooth the motion
         let currentStep = 0;
 
         const animateStep = () => {
@@ -206,7 +206,7 @@ window.simulateFlight = function(flightData) {
                 });
 
                 currentStep++;
-                setTimeout(animateStep, 50); // Use timeout to control speed
+                setTimeout(animateStep, 20); // Use timeout to control speed
             } else {
                 currentIndex++;
                 movePlane(); // Continue moving to the next segment
