@@ -196,9 +196,8 @@ const animateStep = () => {
         // Interpolating position and altitude
         const interpolatedLongitude = fromPoint[0] + (toPoint[0] - fromPoint[0]) * progress;
         const interpolatedLatitude = fromPoint[1] + (toPoint[1] - fromPoint[1]) * progress;
-        const interpolatedAltitude = Math.max(fromPoint[2] + (toPoint[2] - fromPoint[2]) * progress, 1000); // Minimum altitude for visibility
+        const interpolatedAltitude = Math.max(fromPoint[2] + (toPoint[2] - fromPoint[2]) * progress, 1000); // Minimum altitude
 
-        // Log the interpolated values
         console.log(`[Step ${currentStep}/${steps}] Interpolated Plane Position:`, {
             longitude: interpolatedLongitude,
             latitude: interpolatedLatitude,
@@ -213,29 +212,29 @@ const animateStep = () => {
             spatialReference: { wkid: 4326 },
         });
 
-        // Log current map view target
-        console.log(`[Step ${currentStep}/${steps}] Current View Position:`, view.center);
-
         planeGraphic.geometry = currentPlanePosition;
 
-        // Update the map view to follow the plane
+        // Adjust tilt and zoom dynamically for visibility
+        const adjustedTilt = Math.min(view.camera.tilt, 65); // Ensure a more vertical view
+        const zoomOutFactor = Math.log10(interpolatedAltitude / 500 + 1); // Adjust zoom level based on altitude
+
         view.goTo({
             position: {
-                longitude: interpolatedLongitude,
                 latitude: interpolatedLatitude,
-                z: interpolatedAltitude + 5000, // Overhead buffer
+                longitude: interpolatedLongitude,
+                z: interpolatedAltitude + 3000, // Extra buffer for overhead
             },
-            tilt: 60, // Maintain tilt for better perspective
+            tilt: adjustedTilt,
+            zoom: Math.max(view.zoom - zoomOutFactor, 10), // Prevent over-zooming in
             heading: view.camera.heading,
         }, { animate: false }).catch((err) => {
             console.warn("View update failed:", err);
         });
 
-        // Log after setting the plane geometry
-        console.log(`[Step ${currentStep}/${steps}] Updated Plane Position on Map.`);
+        console.log(`[Step ${currentStep}/${steps}] Updated View and Plane Position.`);
 
         currentStep++;
-        setTimeout(animateStep, 20); // Control speed with timeout
+        setTimeout(animateStep, 20); // Control speed
     } else {
         console.log("Moving to next segment.");
         currentIndex++;
