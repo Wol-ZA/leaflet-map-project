@@ -196,7 +196,14 @@ const animateStep = () => {
         // Interpolating position and altitude
         const interpolatedLongitude = fromPoint[0] + (toPoint[0] - fromPoint[0]) * progress;
         const interpolatedLatitude = fromPoint[1] + (toPoint[1] - fromPoint[1]) * progress;
-        const interpolatedAltitude = Math.max(fromPoint[2] + (toPoint[2] - fromPoint[2]) * progress, 1000); // Ensure minimum altitude
+        const interpolatedAltitude = Math.max(fromPoint[2] + (toPoint[2] - fromPoint[2]) * progress, 1000); // Minimum altitude for visibility
+
+        // Log the interpolated values
+        console.log(`[Step ${currentStep}/${steps}] Interpolated Plane Position:`, {
+            longitude: interpolatedLongitude,
+            latitude: interpolatedLatitude,
+            altitude: interpolatedAltitude,
+        });
 
         // Update plane position
         const currentPlanePosition = new Point({
@@ -206,26 +213,36 @@ const animateStep = () => {
             spatialReference: { wkid: 4326 },
         });
 
+        // Log current map view target
+        console.log(`[Step ${currentStep}/${steps}] Current View Position:`, view.center);
+
         planeGraphic.geometry = currentPlanePosition;
 
-        // Update map view to follow the plane
+        // Update the map view to follow the plane
         view.goTo({
             position: {
                 longitude: interpolatedLongitude,
                 latitude: interpolatedLatitude,
                 z: interpolatedAltitude + 5000, // Overhead buffer
             },
-            tilt: 60, // Overhead tilt for better visibility
+            tilt: 60, // Maintain tilt for better perspective
             heading: view.camera.heading,
-        }, { animate: false });
+        }, { animate: false }).catch((err) => {
+            console.warn("View update failed:", err);
+        });
+
+        // Log after setting the plane geometry
+        console.log(`[Step ${currentStep}/${steps}] Updated Plane Position on Map.`);
 
         currentStep++;
-        setTimeout(animateStep, 20); // Use timeout to control speed
+        setTimeout(animateStep, 20); // Control speed with timeout
     } else {
+        console.log("Moving to next segment.");
         currentIndex++;
         movePlane(); // Continue moving to the next segment
     }
 };
+
 
         animateStep();
     }
