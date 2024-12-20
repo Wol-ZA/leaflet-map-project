@@ -218,7 +218,7 @@ const animateStep = () => {
         view.goTo({
             target: currentPlanePosition,
             tilt: 50, // Adjust for a better perspective (reduce to 30-50 degrees)
-            zoom: 10,  // Fixed zoom for better visibility; adjust as necessary
+            zoom: 12,  // Fixed zoom for better visibility; adjust as necessary
             heading: view.camera.heading, // Keep the heading consistent
         }, { animate: false }).catch((err) => {
             console.warn("Error adjusting the view:", err);
