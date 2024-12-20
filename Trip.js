@@ -196,26 +196,27 @@ const animateStep = () => {
         // Interpolating position and altitude
         const interpolatedLongitude = fromPoint[0] + (toPoint[0] - fromPoint[0]) * progress;
         const interpolatedLatitude = fromPoint[1] + (toPoint[1] - fromPoint[1]) * progress;
-        const interpolatedAltitude = fromPoint[2] + (toPoint[2] - fromPoint[2]) * progress;
+        const interpolatedAltitude = Math.max(fromPoint[2] + (toPoint[2] - fromPoint[2]) * progress, 1000); // Ensure minimum altitude
 
         // Update plane position
         const currentPlanePosition = new Point({
             longitude: interpolatedLongitude,
             latitude: interpolatedLatitude,
-            z: interpolatedAltitude, // Match altitude with path
+            z: interpolatedAltitude,
+            spatialReference: { wkid: 4326 },
         });
 
         planeGraphic.geometry = currentPlanePosition;
 
-        // Update the camera to follow the plane with a tilt and dynamic position
+        // Update map view to follow the plane
         view.goTo({
-            position: { // Keep dynamic position updates
+            position: {
                 longitude: interpolatedLongitude,
                 latitude: interpolatedLatitude,
-                z: interpolatedAltitude + 5000, // Adjust Z for an overhead view
+                z: interpolatedAltitude + 5000, // Overhead buffer
             },
-            tilt: view.camera.tilt, // Maintain current tilt
-            heading: view.camera.heading // Maintain current heading
+            tilt: 60, // Overhead tilt for better visibility
+            heading: view.camera.heading,
         }, { animate: false });
 
         currentStep++;
