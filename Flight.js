@@ -518,14 +518,12 @@ window.EndTracking = function() {
 window.windy = function(){
     const center = view.center; // Get the map's current center
     const zoom = view.zoom;
-    toggleWindyOverlay(center.latitude, center.longitude, zoom)
+    toggleWindyOverlay(center.latitude, center.longitude, zoom);
 }
     
 window.toggleWindyOverlay = function (lat,lon,zoom) {
     // Check if the Windy iframe already exists
     const existingIframe = document.getElementById("windyIframe");
-    const center = view.center; // Get current map center
-    const zoom = view.zoom; // Get current map zoom level
 
     if (existingIframe) {
         // If the iframe exists, remove it
