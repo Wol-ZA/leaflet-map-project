@@ -515,7 +515,13 @@ window.EndTracking = function() {
     }
 };
 
-window.toggleWindyOverlay = function () {
+window.windy = function(){
+    const center = view.center; // Get the map's current center
+    const zoom = view.zoom;
+    toggleWindyOverlay(center.latitude, center.longitude, zoom)
+}
+    
+window.toggleWindyOverlay = function (lat,lon,zoom) {
     // Check if the Windy iframe already exists
     const existingIframe = document.getElementById("windyIframe");
     const center = view.center; // Get current map center
@@ -530,8 +536,8 @@ window.toggleWindyOverlay = function () {
 
         // Customize the iframe settings to match Windy overlay size and settings
         windyIframe.src = "https://embed.windy.com/embed2.html" +
-                          `?lat=${center.latitude}` + // Use dynamic latitude
-                          `&lon=${center.longitude}` + // Use dynamic longitude
+                          `?lat=${lat}` + // Use dynamic latitude
+                          `&lon=${lon}` + // Use dynamic longitude
                           `&zoom=${zoom}` + // Use dynamic zoom level
                           "&level=surface" +
                           "&overlay=wind" +
