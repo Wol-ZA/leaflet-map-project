@@ -515,6 +515,43 @@ window.EndTracking = function() {
     }
 };
 
+window.toggleWindyOverlay = function() {
+    // Check if the Windy iframe already exists
+    const existingIframe = document.getElementById("windyIframe");
+
+    if (existingIframe) {
+        // If the iframe exists, remove it
+        existingIframe.remove();
+    } else {
+        // Define the iframe for the Windy API overlay
+        const windyIframe = document.createElement("iframe");
+
+        // Customize the iframe settings to match Windy overlay size and settings
+        windyIframe.src = "https://embed.windy.com/embed2.html" +
+                          "?lat=-33.9646" +
+                          "&lon=22.4617" +
+                          "&zoom=8" + // Adjust zoom level
+                          "&level=surface" +
+                          "&overlay=wind" +
+                          "&menu=&message=true" +
+                          "&marker=&calendar=&pressure=&type=map" +
+                          "&location=coordinates" +
+                          "&detail=&detailLat=" +
+                          "&metricWind=default&metricTemp=default";
+        windyIframe.id = "windyIframe"; // Add an ID to the iframe for toggling
+        windyIframe.width = "100%"; // Set full width
+        windyIframe.height = "100%"; // Set full height
+        windyIframe.style.position = "absolute";
+        windyIframe.style.top = "0";
+        windyIframe.style.left = "0";
+        windyIframe.style.zIndex = "1000"; // Ensure it overlays map
+        windyIframe.style.border = "none";
+
+        // Append the iframe to the map container
+        document.getElementById("viewDiv").appendChild(windyIframe);
+    }
+}
+    
 function highlightUpcomingSector(sector) {
     const highlightedSymbol = {
         type: "simple-fill",
