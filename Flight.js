@@ -516,8 +516,8 @@ window.EndTracking = function() {
 };
 
 window.windy = function(){
-    const center = view.center; // Get the map's current center
-    const zoom = view.zoom;
+    var center = view.center; // Get the map's current center
+    var zoom = view.zoom;
     toggleWindyOverlay(center.latitude, center.longitude, zoom);
 }
     
