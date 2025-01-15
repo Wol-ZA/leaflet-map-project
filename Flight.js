@@ -515,7 +515,7 @@ window.EndTracking = function() {
     }
 };
 
-window.toggleWindyOverlay = function() {
+window.toggleWindyOverlay = function(lat, lon, zoom) {
     // Check if the Windy iframe already exists
     const existingIframe = document.getElementById("windyIframe");
 
@@ -528,9 +528,9 @@ window.toggleWindyOverlay = function() {
 
         // Customize the iframe settings to match Windy overlay size and settings
         windyIframe.src = "https://embed.windy.com/embed2.html" +
-                          "?lat=-33.9646" +
-                          "&lon=22.4617" +
-                          "&zoom=8" + // Adjust zoom level
+                          `?lat=${lat}` + // Use provided latitude
+                          `&lon=${lon}` + // Use provided longitude
+                          `&zoom=${zoom}` + // Use provided zoom level
                           "&level=surface" +
                           "&overlay=wind" +
                           "&menu=&message=true" +
