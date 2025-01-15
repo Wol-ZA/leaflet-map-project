@@ -515,9 +515,11 @@ window.EndTracking = function() {
     }
 };
 
-window.toggleWindyOverlay = function(lat, lon, zoom) {
+window.toggleWindyOverlay = function () {
     // Check if the Windy iframe already exists
     const existingIframe = document.getElementById("windyIframe");
+    const center = view.center; // Get current map center
+    const zoom = view.zoom; // Get current map zoom level
 
     if (existingIframe) {
         // If the iframe exists, remove it
@@ -528,9 +530,9 @@ window.toggleWindyOverlay = function(lat, lon, zoom) {
 
         // Customize the iframe settings to match Windy overlay size and settings
         windyIframe.src = "https://embed.windy.com/embed2.html" +
-                          `?lat=${lat}` + // Use provided latitude
-                          `&lon=${lon}` + // Use provided longitude
-                          `&zoom=${zoom}` + // Use provided zoom level
+                          `?lat=${center.latitude}` + // Use dynamic latitude
+                          `&lon=${center.longitude}` + // Use dynamic longitude
+                          `&zoom=${zoom}` + // Use dynamic zoom level
                           "&level=surface" +
                           "&overlay=wind" +
                           "&menu=&message=true" +
@@ -550,7 +552,7 @@ window.toggleWindyOverlay = function(lat, lon, zoom) {
         // Append the iframe to the map container
         document.getElementById("viewDiv").appendChild(windyIframe);
     }
-}
+};
     
 function highlightUpcomingSector(sector) {
     const highlightedSymbol = {
