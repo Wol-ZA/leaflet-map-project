@@ -214,6 +214,20 @@
     <label><img src="military.png" alt="Military Icon"><input type="checkbox" id="militaryLayerToggle" checked> Military</label>
     <label><img src="helistops.png" alt="Helistops Icon"><input type="checkbox" id="helistopsLayerToggle" checked> Helistops</label>
 </div>
+  <div id="mapContainer" style="position: relative; width: 100%; height: 500px;">
+    <div id="viewDiv" style="position: relative; width: 100%; height: 100%;"></div>
+    <!-- UI Elements Overlay -->
+    <div id="overlayUI" style="position: absolute; top: 10px; right: 10px; z-index: 1100; background: rgba(255, 255, 255, 0.8); padding: 10px; border-radius: 5px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);">
+        <label for="layerSelect">Choose Overlay:</label>
+        <select id="layerSelect">
+            <option value="wind">Wind</option>
+            <option value="clouds">Clouds</option>
+            <option value="rain">Rain</option>
+            <option value="temp">Temperature</option>
+        </select>
+        <button onclick="applyLayer()">Apply</button>
+    </div>
+</div>
   <!-- Link to the JavaScript file -->
   <script src="Flight.js"></script>
 </body>
