@@ -546,7 +546,7 @@ window.toggleWindyOverlay = function (lat,lon,zoom) {
                           "&metricWind=default&metricTemp=default";
         windyIframe.id = "windyIframe"; // Add an ID to the iframe for toggling
         windyIframe.width = "100%"; // Set full width
-        windyIframe.height = "90%"; // Set full height
+        windyIframe.height = "100%"; // Set full height
         windyIframe.style.position = "absolute";
         windyIframe.style.top = "0";
         windyIframe.style.left = "0";
