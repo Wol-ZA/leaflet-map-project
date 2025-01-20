@@ -530,32 +530,41 @@ window.EndTracking = function() {
     if (tracking) {
         tracking = false; // Set tracking status to false
         
-        // Remove the user graphic, polyline graphic, and text graphic
+        // Remove the user graphic, polyline graphic, and text graphic if they exist
         if (userGraphic) {
+            // Remove the polyline, text, and user marker graphics from the graphicsLayer
             if (userGraphic.polylineGraphic) {
-                graphicsLayer.remove(userGraphic.polylineGraphic); // Remove the polyline
-                userGraphic.polylineGraphic = null; // Clear the polyline reference
+                graphicsLayer.remove(userGraphic.polylineGraphic);
+                userGraphic.polylineGraphic = null;
             }
             if (userGraphic.textGraphic) {
-                graphicsLayer.remove(userGraphic.textGraphic); // Remove the text graphic
-                userGraphic.textGraphic = null; // Clear the text reference
+                graphicsLayer.remove(userGraphic.textGraphic);
+                userGraphic.textGraphic = null;
             }
-            graphicsLayer.remove(userGraphic); // Remove the user marker
-            userGraphic = null; // Clear the user graphic reference
+            graphicsLayer.remove(userGraphic); // Remove the user marker graphic
+            userGraphic = null; // Clear userGraphic reference
+        }
+
+        // Stop watching the position
+        if (watchId) {
+            navigator.geolocation.clearWatch(watchId);
+            watchId = null; // Clear watchId reference
         }
         
-        navigator.geolocation.clearWatch(watchId); // Stop watching the position
-        
-        // Reset the view without replacing the map container
-        view.container = null;
-        const mapView = new MapView({
+        // Reset the view (keeping the map container intact but refreshing the MapView)
+        if (view) {
+            // Clean up the previous map view
+            view.container.innerHTML = ""; // Remove existing DOM content
+            view = null; // Clear the old view reference
+        }
+
+        // Create a new MapView and associate it with the map
+        view = new MapView({
             container: "viewDiv",
             map: map,
             center: [22.4617, -33.9646],
             zoom: 12
         });
-        
-        view = mapView; // Update the view variable
     }
 };
 
