@@ -530,44 +530,35 @@ window.EndTracking = function() {
     if (tracking) {
         tracking = false; // Set tracking status to false
         
-        // Remove the user graphic, polyline graphic, and text graphic if they exist
+        // Remove the user graphic, polyline graphic, and text graphic
         if (userGraphic) {
-            // Remove the polyline, text, and user marker graphics from the graphicsLayer
             if (userGraphic.polylineGraphic) {
-                graphicsLayer.remove(userGraphic.polylineGraphic);
-                userGraphic.polylineGraphic = null;
+                graphicsLayer.remove(userGraphic.polylineGraphic); // Remove the polyline
+                userGraphic.polylineGraphic = null; // Clear the polyline reference
             }
             if (userGraphic.textGraphic) {
-                graphicsLayer.remove(userGraphic.textGraphic);
-                userGraphic.textGraphic = null;
+                graphicsLayer.remove(userGraphic.textGraphic); // Remove the text graphic
+                userGraphic.textGraphic = null; // Clear the text reference
             }
-            graphicsLayer.remove(userGraphic); // Remove the user marker graphic
-            userGraphic = null; // Clear userGraphic reference
-        }
-
-        // Stop watching the position
-        if (watchId) {
-            navigator.geolocation.clearWatch(watchId);
-            watchId = null; // Clear watchId reference
+            graphicsLayer.remove(userGraphic); // Remove the user marker
+            userGraphic = null; // Clear the user graphic reference
         }
         
-        // Reset the view (keeping the map container intact but refreshing the MapView)
-        if (view) {
-            // Clean up the previous map view
-            view.container.innerHTML = ""; // Remove existing DOM content
-            view = null; // Clear the old view reference
-        }
-
-        // Create a new MapView and associate it with the map
-        view = new MapView({
+        navigator.geolocation.clearWatch(watchId); // Stop watching the position
+        
+        // Reset the view without replacing the map container
+        view.container = null;
+        const mapView = new MapView({
             container: "viewDiv",
             map: map,
             center: [22.4617, -33.9646],
             zoom: 12
         });
+        
+        view = mapView; // Update the view variable
     }
 };
-
+    
 window.windy = function(){
     var center = view.center; // Get the map's current center
     var zoom = view.zoom;
@@ -1329,8 +1320,19 @@ view.on("click", function () {
     });
 
 window.removeMarkersAndLines = function() {
-    draggableGraphicsLayer.removeAll();
-   // graphicsLayer.removeAll(); // Access graphicsLayer globally and clear all graphics
+    // Ensure you're removing from the correct graphics layers
+    if (draggableGraphicsLayer) {
+        draggableGraphicsLayer.removeAll();  // Clear all graphics from draggable layer
+    }
+    
+    if (graphicsLayer) {
+        graphicsLayer.removeAll();  // Clear all graphics from the main graphics layer
+    }
+
+    // Optional: Refresh the view, forcing a re-render
+    if (view) {
+        view.refresh();  // This triggers a re-render of the map if needed
+    }
 };
     
     // Initial layer visibility toggle
