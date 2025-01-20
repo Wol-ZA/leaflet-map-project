@@ -285,17 +285,27 @@ setInterval(() => isUserInteracting = false, 3000); // Adjust timing as needed
         graphicsLayer.add(userGraphic);
     }
 
-    // Adjust heading for map rotation
-    const adjustedHeading = (heading + view.rotation) % 360;
-    // Create the polyline graphic
-    const polylineGraphic = createDirectionalPolyline(location, heading);
-    // Add or update the polyline graphic on the map
-    if (!userGraphic.polylineGraphic) {
-        userGraphic.polylineGraphic = polylineGraphic;
-        graphicsLayer.add(userGraphic.polylineGraphic);
-    } else {
-        userGraphic.polylineGraphic.geometry = polylineGraphic.geometry; // Update existing polyline
-    }
+   const adjustedHeading = (heading + view.rotation) % 360;
+
+// Create the polyline and text graphics
+const [polylineGraphic, textGraphic] = createDirectionalPolyline(location, adjustedHeading);
+
+// Add or update the polyline graphic on the map
+if (!userGraphic.polylineGraphic) {
+    userGraphic.polylineGraphic = polylineGraphic;
+    graphicsLayer.add(userGraphic.polylineGraphic);
+} else {
+    userGraphic.polylineGraphic.geometry = polylineGraphic.geometry; // Update existing polyline
+}
+
+// Add or update the text graphic on the map
+if (!userGraphic.textGraphic) {
+    userGraphic.textGraphic = textGraphic;
+    graphicsLayer.add(userGraphic.textGraphic);
+} else {
+    userGraphic.textGraphic.geometry = textGraphic.geometry; // Update existing text location
+    userGraphic.textGraphic.symbol.text = `${adjustedHeading.toFixed(1)}°`; // Update heading text
+}
 
     // Rotate the map view based on heading
     // Get JSON of intersecting polygon names
@@ -423,11 +433,41 @@ function createDirectionalPolyline(userPoint, heading) {
         width: 2
     };
 
-    // Return the polyline graphic
-    return new Graphic({
-        geometry: polylineGeometry,
-        symbol: lineSymbol
+    // Calculate the midpoint of the polyline for the text placement
+    const midLatitude = (userPoint[1] + endLatitude) / 2;
+    const midLongitude = (userPoint[0] + endLongitude) / 2;
+
+    // Create the text symbol to show the heading
+    const textSymbol = {
+        type: "text",
+        color: [255, 0, 0, 1],
+        haloColor: "white",
+        haloSize: "2px",
+        text: `${heading.toFixed(1)}°`,
+        font: {
+            size: 12,
+            weight: "bold"
+        }
+    };
+
+    // Create the text graphic
+    const textGraphic = new Graphic({
+        geometry: {
+            type: "point",
+            longitude: midLongitude,
+            latitude: midLatitude
+        },
+        symbol: textSymbol
     });
+
+    // Return both the polyline and text graphic as an array
+    return [
+        new Graphic({
+            geometry: polylineGeometry,
+            symbol: lineSymbol
+        }),
+        textGraphic
+    ];
 }
 
     
