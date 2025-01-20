@@ -530,11 +530,15 @@ window.EndTracking = function() {
     if (tracking) {
         tracking = false; // Set tracking status to false
         
-        // Remove the user graphic and the polyline graphic
+        // Remove the user graphic, polyline graphic, and text graphic
         if (userGraphic) {
             if (userGraphic.polylineGraphic) {
                 graphicsLayer.remove(userGraphic.polylineGraphic); // Remove the polyline
                 userGraphic.polylineGraphic = null; // Clear the polyline reference
+            }
+            if (userGraphic.textGraphic) {
+                graphicsLayer.remove(userGraphic.textGraphic); // Remove the text graphic
+                userGraphic.textGraphic = null; // Clear the text reference
             }
             graphicsLayer.remove(userGraphic); // Remove the user marker
             userGraphic = null; // Clear the user graphic reference
