@@ -459,37 +459,17 @@ function createDirectionalPolyline(userPoint, heading) {
     document.getElementById("militaryLayerToggle").addEventListener("change", toggleLayerVisibility);
     document.getElementById("helistopsLayerToggle").addEventListener("change", toggleLayerVisibility);
 
+
+    
+    // Function to start tracking
 window.StartTracking = function() {
     if (!tracking) {
         tracking = true;
         watchId = navigator.geolocation.watchPosition(function(position) {
             if (position && position.coords) {
                 const userLocation = [position.coords.longitude, position.coords.latitude];
-                const trueHeading = position.coords.heading || 0;
-
-                // Current date for calculation
-                const currentDate = new Date();
-                const startYear = currentDate.getFullYear();
-                const startMonth = currentDate.getMonth() + 1;  // Months are 0-based in JS, so we add 1
-                const startDay = currentDate.getDate();
-
-                // NOAA WMM API request URL
-                const apiKey = 'zNEw7';  // Replace this with your API key
-                const resultFormat = 'json';  // You can change to 'xml', 'csv', etc.
-                const url = `https://www.ngdc.noaa.gov/geomag-web/calculators/calculateDeclination?lat1=${userLocation[1]}&lon1=${userLocation[0]}&key=${apiKey}&model=WMM&startYear=${startYear}&startMonth=${startMonth}&startDay=${startDay}&resultFormat=${resultFormat}`;
-
-                // Fetch the magnetic declination data from NOAA API
-                fetch(url)
-                    .then(response => response.json())
-                    .then(data => {
-                        const declination = data.result.magneticDeclination;
-                        // Convert to magnetic heading
-                        const magneticHeading = (trueHeading - declination + 360) % 360 || 0;
-                        addUserLocationMarker(userLocation, magneticHeading);
-                    })
-                    .catch(error => {
-                        console.error("Error fetching magnetic declination: ", error);
-                    });
+                const heading = position.coords.heading || 0; // Default to 0 if heading is unavailable
+                addUserLocationMarker(userLocation, heading); // Pass heading for rotation
             } else {
                 console.error("Position is undefined or does not have coordinates.");
             }
@@ -501,29 +481,7 @@ window.StartTracking = function() {
             timeout: 5000
         });
     }
-};
-    
-    // Function to start tracking
-// window.StartTracking = function() {
- //   if (!tracking) {
- //       tracking = true;
- //       watchId = navigator.geolocation.watchPosition(function(position) {
- //           if (position && position.coords) {
-  //              const userLocation = [position.coords.longitude, position.coords.latitude];
-//                const heading = position.coords.heading || 0; // Default to 0 if heading is unavailable
- //               addUserLocationMarker(userLocation, heading); // Pass heading for rotation
- //           } else {
- //               console.error("Position is undefined or does not have coordinates.");
- //           }
-//        }, function(error) {
-//            console.error("Geolocation error: ", error);
-//        }, {
-//            enableHighAccuracy: true,
- //           maximumAge: 0,
-//            timeout: 5000
- //       });
- //   }
-//}
+}
 
     // Function to stop tracking
 window.EndTracking = function() {
