@@ -288,15 +288,26 @@ setInterval(() => isUserInteracting = false, 3000); // Adjust timing as needed
 
 // Create the polyline and text graphics
 const adjustedHeading = (heading + view.rotation) % 360;
-    // Create the polyline graphic
-    const polylineGraphic = createDirectionalPolyline(location, heading);
-    // Add or update the polyline graphic on the map
-    if (!userGraphic.polylineGraphic) {
-        userGraphic.polylineGraphic = polylineGraphic;
-        graphicsLayer.add(userGraphic.polylineGraphic);
-    } else {
-        userGraphic.polylineGraphic.geometry = polylineGraphic.geometry; // Update existing polyline
-    }
+
+// Create the polyline and text graphics
+const [polylineGraphic, textGraphic] = createDirectionalPolyline(location, adjustedHeading);
+
+// Add or update the polyline graphic on the map
+if (!userGraphic.polylineGraphic) {
+    userGraphic.polylineGraphic = polylineGraphic;
+    graphicsLayer.add(userGraphic.polylineGraphic);
+} else {
+    userGraphic.polylineGraphic.geometry = polylineGraphic.geometry; // Update existing polyline
+}
+
+// Add or update the text graphic on the map
+if (!userGraphic.textGraphic) {
+    userGraphic.textGraphic = textGraphic;
+    graphicsLayer.add(userGraphic.textGraphic);
+} else {
+    userGraphic.textGraphic.geometry = textGraphic.geometry; // Update existing text location
+    userGraphic.textGraphic.symbol.text = `${adjustedHeading.toFixed(1)}°`; // Update heading text
+}
     // Rotate the map view based on heading
     // Get JSON of intersecting polygon names
  
