@@ -285,7 +285,6 @@ setInterval(() => isUserInteracting = false, 3000); // Adjust timing as needed
         graphicsLayer.add(userGraphic);
     }
 
-   const adjustedHeading = (heading + view.rotation) % 360;
 
 // Create the polyline and text graphics
 const adjustedHeading = (heading + view.rotation) % 360;
