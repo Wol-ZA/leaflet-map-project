@@ -379,12 +379,43 @@ function createDirectionalPolyline(userPoint, heading) {
         width: 2
     };
 
-    // Return the polyline graphic
-    return new Graphic({
-        geometry: polylineGeometry,
-        symbol: lineSymbol
+    // Calculate the midpoint of the polyline for the text placement
+    const midLatitude = (userPoint[1] + endLatitude) / 2;
+    const midLongitude = (userPoint[0] + endLongitude) / 2;
+
+    // Create the text symbol to show the heading
+    const textSymbol = {
+        type: "text",
+        color: [255, 0, 0, 1],
+        haloColor: "white",
+        haloSize: "2px",
+        text: `${heading.toFixed(1)}°`,
+        font: {
+            size: 12,
+            weight: "bold"
+        }
+    };
+
+    // Create the text graphic
+    const textGraphic = new Graphic({
+        geometry: {
+            type: "point",
+            longitude: midLongitude,
+            latitude: midLatitude
+        },
+        symbol: textSymbol
     });
+
+    // Return both the polyline and text graphic as an array
+    return [
+        new Graphic({
+            geometry: polylineGeometry,
+            symbol: lineSymbol
+        }),
+        textGraphic
+    ];
 }
+
 
     
     // Function to toggle layer visibility based on checkbox states
