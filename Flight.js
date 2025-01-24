@@ -306,7 +306,7 @@ if (!userGraphic.textGraphic) {
     graphicsLayer.add(userGraphic.textGraphic);
 } else {
     userGraphic.textGraphic.geometry = textGraphic.geometry; // Update existing text location
-    userGraphic.textGraphic.symbol.text = `${adjustedHeading.toFixed(1)}°`; // Update heading text
+    userGraphic.textGraphic.symbol.text = `${adjustedHeading.toFixed(1)}`; // Update heading text
 }
     // Rotate the map view based on heading
     // Get JSON of intersecting polygon names
