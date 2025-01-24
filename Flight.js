@@ -400,7 +400,7 @@ function createDirectionalPolyline(userPoint, heading) {
         color: [255, 0, 0, 1],
         haloColor: "white",
         haloSize: "2px",
-        text: `${heading.toFixed(1)}°`,
+        text: `${heading.toFixed(1)}`,
         font: {
             size: 12,
             weight: "bold"
