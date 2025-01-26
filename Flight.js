@@ -318,8 +318,7 @@ function addUserLocationMarker(location, heading) {
     //const intersections = checkIntersectionWithPolygons(polylineGraphic.geometry, userPoint);
 
     // Optionally do something with the JSON (e.g., send it to a server or log it)
-   //WL.Execute("ClosingIn", intersections);
-}   
+   //WL.Execute("ClosingIn", intersections);  
 
 
 function checkIfInsidePolygon(userPoint) {
