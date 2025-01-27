@@ -361,16 +361,16 @@ function checkIntersectionWithPolygons(polylineGeometry, userPoint) {
 }
 
 function createDirectionalPolyline(userPoint, heading, mapRotation) {
-    const nauticalMilesToMeters = 60 * 1852; // 20 nautical miles in meters
+    const nauticalMilesToMeters = 60 * 1852; // Distance in meters (20 nautical miles)
     const earthRadiusMeters = 6371000; // Earth's radius in meters
 
-    // Adjust heading for the map's rotation
+    // Adjust heading for the map's current rotation
     const adjustedHeading = (heading + mapRotation) % 360;
 
-    // Convert adjusted heading to radians
+    // Convert the adjusted heading to radians
     const headingRadians = adjustedHeading * (Math.PI / 180);
 
-    // Calculate the endpoint based on distance and heading
+    // Calculate the polyline's endpoint
     const endLatitude =
         userPoint[1] +
         (nauticalMilesToMeters / earthRadiusMeters) *
@@ -383,30 +383,30 @@ function createDirectionalPolyline(userPoint, heading, mapRotation) {
             Math.sin(headingRadians) /
             Math.cos(userPoint[1] * Math.PI / 180);
 
-    // Create the polyline geometry
+    // Construct the polyline geometry
     const polylineGeometry = {
         type: "polyline",
         paths: [[userPoint[0], userPoint[1]], [endLongitude, endLatitude]]
     };
 
-    // Define the line symbol
+    // Define the line's appearance
     const lineSymbol = {
         type: "simple-line",
-        color: [0, 0, 255, 0.5],
+        color: [0, 0, 255, 0.5], // Semi-transparent blue
         width: 2
     };
 
-    // Calculate the midpoint of the polyline for the text placement
+    // Calculate the text location at the midpoint of the line
     const midLatitude = (userPoint[1] + endLatitude) / 2;
     const midLongitude = (userPoint[0] + endLongitude) / 2;
 
-    // Create the text symbol to show the adjusted heading
+    // Define the text symbol to display the adjusted heading
     const textSymbol = {
         type: "text",
-        color: [255, 0, 0, 1],
-        haloColor: "white",
+        color: [255, 0, 0, 1], // Red text
+        haloColor: "white", // Add a white outline to improve visibility
         haloSize: "2px",
-        text: `${adjustedHeading.toFixed(1)}°`,
+        text: `${adjustedHeading.toFixed(1)}°`, // Display the heading
         font: {
             size: 12,
             weight: "bold"
@@ -423,7 +423,7 @@ function createDirectionalPolyline(userPoint, heading, mapRotation) {
         symbol: textSymbol
     });
 
-    // Return both the polyline and text graphic as an array
+    // Return the polyline and text as Graphics objects
     return [
         new Graphic({
             geometry: polylineGeometry,
