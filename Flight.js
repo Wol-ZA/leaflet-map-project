@@ -285,12 +285,9 @@ function addUserLocationMarker(location, heading) {
         graphicsLayer.add(userGraphic);
     }
 
-    // Adjust heading based on map's rotation
-    const adjustedHeading = (heading + view.rotation) % 360;
-
-    // Create the polyline and text graphics
-    const [polylineGraphic, textGraphic] = createDirectionalPolyline(location, heading, view.rotation);
-
+const adjustedHeading = (heading + view.rotation) % 360;
+    // Create the polyline graphic
+    const polylineGraphic = createDirectionalPolyline(location, heading);
     // Add or update the polyline graphic on the map
     if (!userGraphic.polylineGraphic) {
         userGraphic.polylineGraphic = polylineGraphic;
@@ -299,14 +296,29 @@ function addUserLocationMarker(location, heading) {
         userGraphic.polylineGraphic.geometry = polylineGraphic.geometry; // Update existing polyline
     }
 
+    
+    // Adjust heading based on map's rotation
+    //const adjustedHeading = (heading + view.rotation) % 360;
+
+    // Create the polyline and text graphics
+    //const [polylineGraphic, textGraphic] = createDirectionalPolyline(location, heading, view.rotation);
+
+    // Add or update the polyline graphic on the map
+    //if (!userGraphic.polylineGraphic) {
+    //    userGraphic.polylineGraphic = polylineGraphic;
+    //    graphicsLayer.add(userGraphic.polylineGraphic);
+   // } else {
+     //   userGraphic.polylineGraphic.geometry = polylineGraphic.geometry; // Update existing polyline
+   // }
+
     // Add or update the text graphic on the map
-    if (!userGraphic.textGraphic) {
-        userGraphic.textGraphic = textGraphic;
-        graphicsLayer.add(userGraphic.textGraphic);
-    } else {
-        userGraphic.textGraphic.geometry = textGraphic.geometry; // Update existing text location
-        userGraphic.textGraphic.symbol.text = `${adjustedHeading.toFixed(1)}`; // Update heading text
-    }
+   // if (!userGraphic.textGraphic) {
+    //    userGraphic.textGraphic = textGraphic;
+    //    graphicsLayer.add(userGraphic.textGraphic);
+    //} else {
+    //    userGraphic.textGraphic.geometry = textGraphic.geometry; // Update existing text location
+    //    userGraphic.textGraphic.symbol.text = `${adjustedHeading.toFixed(1)}`; // Update heading text
+    //}
 
     if (!isUserInteracting) {
         // Calculate corrected map rotation
@@ -360,77 +372,35 @@ function checkIntersectionWithPolygons(polylineGeometry, userPoint) {
     return intersectingPolygons;
 }
 
-function createDirectionalPolyline(userPoint, heading, mapRotation) {
-    const nauticalMilesToMeters = 60 * 1852; // Distance in meters (20 nautical miles)
+function createDirectionalPolyline(userPoint, heading) {
+    const nauticalMilesToMeters = 60 * 1852; // 20 nautical miles in meters
     const earthRadiusMeters = 6371000; // Earth's radius in meters
 
-    // Adjust heading for the map's current rotation
-    const adjustedHeading = (heading + mapRotation) % 360;
+    // Convert heading to radians
+    const headingRadians = heading * (Math.PI / 180);
 
-    // Convert the adjusted heading to radians
-    const headingRadians = adjustedHeading * (Math.PI / 180);
+    // Calculate the endpoint based on distance and heading
+    const endLatitude = userPoint[1] + (nauticalMilesToMeters / earthRadiusMeters) * (180 / Math.PI) * Math.cos(headingRadians);
+    const endLongitude = userPoint[0] + (nauticalMilesToMeters / earthRadiusMeters) * (180 / Math.PI) * Math.sin(headingRadians) / Math.cos(userPoint[1] * Math.PI / 180);
 
-    // Calculate the polyline's endpoint
-    const endLatitude =
-        userPoint[1] +
-        (nauticalMilesToMeters / earthRadiusMeters) *
-            (180 / Math.PI) *
-            Math.cos(headingRadians);
-    const endLongitude =
-        userPoint[0] +
-        (nauticalMilesToMeters / earthRadiusMeters) *
-            (180 / Math.PI) *
-            Math.sin(headingRadians) /
-            Math.cos(userPoint[1] * Math.PI / 180);
-
-    // Construct the polyline geometry
+    // Create the polyline geometry
     const polylineGeometry = {
         type: "polyline",
         paths: [[userPoint[0], userPoint[1]], [endLongitude, endLatitude]]
     };
 
-    // Define the line's appearance
+    // Define the line symbol
     const lineSymbol = {
         type: "simple-line",
-        color: [0, 0, 255, 0.5], // Semi-transparent blue
+        color: [0, 0, 255, 0.5],
         width: 2
     };
 
-    // Calculate the text location at the midpoint of the line
-    const midLatitude = (userPoint[1] + endLatitude) / 2;
-    const midLongitude = (userPoint[0] + endLongitude) / 2;
-
-    // Define the text symbol to display the adjusted heading
-    const textSymbol = {
-        type: "text",
-        color: [255, 0, 0, 1], // Red text
-        haloColor: "white", // Add a white outline to improve visibility
-        haloSize: "2px",
-        text: `${adjustedHeading.toFixed(1)}°`, // Display the heading
-        font: {
-            size: 12,
-            weight: "bold"
-        }
-    };
-
-    // Create the text graphic
-    const textGraphic = new Graphic({
-        geometry: {
-            type: "point",
-            longitude: midLongitude,
-            latitude: midLatitude
-        },
-        symbol: textSymbol
+    // Return the polyline graphic
+    return new Graphic({
+        geometry: polylineGeometry,
+        symbol: lineSymbol
     });
-
-    // Return the polyline and text as Graphics objects
-    return [
-        new Graphic({
-            geometry: polylineGeometry,
-            symbol: lineSymbol
-        }),
-        textGraphic
-    ];
 }
 
 
