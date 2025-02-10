@@ -285,16 +285,22 @@ function addUserLocationMarker(location, heading) {
         graphicsLayer.add(userGraphic);
     }
 
-const adjustedHeading = (heading + view.rotation) % 360;
+    const adjustedHeading = (heading + view.rotation) % 360;
+
     // Create the polyline graphic
     const polylineGraphic = createDirectionalPolyline(location, heading);
-    // Add or update the polyline graphic on the map
-    if (!userGraphic.polylineGraphic) {
-        userGraphic.polylineGraphic = polylineGraphic;
-        graphicsLayer.add(userGraphic.polylineGraphic);
+
+    // Check if polyline exists, update it, otherwise add a new one
+    if (!userPolylineGraphic) {
+        userPolylineGraphic = polylineGraphic;
+        graphicsLayer.add(userPolylineGraphic);
     } else {
-        userGraphic.polylineGraphic.geometry = polylineGraphic.geometry; // Update existing polyline
+        userPolylineGraphic.geometry = polylineGraphic.geometry;
     }
+
+    // Ensure graphics layer remains on top
+    map.layers.reorder(graphicsLayer, map.layers.length - 1);
+}
 
     
     // Adjust heading based on map's rotation
