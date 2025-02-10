@@ -300,7 +300,6 @@ function addUserLocationMarker(location, heading) {
 
     // Ensure graphics layer remains on top
     map.layers.reorder(graphicsLayer, map.layers.length - 1);
-}
 
     
     // Adjust heading based on map's rotation
