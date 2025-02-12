@@ -1,4 +1,4 @@
-require([
+Rrequire([
     "esri/geometry/Circle",
     "esri/geometry/Extent",
     "esri/Map",
@@ -238,7 +238,7 @@ window.createGeoJSONLayer = function (url, colorHTML, alpha) {
     const atnsLayer = createIconGeoJSONLayer("ATNS.geojson", "atns.png");
     const militaryLayer = createIconGeoJSONLayer("Military.geojson", "military.png");
     const helistopsLayer = createIconGeoJSONLayer("helistops.geojson", "helistops.png");
-    const ENRLayer = createIconGeoJSONLayer("ENR.geojson", "enr.png");
+    const ENRLayer = createIconGeoJSONLayer("ENR.geojson", "ENR.png");
     const RnavLayer = createIconGeoJSONLayer("RNAV.geojson", "Rnav.png");
     const Iorra = createIconGeoJSONLayer("IORRA.geojson", "Iorra.png");
     const Aorra = createIconGeoJSONLayer("AORRA.geojson", "Iorra.png");
@@ -424,6 +424,9 @@ function createDirectionalPolyline(userPoint, heading) {
         atnsLayer.visible = document.getElementById("atnsLayerToggle").checked;
         militaryLayer.visible = document.getElementById("militaryLayerToggle").checked;
         helistopsLayer.visible = document.getElementById("helistopsLayerToggle").checked;
+        ENRLayer.visible = document.getElementById("ENRLayerToggle").checked;
+        RNAVLayer.visible = document.getElementById("RNAVLayerToggle").checked;
+        IorraLayer.visible = document.getElementById("IORRALayerToggle").checked;
     }
 
     // Add event listeners to the checkboxes
@@ -440,6 +443,10 @@ function createDirectionalPolyline(userPoint, heading) {
     document.getElementById("atnsLayerToggle").addEventListener("change", toggleLayerVisibility);
     document.getElementById("militaryLayerToggle").addEventListener("change", toggleLayerVisibility);
     document.getElementById("helistopsLayerToggle").addEventListener("change", toggleLayerVisibility);
+
+    document.getElementById("ENRLayerToggle").addEventListener("change", toggleLayerVisibility);
+    document.getElementById("RNAVLayerToggle").addEventListener("change", toggleLayerVisibility);
+    document.getElementById("IORRALayerToggle").addEventListener("change", toggleLayerVisibility);
 
 
     
