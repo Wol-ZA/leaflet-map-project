@@ -574,6 +574,9 @@ window.addMarkersAndDrawLine = function (data) {
         atnsLayer: "atns.png",
         militaryLayer: "military.png",
         helistopsLayer: "helistops.png"
+        ENRLayer: "ENR.png",
+        RnavLayer: "Iorra.png",
+        IorraLayer:"Rnav.png"
     };
 
     const layers = [
@@ -583,7 +586,10 @@ window.addMarkersAndDrawLine = function (data) {
         unlicensedLayer,
         atnsLayer,
         militaryLayer,
-        helistopsLayer
+        helistopsLayer,
+        ENRLayer,
+        RnavLayer,
+        IorraLayer
     ];
 
     const draggableGraphicsLayer = new GraphicsLayer({ zIndex: 1000 });
