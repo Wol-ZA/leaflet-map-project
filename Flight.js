@@ -425,7 +425,7 @@ function createDirectionalPolyline(userPoint, heading) {
         militaryLayer.visible = document.getElementById("militaryLayerToggle").checked;
         helistopsLayer.visible = document.getElementById("helistopsLayerToggle").checked;
         ENRLayer.visible = document.getElementById("ENRLayerToggle").checked;
-        RNAVLayer.visible = document.getElementById("RNAVLayerToggle").checked;
+        RnavLayer.visible = document.getElementById("RNAVLayerToggle").checked;
         IorraLayer.visible = document.getElementById("IORRALayerToggle").checked;
     }
 
