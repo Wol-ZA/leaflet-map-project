@@ -238,9 +238,13 @@ window.createGeoJSONLayer = function (url, colorHTML, alpha) {
     const atnsLayer = createIconGeoJSONLayer("ATNS.geojson", "atns.png");
     const militaryLayer = createIconGeoJSONLayer("Military.geojson", "military.png");
     const helistopsLayer = createIconGeoJSONLayer("helistops.geojson", "helistops.png");
+    const ENRLayer = createIconGeoJSONLayer("ENR.geojson", "enr.png");
+    const RnavLayer = createIconGeoJSONLayer("RNAV.geojson", "Rnav.png");
+    const Iorra = createIconGeoJSONLayer("IORRA.geojson", "Iorra.png");
+    const Aorra = createIconGeoJSONLayer("AORRA.geojson", "Iorra.png");
 
     // Add point layers to the map
-    map.addMany([sacaaLayer, aerodromeAipLayer, aerodromeAicLayer, unlicensedLayer, atnsLayer, militaryLayer, helistopsLayer]);
+    map.addMany([sacaaLayer, aerodromeAipLayer, aerodromeAicLayer, unlicensedLayer, atnsLayer, militaryLayer, helistopsLayer, ENRLayer, RnavLayer, Iorra, Aorra]);
 
     // Create a GraphicsLayer for static graphics
     const graphicsLayer = new GraphicsLayer();
