@@ -1,4 +1,4 @@
-Require([
+require([
     "esri/geometry/Circle",
     "esri/geometry/Extent",
     "esri/Map",
