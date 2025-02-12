@@ -573,7 +573,7 @@ window.addMarkersAndDrawLine = function (data) {
         unlicensedLayer: "unlicensed.png",
         atnsLayer: "atns.png",
         militaryLayer: "military.png",
-        helistopsLayer: "helistops.png"
+        helistopsLayer: "helistops.png",
         ENRLayer: "ENR.png",
         RnavLayer: "Iorra.png",
         IorraLayer:"Rnav.png"
