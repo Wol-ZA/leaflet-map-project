@@ -167,7 +167,7 @@ function createIconGeoJSONLayer(url, iconUrl) {
             }
         },
         labelingInfo: [{
-            labelExpressionInfo: { expression: "$feature.description" }, // Show description as label
+            labelExpressionInfo: { expression: "$feature.name" }, // Show description as label
             symbol: {
                 type: "text",
                 color: "black",
