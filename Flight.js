@@ -396,7 +396,7 @@ function createDirectionalPolyline(userPoint, heading) {
     // Define the line symbol
     const lineSymbol = {
         type: "simple-line",
-        color: [255, 192, 203, 0.7],
+        color: [255, 105, 180, 0.7],
         width: 2
     };
 
