@@ -155,7 +155,7 @@ window.createGeoJSONLayer = function (url, colorHTML, alpha) {
 };
  // Function to create a GeoJSONLayer with a specific icon for points
 function createIconGeoJSONLayer(url, iconUrl) {
-    return new GeoJSONLayer({
+    const layer = new GeoJSONLayer({
         url: url,
         renderer: {
             type: "simple",
@@ -166,8 +166,16 @@ function createIconGeoJSONLayer(url, iconUrl) {
                 height: "16px"
             }
         },
-        labelingInfo: [{
-            labelExpressionInfo: { expression: "$feature.name" }, // Show description as label
+        popupTemplate: {
+            title: "{name}",
+            content: "{description}"
+        }
+    });
+
+    // Only add labelingInfo for ENR.geojson
+    if (url === "ENR.geojson") {
+        layer.labelingInfo = [{
+            labelExpressionInfo: { expression: "$feature.description" },
             symbol: {
                 type: "text",
                 color: "black",
@@ -178,14 +186,13 @@ function createIconGeoJSONLayer(url, iconUrl) {
                     weight: "bold"
                 }
             },
-            minScale: 200000, // Labels appear when zoomed in to 1:200,000 or closer
-            maxScale: 0       // Allows labels to always be visible at close zoom
-        }],
-        popupTemplate: {
-            title: "{name}",
-            content: "{description}"
-        }
-    });
+            labelPlacement: "below-right",
+            minScale: 200000,
+            maxScale: 0
+        }];
+    }
+
+    return layer;
 }
 
 
