@@ -154,21 +154,24 @@ window.createGeoJSONLayer = function (url, colorHTML, alpha) {
     return layer;
 };
  // Function to create a GeoJSONLayer with a specific icon for points
-    function createIconGeoJSONLayer(url, iconUrl) {
-        return new GeoJSONLayer({
-            url: url,
-            renderer: {
-                type: "simple",
-                symbol: {
-                    type: "picture-marker",
-                    url: iconUrl,
-                    width: "16px",
-                    height: "16px"
-                }
+function createIconGeoJSONLayer(url, iconUrl) {
+    return new GeoJSONLayer({
+        url: url,
+        renderer: {
+            type: "simple",
+            symbol: {
+                type: "picture-marker",
+                url: iconUrl,
+                width: "16px",
+                height: "16px"
             }
-        });
-         // Fetch GeoJSON data to populate geoJSONPolygons
-    }
+        },
+        popupTemplate: {
+            title: "{name}", // Change this to match your GeoJSON property
+            content: "{description}" // This should be a property in your GeoJSON
+        }
+    });
+}
 
      function convertGeoJSONGeometry(geometry) {
         if (geometry.type === "Polygon") {
