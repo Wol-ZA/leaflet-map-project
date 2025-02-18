@@ -166,12 +166,27 @@ function createIconGeoJSONLayer(url, iconUrl) {
                 height: "16px"
             }
         },
+        labelingInfo: [{
+            labelExpressionInfo: { expression: "$feature.name" }, // Display the "name" field
+            symbol: {
+                type: "text",
+                color: "black",
+                haloColor: "white",
+                haloSize: "2px",
+                font: {
+                    size: "12px",
+                    weight: "bold"
+                }
+            },
+            minScale: 50000 // Adjust this to set at what zoom level labels appear
+        }],
         popupTemplate: {
-            title: "{name}", // Change this to match your GeoJSON property
-            content: "{description}" // This should be a property in your GeoJSON
+            title: "{name}",
+            content: "{description}"
         }
     });
 }
+
 
      function convertGeoJSONGeometry(geometry) {
         if (geometry.type === "Polygon") {
