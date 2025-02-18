@@ -175,7 +175,7 @@ function createIconGeoJSONLayer(url, iconUrl) {
     // Only add labelingInfo for ENR.geojson
     if (url === "ENR.geojson") {
         layer.labelingInfo = [{
-            labelExpressionInfo: { expression: "$feature.description" },
+            labelExpressionInfo: { expression: "$feature.name" },
             symbol: {
                 type: "text",
                 color: "black",
@@ -187,7 +187,7 @@ function createIconGeoJSONLayer(url, iconUrl) {
                 }
             },
             labelPlacement: "below-right",
-            minScale: 200000,
+            minScale: 100000,
             maxScale: 0
         }];
     }
