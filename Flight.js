@@ -396,8 +396,8 @@ function createDirectionalPolyline(userPoint, heading) {
     // Define the line symbol
     const lineSymbol = {
         type: "simple-line",
-        color: [255, 192, 203, 0.4],
-        width: 1
+        color: [255, 192, 203, 0.7],
+        width: 2
     };
 
     // Return the polyline graphic
@@ -634,7 +634,7 @@ window.addMarkersAndDrawLine = function (data) {
 
     const polylineGraphic = new Graphic({
         geometry: { type: "polyline", paths: polylineCoordinates },
-        symbol: { type: "simple-line", color: [0, 0, 255, 0.5], width: 3 }
+        symbol: { type: "simple-line", color: [0, 0, 255, 0.5], width: 4 }
     });
     draggableGraphicsLayer.add(polylineGraphic);
     zoomToFlightPlan(polylineCoordinates,window.view);
