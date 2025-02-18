@@ -187,7 +187,7 @@ function createIconGeoJSONLayer(url, iconUrl) {
                 }
             },
             labelPlacement: "below-right",
-            minScale: 10000,
+            minScale: 300000,
             maxScale: 0
         }];
     }
