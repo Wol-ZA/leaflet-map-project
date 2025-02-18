@@ -166,23 +166,9 @@ function createIconGeoJSONLayer(url, iconUrl) {
                 height: "16px"
             }
         },
-        labelingInfo: [{
-            labelExpressionInfo: { expression: "$feature.description" }, // Show description as label
-            symbol: {
-                type: "text",
-                color: "black",
-                haloColor: "white",
-                haloSize: "2px",
-                font: {
-                    size: "12px",
-                    weight: "bold"
-                }
-            },
-            // REMOVE minScale temporarily to check if the issue is caused by scale limitations
-        }],
         popupTemplate: {
-            title: "{name}",
-            content: "{description}"
+            title: "{name}", // Change this to match your GeoJSON property
+            content: "{description}" // This should be a property in your GeoJSON
         }
     });
 }
