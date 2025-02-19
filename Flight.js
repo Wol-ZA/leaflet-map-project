@@ -359,10 +359,10 @@ const adjustedHeading = (heading + view.rotation) % 360;
         view.center = userPoint; // Center map on user location
     }
 }
-    //const intersections = checkIntersectionWithPolygons(polylineGraphic.geometry, userPoint);
+    const intersections = checkIntersectionWithPolygons(polylineGraphic.geometry, userPoint);
 
     // Optionally do something with the JSON (e.g., send it to a server or log it)
-   //WL.Execute("ClosingIn", intersections);  
+   WL.Execute("ClosingInn", intersections);  
 
 
 function checkIfInsidePolygon(userPoint) {
