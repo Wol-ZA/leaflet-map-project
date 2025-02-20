@@ -333,9 +333,9 @@ function addUserLocationMarker(location, heading) {
         const correctedRotation = 360 - heading;
         view.rotation = correctedRotation; // Rotate the map view
         view.center = userPoint; // Center map on user location
-        const intersections = checkIntersectionWithPolygons(polylineGraphic.geometry, userPoint);
-        console.log(intersections)
-        WL.Execute("ClosingInn", intersections);
+        //const intersections = checkIntersectionWithPolygons(polylineGraphic.geometry, userPoint);
+        //console.log(intersections)
+        //WL.Execute("ClosingInn", intersections);
     }
 }
   
