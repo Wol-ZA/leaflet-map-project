@@ -357,24 +357,29 @@ function checkIfInsidePolygon(userPoint) {
 }
     
 function checkIntersectionWithPolygons(polylineGeometry, userPoint) {
-    const intersectingPolygons = []; // Array to store names of intersecting polygons
+    const intersectingPolygons = [];
 
     geoJSONPolygons.forEach((polygonData) => {
         const { geometry: polygonGeometry, feature } = polygonData;
 
+        // Ensure geometries are valid
+        if (!polygonGeometry || !userPoint) {
+            console.warn("Invalid geometry detected", polygonGeometry, userPoint);
+            return; // Skip this iteration
+        }
+
         // Check if the polyline intersects the polygon
         const intersects = geometryEngine.intersects(polylineGeometry, polygonGeometry);
 
-        // Check if the user is currently inside this polygon
+        // Check if the user is inside this polygon
         const containsUser = geometryEngine.contains(polygonGeometry, userPoint);
 
         // Add to the array if it intersects and does not contain the user
-        if (intersects && !containsUser && feature.properties && feature.properties.name) {
+        if (intersects && !containsUser && feature.properties?.name) {
             intersectingPolygons.push({ name: feature.properties.name });
         }
     });
 
-    // Return the array of JSON objects
     return intersectingPolygons;
 }
 
