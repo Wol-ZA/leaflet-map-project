@@ -292,7 +292,7 @@ view.on("click", () => isUserInteracting = true);
 view.on("pointer-move", () => isUserInteracting = true);
 
 // Reset interaction flag after a delay to allow map updates
-setInterval(() => isUserInteracting = false, 3000); // Adjust timing as needed
+setInterval(() => isUserInteracting = false, 4000); // Adjust timing as needed
 
 function addUserLocationMarker(location, heading) {
     const userPoint = {
@@ -333,17 +333,12 @@ function addUserLocationMarker(location, heading) {
         const correctedRotation = 360 - heading;
         view.rotation = correctedRotation; // Rotate the map view
         view.center = userPoint; // Center map on user location
-        //const intersections = checkIntersectionWithPolygons(polylineGraphic.geometry, userPoint);
-        WL.Execute("ClosingInn", checkIntersectionWithPolygons(polylineGraphic.geometry, userPoint));
+        const intersections = checkIntersectionWithPolygons(polylineGraphic.geometry, userPoint);
+        console.log(intersections)
+        WL.Execute("ClosingInn", intersections);
     }
-    
 }
-    //
-
-    // Optionally do something with the JSON (e.g., send it to a server or log it)
-   //  
-
-
+  
 function checkIfInsidePolygon(userPoint) {
     let insideAnyPolygon = false;
 
