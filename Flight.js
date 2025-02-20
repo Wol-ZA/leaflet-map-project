@@ -317,7 +317,7 @@ function addUserLocationMarker(location, heading) {
         graphicsLayer.add(userGraphic);
     }
 
-const adjustedHeading = (heading + view.rotation) % 360;
+    const adjustedHeading = (heading + view.rotation) % 360;
     // Create the polyline graphic
     const polylineGraphic = createDirectionalPolyline(location, heading);
     // Add or update the polyline graphic on the map
@@ -328,41 +328,19 @@ const adjustedHeading = (heading + view.rotation) % 360;
         userGraphic.polylineGraphic.geometry = polylineGraphic.geometry; // Update existing polyline
     }
 
-    
-    // Adjust heading based on map's rotation
-    //const adjustedHeading = (heading + view.rotation) % 360;
-
-    // Create the polyline and text graphics
-    //const [polylineGraphic, textGraphic] = createDirectionalPolyline(location, heading, view.rotation);
-
-    // Add or update the polyline graphic on the map
-    //if (!userGraphic.polylineGraphic) {
-    //    userGraphic.polylineGraphic = polylineGraphic;
-    //    graphicsLayer.add(userGraphic.polylineGraphic);
-   // } else {
-     //   userGraphic.polylineGraphic.geometry = polylineGraphic.geometry; // Update existing polyline
-   // }
-
-    // Add or update the text graphic on the map
-   // if (!userGraphic.textGraphic) {
-    //    userGraphic.textGraphic = textGraphic;
-    //    graphicsLayer.add(userGraphic.textGraphic);
-    //} else {
-    //    userGraphic.textGraphic.geometry = textGraphic.geometry; // Update existing text location
-    //    userGraphic.textGraphic.symbol.text = `${adjustedHeading.toFixed(1)}`; // Update heading text
-    //}
-
     if (!isUserInteracting) {
         // Calculate corrected map rotation
         const correctedRotation = 360 - heading;
         view.rotation = correctedRotation; // Rotate the map view
         view.center = userPoint; // Center map on user location
     }
+    const intersections = checkIntersectionWithPolygons(polylineGraphic.geometry, userPoint);
+    WL.Execute("ClosingInn", intersections);
 }
-    //const intersections = checkIntersectionWithPolygons(polylineGraphic.geometry, userPoint);
+    //
 
     // Optionally do something with the JSON (e.g., send it to a server or log it)
-   //WL.Execute("ClosingInn", intersections);  
+   //  
 
 
 function checkIfInsidePolygon(userPoint) {
