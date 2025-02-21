@@ -186,7 +186,7 @@ function createIconGeoJSONLayer(url, iconUrl) {
                     weight: "bold"
                 }
             },
-            labelPlacement: "below-right",
+            labelPlacement: "above-center",
             minScale: 300000,
             maxScale: 0
         }];
