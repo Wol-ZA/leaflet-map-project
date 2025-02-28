@@ -31,7 +31,7 @@ require([
     let flightPath = [];
     let planeGraphic = null;
     let animationRunning = false;
-    
+
     window.loadFlightPath = function(flightData) {
         graphicsLayer.removeAll();
         flightPath = flightData;
@@ -48,9 +48,46 @@ require([
             ymin = Math.min(ymin, latitude);
             xmax = Math.max(xmax, longitude);
             ymax = Math.max(ymax, latitude);
+
+            const point = new Point({ latitude, longitude, z: altitude });
+
+            // **Plot Waypoints**
+            const markerSymbol = new SimpleMarkerSymbol({
+                color: [0, 0, 255, 0.6],
+                size: 8,
+                outline: { color: "white", width: 2 }
+            });
+
+            const pointGraphic = new Graphic({
+                geometry: point,
+                symbol: markerSymbol
+            });
+            graphicsLayer.add(pointGraphic);
+
+            // **Create Vertical Line from Point to Ground**
+            const verticalLine = new Polyline({
+                paths: [
+                    [longitude, latitude, altitude],
+                    [longitude, latitude, 0]
+                ]
+            });
+
+            const verticalLineSymbol = new SimpleLineSymbol({
+                color: [0, 0, 0, 0.3],
+                width: 1,
+                style: "dash"
+            });
+
+            const verticalLineGraphic = new Graphic({
+                geometry: verticalLine,
+                symbol: verticalLineSymbol
+            });
+            graphicsLayer.add(verticalLineGraphic);
+
             return [longitude, latitude, altitude];
         });
 
+        // **Draw Flight Path Polyline**
         const polyline = new Polyline({ paths: [pathCoordinates] });
 
         const lineSymbol = new SimpleLineSymbol({
@@ -66,10 +103,11 @@ require([
 
         graphicsLayer.add(lineGraphic);
 
+        // **Adjust View to Fit the Flight Path**
         const extent = new Extent({ xmin, ymin, xmax, ymax, spatialReference: { wkid: 4326 } });
         view.extent = extent.expand(1.2);
 
-        // Create a plane symbol
+        // **Add Plane Symbol for Animation**
         planeGraphic = new Graphic({
             geometry: new Point({
                 longitude: flightPath[0].longitude,
@@ -103,7 +141,7 @@ require([
             planeGraphic.geometry = new Point({ latitude, longitude, z: altitude });
 
             index++;
-            setTimeout(animatePlane, 200); // Adjust speed
+            setTimeout(animatePlane, 200); // Adjust speed as needed
         }
 
         animatePlane();
