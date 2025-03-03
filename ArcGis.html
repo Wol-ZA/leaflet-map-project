@@ -166,23 +166,34 @@
     }
 }
 
-.delete-button {
-        position: absolute;
-        top: 5px;
-        right: 5px;
-        background-color: red;
-        color: white;
-        border: none;
-        border-radius: 4px;
-        padding: 5px 10px;
-        cursor: pointer;
-        font-size: 14px;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-    }
+.button-group {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+}
 
-    .delete-button:hover {
-        background-color: darkred;
-    }
+.delete-button {
+    background-color: red;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 5px; /* Space between icon and text */
+    margin-left: auto; /* Pushes the button to the right */
+}
+
+.delete-button:hover {
+    background-color: darkred;
+}
+
+.delete-button i {
+    font-size: 16px;
+}
     
   </style>
 </head>
