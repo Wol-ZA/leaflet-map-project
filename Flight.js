@@ -793,9 +793,10 @@ function generatePopupHTML(content, pointsWithinRadius) {
             <input type="text" placeholder="Enter waypoint name">
             <label>Identifier:</label>
             <input type="text" placeholder="Enter identifier">
-            <div>
-                <button>Create</button>
+            <div class="button-group">
+                <button class="create">Create</button>
                 <button class="cancel">Cancel</button>
+                <button class="delete-button"><i class="fas fa-trash"></i> Delete</button>
             </div>
         </div>
         <div class="poi-tags">
