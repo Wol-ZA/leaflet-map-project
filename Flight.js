@@ -437,9 +437,30 @@ function toggleLayerVisibility() {
 }
 
 function getToggledLayerName(event) {
-    const layerName = event.target.id.replace("Toggle", "");
-    console.log(`Layer toggled: ${layerName}, Visible: ${event.target.checked}`);
-    return layerName;
+    const layerMap = {
+        "accfisLayerToggle": "accfisLayer",
+        "atzCtrLayerToggle": "atzCtrLayer",
+        "ctaLayerToggle": "ctaLayer",
+        "tmaLayerToggle": "tmaLayer",
+        "fadFapFarLayerToggle": "fadFapFarLayer",
+        "sacaaLayerToggle": "sacaaLayer",
+        "aerodromeAipLayerToggle": "aerodromeAipLayer",
+        "aerodromeAicLayerToggle": "aerodromeAicLayer",
+        "unlicensedLayerToggle": "unlicensedLayer",
+        "atnsLayerToggle": "atnsLayer",
+        "militaryLayerToggle": "militaryLayer",
+        "helistopsLayerToggle": "helistopsLayer",
+        "ENRLayerToggle": "ENRLayer",
+        "RNAVLayerToggle": "RnavLayer",
+        "IORRALayerToggle": "IorraLayer"
+    };
+
+    const layerName = layerMap[event.target.id];
+    if (layerName) {
+        console.log(`Layer toggled: ${layerName}, Visible: ${event.target.checked}`);
+        return layerName;
+    }
+    return null;
 }
 
 // Add event listeners to the checkboxes
