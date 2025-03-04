@@ -465,68 +465,67 @@ function getToggledLayerName(event) {
 
 // Add event listeners to the checkboxes
 document.getElementById("accfisLayerToggle").addEventListener("change", (event) => {
-    WL.Execute("ToggleLayer", toggleLayerVisibility());
-    getToggledLayerName(event);
+    toggleLayerVisibility();
+    WL.Execute("ToggleLayer", getToggledLayerName(event));
 });
 document.getElementById("atzCtrLayerToggle").addEventListener("change", (event) => {
-    WL.Execute("ToggleLayer", toggleLayerVisibility());
-    getToggledLayerName(event);
+    toggleLayerVisibility();
+     WL.Execute("ToggleLayer", getToggledLayerName(event));
 });
 document.getElementById("ctaLayerToggle").addEventListener("change", (event) => {
-    WL.Execute("ToggleLayer", toggleLayerVisibility());
-    getToggledLayerName(event);
+    toggleLayerVisibility();
+     WL.Execute("ToggleLayer", getToggledLayerName(event));
 });
 document.getElementById("tmaLayerToggle").addEventListener("change", (event) => {
-    WL.Execute("ToggleLayer", toggleLayerVisibility());
-    getToggledLayerName(event);
+    toggleLayerVisibility();
+     WL.Execute("ToggleLayer", getToggledLayerName(event));
 });
 document.getElementById("fadFapFarLayerToggle").addEventListener("change", (event) => {
-    WL.Execute("ToggleLayer", toggleLayerVisibility());
-    getToggledLayerName(event);
+    toggleLayerVisibility();
+     WL.Execute("ToggleLayer", getToggledLayerName(event));
 });
 
 document.getElementById("sacaaLayerToggle").addEventListener("change", (event) => {
-    WL.Execute("ToggleLayer", toggleLayerVisibility());
-    getToggledLayerName(event);
+    toggleLayerVisibility();
+     WL.Execute("ToggleLayer", getToggledLayerName(event));
 });
 document.getElementById("aerodromeAipLayerToggle").addEventListener("change", (event) => {
-    WL.Execute("ToggleLayer", toggleLayerVisibility());
-    getToggledLayerName(event);
+    toggleLayerVisibility();
+     WL.Execute("ToggleLayer", getToggledLayerName(event));
 });
 document.getElementById("aerodromeAicLayerToggle").addEventListener("change", (event) => {
     toggleLayerVisibility();
-    getToggledLayerName(event);
+     WL.Execute("ToggleLayer", getToggledLayerName(event));
 });
 document.getElementById("unlicensedLayerToggle").addEventListener("change", (event) => {
-    WL.Execute("ToggleLayer", toggleLayerVisibility());
-    getToggledLayerName(event);
+    toggleLayerVisibility();
+     WL.Execute("ToggleLayer", getToggledLayerName(event));
 });
 document.getElementById("atnsLayerToggle").addEventListener("change", (event) => {
-    WL.Execute("ToggleLayer", toggleLayerVisibility());
-    getToggledLayerName(event);
+    toggleLayerVisibility();
+     WL.Execute("ToggleLayer", getToggledLayerName(event));
 });
 document.getElementById("militaryLayerToggle").addEventListener("change", (event) => {
-    WL.Execute("ToggleLayer", toggleLayerVisibility());
-    getToggledLayerName(event);
+    toggleLayerVisibility();
+     WL.Execute("ToggleLayer", getToggledLayerName(event));
 });
 document.getElementById("helistopsLayerToggle").addEventListener("change", (event) => {
-    WL.Execute("ToggleLayer", toggleLayerVisibility());
-    getToggledLayerName(event);
+    toggleLayerVisibility();
+     WL.Execute("ToggleLayer", getToggledLayerName(event));
 });
 
 document.getElementById("ENRLayerToggle").addEventListener("change", (event) => {
-    WL.Execute("ToggleLayer", toggleLayerVisibility());
-    getToggledLayerName(event);
+    toggleLayerVisibility();
+    WL.Execute("ToggleLayer", getToggledLayerName(event));
 });
 document.getElementById("RNAVLayerToggle").addEventListener("change", (event) => {
-    WL.Execute("ToggleLayer", toggleLayerVisibility());
-    getToggledLayerName(event);
+    toggleLayerVisibility();
+     WL.Execute("ToggleLayer", getToggledLayerName(event));
 });
 document.getElementById("IORRALayerToggle").addEventListener("change", (event) => {
-    WL.Execute("ToggleLayer", toggleLayerVisibility());
-    getToggledLayerName(event);
+    toggleLayerVisibility();
+     WL.Execute("ToggleLayer", getToggledLayerName(event));
 });
-
     
     // Function to start tracking
 window.StartTracking = function() {
