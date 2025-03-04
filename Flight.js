@@ -229,7 +229,18 @@ function createIconGeoJSONLayer(url, iconUrl) {
         });
     }
 
-
+window.updateMapLayers= function(layerStates) {
+    for (const [layerToggleId, isVisible] of Object.entries(layerStates)) {
+        const checkbox = document.getElementById(layerToggleId);
+        if (checkbox) {
+            checkbox.checked = isVisible; // Update checkbox state
+            const layerName = getToggledLayerName({ target: checkbox });
+            if (layerName && window[layerName]) {
+                window[layerName].visible = isVisible; // Update layer visibility
+            }
+        }
+    }
+}
     
  window.loadGeoJSONAndDisplay = function(url, opacity = 0.7) {
          const graphicsLayer = new GraphicsLayer({
