@@ -417,44 +417,94 @@ function createDirectionalPolyline(userPoint, heading) {
 
     
     // Function to toggle layer visibility based on checkbox states
-    function toggleLayerVisibility() {
-        accfisLayer.visible = document.getElementById("accfisLayerToggle").checked;
-        atzCtrLayer.visible = document.getElementById("atzCtrLayerToggle").checked;
-        ctaLayer.visible = document.getElementById("ctaLayerToggle").checked;
-        tmaLayer.visible = document.getElementById("tmaLayerToggle").checked;
-        fadFapFarLayer.visible = document.getElementById("fadFapFarLayerToggle").checked;
+function toggleLayerVisibility() {
+    accfisLayer.visible = document.getElementById("accfisLayerToggle").checked;
+    atzCtrLayer.visible = document.getElementById("atzCtrLayerToggle").checked;
+    ctaLayer.visible = document.getElementById("ctaLayerToggle").checked;
+    tmaLayer.visible = document.getElementById("tmaLayerToggle").checked;
+    fadFapFarLayer.visible = document.getElementById("fadFapFarLayerToggle").checked;
 
-        sacaaLayer.visible = document.getElementById("sacaaLayerToggle").checked;
-        aerodromeAipLayer.visible = document.getElementById("aerodromeAipLayerToggle").checked;
-        aerodromeAicLayer.visible = document.getElementById("aerodromeAicLayerToggle").checked;
-        unlicensedLayer.visible = document.getElementById("unlicensedLayerToggle").checked;
-        atnsLayer.visible = document.getElementById("atnsLayerToggle").checked;
-        militaryLayer.visible = document.getElementById("militaryLayerToggle").checked;
-        helistopsLayer.visible = document.getElementById("helistopsLayerToggle").checked;
-        ENRLayer.visible = document.getElementById("ENRLayerToggle").checked;
-        RnavLayer.visible = document.getElementById("RNAVLayerToggle").checked;
-        IorraLayer.visible = document.getElementById("IORRALayerToggle").checked;
-    }
+    sacaaLayer.visible = document.getElementById("sacaaLayerToggle").checked;
+    aerodromeAipLayer.visible = document.getElementById("aerodromeAipLayerToggle").checked;
+    aerodromeAicLayer.visible = document.getElementById("aerodromeAicLayerToggle").checked;
+    unlicensedLayer.visible = document.getElementById("unlicensedLayerToggle").checked;
+    atnsLayer.visible = document.getElementById("atnsLayerToggle").checked;
+    militaryLayer.visible = document.getElementById("militaryLayerToggle").checked;
+    helistopsLayer.visible = document.getElementById("helistopsLayerToggle").checked;
+    ENRLayer.visible = document.getElementById("ENRLayerToggle").checked;
+    RnavLayer.visible = document.getElementById("RNAVLayerToggle").checked;
+    IorraLayer.visible = document.getElementById("IORRALayerToggle").checked;
+}
 
-    // Add event listeners to the checkboxes
-    document.getElementById("accfisLayerToggle").addEventListener("change", toggleLayerVisibility);
-    document.getElementById("atzCtrLayerToggle").addEventListener("change", toggleLayerVisibility);
-    document.getElementById("ctaLayerToggle").addEventListener("change", toggleLayerVisibility);
-    document.getElementById("tmaLayerToggle").addEventListener("change", toggleLayerVisibility);
-    document.getElementById("fadFapFarLayerToggle").addEventListener("change", toggleLayerVisibility);
+function getToggledLayerName(event) {
+    const layerName = event.target.id.replace("Toggle", "");
+    console.log(`Layer toggled: ${layerName}, Visible: ${event.target.checked}`);
+    return layerName;
+}
 
-    document.getElementById("sacaaLayerToggle").addEventListener("change", toggleLayerVisibility);
-    document.getElementById("aerodromeAipLayerToggle").addEventListener("change", toggleLayerVisibility);
-    document.getElementById("aerodromeAicLayerToggle").addEventListener("change", toggleLayerVisibility);
-    document.getElementById("unlicensedLayerToggle").addEventListener("change", toggleLayerVisibility);
-    document.getElementById("atnsLayerToggle").addEventListener("change", toggleLayerVisibility);
-    document.getElementById("militaryLayerToggle").addEventListener("change", toggleLayerVisibility);
-    document.getElementById("helistopsLayerToggle").addEventListener("change", toggleLayerVisibility);
+// Add event listeners to the checkboxes
+document.getElementById("accfisLayerToggle").addEventListener("change", (event) => {
+    WL.Execute("ToggleLayer", toggleLayerVisibility());
+    getToggledLayerName(event);
+});
+document.getElementById("atzCtrLayerToggle").addEventListener("change", (event) => {
+    WL.Execute("ToggleLayer", toggleLayerVisibility());
+    getToggledLayerName(event);
+});
+document.getElementById("ctaLayerToggle").addEventListener("change", (event) => {
+    WL.Execute("ToggleLayer", toggleLayerVisibility());
+    getToggledLayerName(event);
+});
+document.getElementById("tmaLayerToggle").addEventListener("change", (event) => {
+    WL.Execute("ToggleLayer", toggleLayerVisibility());
+    getToggledLayerName(event);
+});
+document.getElementById("fadFapFarLayerToggle").addEventListener("change", (event) => {
+    WL.Execute("ToggleLayer", toggleLayerVisibility());
+    getToggledLayerName(event);
+});
 
-    document.getElementById("ENRLayerToggle").addEventListener("change", toggleLayerVisibility);
-    document.getElementById("RNAVLayerToggle").addEventListener("change", toggleLayerVisibility);
-    document.getElementById("IORRALayerToggle").addEventListener("change", toggleLayerVisibility);
+document.getElementById("sacaaLayerToggle").addEventListener("change", (event) => {
+    WL.Execute("ToggleLayer", toggleLayerVisibility());
+    getToggledLayerName(event);
+});
+document.getElementById("aerodromeAipLayerToggle").addEventListener("change", (event) => {
+    WL.Execute("ToggleLayer", toggleLayerVisibility());
+    getToggledLayerName(event);
+});
+document.getElementById("aerodromeAicLayerToggle").addEventListener("change", (event) => {
+    toggleLayerVisibility();
+    getToggledLayerName(event);
+});
+document.getElementById("unlicensedLayerToggle").addEventListener("change", (event) => {
+    WL.Execute("ToggleLayer", toggleLayerVisibility());
+    getToggledLayerName(event);
+});
+document.getElementById("atnsLayerToggle").addEventListener("change", (event) => {
+    WL.Execute("ToggleLayer", toggleLayerVisibility());
+    getToggledLayerName(event);
+});
+document.getElementById("militaryLayerToggle").addEventListener("change", (event) => {
+    WL.Execute("ToggleLayer", toggleLayerVisibility());
+    getToggledLayerName(event);
+});
+document.getElementById("helistopsLayerToggle").addEventListener("change", (event) => {
+    WL.Execute("ToggleLayer", toggleLayerVisibility());
+    getToggledLayerName(event);
+});
 
+document.getElementById("ENRLayerToggle").addEventListener("change", (event) => {
+    WL.Execute("ToggleLayer", toggleLayerVisibility());
+    getToggledLayerName(event);
+});
+document.getElementById("RNAVLayerToggle").addEventListener("change", (event) => {
+    WL.Execute("ToggleLayer", toggleLayerVisibility());
+    getToggledLayerName(event);
+});
+document.getElementById("IORRALayerToggle").addEventListener("change", (event) => {
+    WL.Execute("ToggleLayer", toggleLayerVisibility());
+    getToggledLayerName(event);
+});
 
     
     // Function to start tracking
