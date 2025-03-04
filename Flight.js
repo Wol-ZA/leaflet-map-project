@@ -785,7 +785,6 @@ function generatePopupHTML(content, pointsWithinRadius) {
     `).join("");
 
     return `
-        <button class="delete-button">Delete</button>
         <h3>Current Location</h3>
         <div class="content">${content}</div>
         <div class="input-group">
