@@ -154,7 +154,7 @@ window.createGeoJSONLayer = function (url, colorHTML, alpha) {
     return layer;
 };
  // Function to create a GeoJSONLayer with a specific icon for points
-function createIconGeoJSONLayer(url, iconUrl) {
+ window.createIconGeoJSONLayer = function(url, iconUrl) {
     const layer = new GeoJSONLayer({
         url: url,
         renderer: {
