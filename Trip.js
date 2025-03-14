@@ -70,30 +70,33 @@ window.loadFlightPath = function(flightData) {
 
     graphicsLayer.add(lineGraphic);
 
-    // **Create Curtain Effect for the Entire Path**
-    const groundPath = pathCoordinates.map(([longitude, latitude]) => [longitude, latitude, 0]);
+    // **Draw evenly spaced vertical lines along the path**
+    const numLines = 50; // Number of vertical lines to create
+    const step = Math.floor(pathCoordinates.length / numLines);
 
-    const curtainPath = [...pathCoordinates, ...groundPath.reverse(), pathCoordinates[0]];
+    for (let i = 0; i < pathCoordinates.length; i += step) {
+        const [longitude, latitude, altitude] = pathCoordinates[i];
 
-    const curtainPolygon = new Polygon({
-        rings: [curtainPath],
-        spatialReference: { wkid: 4326 }
-    });
+        const verticalLine = new Polyline({
+            paths: [
+                [longitude, latitude, altitude],
+                [longitude, latitude, 0]
+            ]
+        });
 
-    const curtainSymbol = new SimpleFillSymbol({
-        color: [0, 255, 0, 0.15], // Slightly more transparent green curtain
-        outline: {
-            color: [0, 255, 0, 0.3],
-            width: 1
-        }
-    });
+        const verticalLineSymbol = new SimpleLineSymbol({
+            color: [0, 255, 0, 0.2], // Light green and transparent
+            width: 1,
+            style: "dash"
+        });
 
-    const curtainGraphic = new Graphic({
-        geometry: curtainPolygon,
-        symbol: curtainSymbol
-    });
+        const verticalLineGraphic = new Graphic({
+            geometry: verticalLine,
+            symbol: verticalLineSymbol
+        });
 
-    graphicsLayer.add(curtainGraphic);
+        graphicsLayer.add(verticalLineGraphic);
+    }
 
     // **Adjust View to Fit the Flight Path**
     const extent = new Extent({ xmin, ymin, xmax, ymax, spatialReference: { wkid: 4326 } });
