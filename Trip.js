@@ -1,6 +1,7 @@
 require([
     "esri/Map",
     "esri/views/SceneView",
+    "esri/geometry/Polygon",
     "esri/Graphic",
     "esri/layers/GraphicsLayer",
     "esri/geometry/Point",
@@ -9,7 +10,7 @@ require([
     "esri/symbols/SimpleLineSymbol",
     "esri/symbols/PictureMarkerSymbol",
     "esri/geometry/Extent"
-], function(Map, SceneView, Graphic, GraphicsLayer, Point, Polyline, SimpleMarkerSymbol, SimpleLineSymbol, PictureMarkerSymbol, Extent) {
+], function(Map, SceneView, Polygon,Graphic, GraphicsLayer, Point, Polyline, SimpleMarkerSymbol, SimpleLineSymbol, PictureMarkerSymbol, Extent) {
 
     const map = new Map({
         basemap: "topo-vector",
