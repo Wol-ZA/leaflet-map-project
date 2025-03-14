@@ -69,21 +69,25 @@ window.loadFlightPath = function(flightData) {
     graphicsLayer.add(lineGraphic);
 
     // **Create Curtain Effect for the Entire Path**
-    const curtainPaths = pathCoordinates.map(([longitude, latitude, altitude]) => [
-        [longitude, latitude, altitude],
-        [longitude, latitude, 0]
-    ]);
+    const groundPath = pathCoordinates.map(([longitude, latitude]) => [longitude, latitude, 0]);
 
-    const curtainPolyline = new Polyline({ paths: curtainPaths });
+    const curtainPolygon = new Polygon({
+        rings: [
+            ...pathCoordinates,
+            ...groundPath.reverse()
+        ]
+    });
 
-    const curtainSymbol = new SimpleLineSymbol({
-        color: [0, 255, 0, 0.2], // Light green transparent curtain
-        width: 2,
-        style: "solid"
+    const curtainSymbol = new SimpleFillSymbol({
+        color: [0, 255, 0, 0.1], // Light green transparent curtain
+        outline: {
+            color: [0, 255, 0, 0.3],
+            width: 1
+        }
     });
 
     const curtainGraphic = new Graphic({
-        geometry: curtainPolyline,
+        geometry: curtainPolygon,
         symbol: curtainSymbol
     });
 
