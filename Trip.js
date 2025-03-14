@@ -73,14 +73,11 @@ window.loadFlightPath = function(flightData) {
     // **Create Curtain Effect for the Entire Path**
     const groundPath = pathCoordinates.map(([longitude, latitude]) => [longitude, latitude, 0]);
 
-    // Close the polygon by repeating the first point
-    groundPath.push(groundPath[0]);
+    const curtainPath = [...pathCoordinates, ...groundPath.reverse(), pathCoordinates[0]];
 
     const curtainPolygon = new Polygon({
-        rings: [
-            [...pathCoordinates],
-            [...groundPath.reverse()]
-        ]
+        rings: [curtainPath],
+        spatialReference: { wkid: 4326 }
     });
 
     const curtainSymbol = new SimpleFillSymbol({
