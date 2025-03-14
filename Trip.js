@@ -32,7 +32,7 @@ require([
     let planeGraphic = null;
     let animationRunning = false;
 
-    window.loadFlightPath = function(flightData) {
+   window.loadFlightPath = function(flightData) {
     graphicsLayer.removeAll();
     flightPath = flightData;
 
@@ -49,6 +49,26 @@ require([
         xmax = Math.max(xmax, longitude);
         ymax = Math.max(ymax, latitude);
 
+        // **Create Vertical Curtain Line from Point to Ground**
+        const curtainLine = new Polyline({
+            paths: [
+                [longitude, latitude, altitude],
+                [longitude, latitude, 0]
+            ]
+        });
+
+        const curtainSymbol = new SimpleLineSymbol({
+            color: [0, 255, 0, 0.2], // Light green transparent line
+            width: 2,
+            style: "solid"
+        });
+
+        const curtainGraphic = new Graphic({
+            geometry: curtainLine,
+            symbol: curtainSymbol
+        });
+        graphicsLayer.add(curtainGraphic);
+
         return [longitude, latitude, altitude];
     });
 
@@ -56,7 +76,7 @@ require([
     const polyline = new Polyline({ paths: [pathCoordinates] });
 
     const lineSymbol = new SimpleLineSymbol({
-        color: [0, 255, 0, 0.7], // Green color for the flight path
+        color: [0, 255, 0, 0.5], // Semi-transparent green for the flight path
         width: 3,
         style: "solid"
     });
@@ -102,6 +122,7 @@ require([
 
     graphicsLayer.add(planeGraphic);
 };
+
 
 
     window.startFlightSimulation = function() {
