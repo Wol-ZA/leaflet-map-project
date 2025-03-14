@@ -32,7 +32,7 @@ require([
     let planeGraphic = null;
     let animationRunning = false;
 
-   window.loadFlightPath = function(flightData) {
+window.loadFlightPath = function(flightData) {
     graphicsLayer.removeAll();
     flightPath = flightData;
 
@@ -48,26 +48,6 @@ require([
         ymin = Math.min(ymin, latitude);
         xmax = Math.max(xmax, longitude);
         ymax = Math.max(ymax, latitude);
-
-        // **Create Vertical Curtain Line from Point to Ground**
-        const curtainLine = new Polyline({
-            paths: [
-                [longitude, latitude, altitude],
-                [longitude, latitude, 0]
-            ]
-        });
-
-        const curtainSymbol = new SimpleLineSymbol({
-            color: [0, 255, 0, 0.2], // Light green transparent line
-            width: 2,
-            style: "solid"
-        });
-
-        const curtainGraphic = new Graphic({
-            geometry: curtainLine,
-            symbol: curtainSymbol
-        });
-        graphicsLayer.add(curtainGraphic);
 
         return [longitude, latitude, altitude];
     });
@@ -87,6 +67,27 @@ require([
     });
 
     graphicsLayer.add(lineGraphic);
+
+    // **Create Curtain Effect for the Entire Path**
+    const curtainPaths = pathCoordinates.map(([longitude, latitude, altitude]) => [
+        [longitude, latitude, altitude],
+        [longitude, latitude, 0]
+    ]);
+
+    const curtainPolyline = new Polyline({ paths: curtainPaths });
+
+    const curtainSymbol = new SimpleLineSymbol({
+        color: [0, 255, 0, 0.2], // Light green transparent curtain
+        width: 2,
+        style: "solid"
+    });
+
+    const curtainGraphic = new Graphic({
+        geometry: curtainPolyline,
+        symbol: curtainSymbol
+    });
+
+    graphicsLayer.add(curtainGraphic);
 
     // **Adjust View to Fit the Flight Path**
     const extent = new Extent({ xmin, ymin, xmax, ymax, spatialReference: { wkid: 4326 } });
