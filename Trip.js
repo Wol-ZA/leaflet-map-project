@@ -42,10 +42,23 @@ window.loadFlightPath = function(flightData) {
         return;
     }
 
-    let pathCoordinates = flightData.map(({ latitude, longitude, altitude }) => [longitude, latitude, altitude]);
+    // Convert flightData to GeoJSON
+    const geojson = {
+        type: "FeatureCollection",
+        features: [
+            {
+                type: "Feature",
+                geometry: {
+                    type: "LineString",
+                    coordinates: flightData.map(({ longitude, latitude }) => [longitude, latitude])
+                }
+            }
+        ]
+    };
 
-    // **Generate Smooth Curve Using Catmull-Rom Spline**
-    const smoothPath = interpolatePath(pathCoordinates);
+    // Generate smooth path using Turf.js
+    const smoothed = turf.bezierSpline(geojson.features[0]);
+    const smoothPath = smoothed.geometry.coordinates;
 
     // **Create Polyline with Altitude-Based Colors**
     const polyline = new Polyline({ paths: [smoothPath] });
@@ -96,14 +109,6 @@ window.loadFlightPath = function(flightData) {
     const extent = polyline.extent;
     view.extent = extent.expand(1.2);
 };
-
-// 🎯 Catmull-Rom Spline Interpolation for Smoother Path
-function interpolatePath(path) {
-    const points = path.map(p => turf.point(p));
-    const line = turf.lineString(path);
-    const smoothed = turf.bezierSpline(line);
-    return smoothed.geometry.coordinates;
-}
 
 
 
