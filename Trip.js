@@ -58,7 +58,7 @@ window.loadFlightPath = function(flightData) {
     const polyline = new Polyline({ paths: [pathCoordinates] });
 
     const lineSymbol = new SimpleLineSymbol({
-        color: [0, 255, 0, 0.5], // Semi-transparent green for the flight path
+        color: [0, 255, 0, 0.7], // Green color for the flight path
         width: 3,
         style: "solid"
     });
@@ -69,34 +69,6 @@ window.loadFlightPath = function(flightData) {
     });
 
     graphicsLayer.add(lineGraphic);
-
-    // **Draw evenly spaced vertical lines along the path**
-    const numLines = 50; // Number of vertical lines to create
-    const step = Math.floor(pathCoordinates.length / numLines);
-
-    for (let i = 0; i < pathCoordinates.length; i += step) {
-        const [longitude, latitude, altitude] = pathCoordinates[i];
-
-        const verticalLine = new Polyline({
-            paths: [
-                [longitude, latitude, altitude],
-                [longitude, latitude, 0]
-            ]
-        });
-
-        const verticalLineSymbol = new SimpleLineSymbol({
-            color: [0, 255, 0, 0.2], // Light green and transparent
-            width: 1,
-            style: "dash"
-        });
-
-        const verticalLineGraphic = new Graphic({
-            geometry: verticalLine,
-            symbol: verticalLineSymbol
-        });
-
-        graphicsLayer.add(verticalLineGraphic);
-    }
 
     // **Adjust View to Fit the Flight Path**
     const extent = new Extent({ xmin, ymin, xmax, ymax, spatialReference: { wkid: 4326 } });
