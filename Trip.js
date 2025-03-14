@@ -33,81 +33,46 @@ require([
     let animationRunning = false;
 
     window.loadFlightPath = function(flightData) {
-        graphicsLayer.removeAll();
-        flightPath = flightData;
+    graphicsLayer.removeAll();
+    flightPath = flightData;
 
-        if (flightPath.length === 0) {
-            console.warn("No flight data provided.");
-            return;
-        }
+    if (flightPath.length === 0) {
+        console.warn("No flight data provided.");
+        return;
+    }
 
-        let xmin = Infinity, ymin = Infinity, xmax = -Infinity, ymax = -Infinity;
+    let xmin = Infinity, ymin = Infinity, xmax = -Infinity, ymax = -Infinity;
 
-        const pathCoordinates = flightData.map(({ latitude, longitude, altitude }) => {
-            xmin = Math.min(xmin, longitude);
-            ymin = Math.min(ymin, latitude);
-            xmax = Math.max(xmax, longitude);
-            ymax = Math.max(ymax, latitude);
+    const pathCoordinates = flightData.map(({ latitude, longitude, altitude }) => {
+        xmin = Math.min(xmin, longitude);
+        ymin = Math.min(ymin, latitude);
+        xmax = Math.max(xmax, longitude);
+        ymax = Math.max(ymax, latitude);
 
-            const point = new Point({ latitude, longitude, z: altitude });
+        return [longitude, latitude, altitude];
+    });
 
-            // **Plot Waypoints**
-            const markerSymbol = new SimpleMarkerSymbol({
-                color: [0, 0, 255, 0.6],
-                size: 8,
-                outline: { color: "white", width: 2 }
-            });
+    // **Draw Flight Path Polyline**
+    const polyline = new Polyline({ paths: [pathCoordinates] });
 
-            const pointGraphic = new Graphic({
-                geometry: point,
-                symbol: markerSymbol
-            });
-            graphicsLayer.add(pointGraphic);
+    const lineSymbol = new SimpleLineSymbol({
+        color: [0, 255, 0, 0.7], // Green color for the flight path
+        width: 3,
+        style: "solid"
+    });
 
-            // **Create Vertical Line from Point to Ground**
-            const verticalLine = new Polyline({
-                paths: [
-                    [longitude, latitude, altitude],
-                    [longitude, latitude, 0]
-                ]
-            });
+    const lineGraphic = new Graphic({
+        geometry: polyline,
+        symbol: lineSymbol
+    });
 
-            const verticalLineSymbol = new SimpleLineSymbol({
-                color: [0, 0, 0, 0.3],
-                width: 1,
-                style: "dash"
-            });
+    graphicsLayer.add(lineGraphic);
 
-            const verticalLineGraphic = new Graphic({
-                geometry: verticalLine,
-                symbol: verticalLineSymbol
-            });
-            graphicsLayer.add(verticalLineGraphic);
+    // **Adjust View to Fit the Flight Path**
+    const extent = new Extent({ xmin, ymin, xmax, ymax, spatialReference: { wkid: 4326 } });
+    view.extent = extent.expand(1.2);
 
-            return [longitude, latitude, altitude];
-        });
-
-        // **Draw Flight Path Polyline**
-        const polyline = new Polyline({ paths: [pathCoordinates] });
-
-        const lineSymbol = new SimpleLineSymbol({
-            color: [255, 0, 0, 0.7],
-            width: 3,
-            style: "solid"
-        });
-
-        const lineGraphic = new Graphic({
-            geometry: polyline,
-            symbol: lineSymbol
-        });
-
-        graphicsLayer.add(lineGraphic);
-
-        // **Adjust View to Fit the Flight Path**
-       const extent = new Extent({ xmin, ymin, xmax, ymax, spatialReference: { wkid: 4326 } });
-        view.extent = extent.expand(1.2);
-
-// 🔥 Unlock the Camera Controls After Zooming
+    // 🔥 Unlock the Camera Controls After Zooming
     setTimeout(() => {
         view.constraints = {
             altitude: {
@@ -118,25 +83,26 @@ require([
                 max: 180   // Allow full tilting
             }
         };
-        }, 1000); // Delay to let the extent load first
+    }, 1000); // Delay to let the extent load first
 
-        // **Add Plane Symbol for Animation**
-        planeGraphic = new Graphic({
-            geometry: new Point({
-                longitude: flightPath[0].longitude,
-                latitude: flightPath[0].latitude,
-                z: flightPath[0].altitude
-            }),
-            symbol: new PictureMarkerSymbol({
-                url: "https://upload.wikimedia.org/wikipedia/commons/e/ec/Airplane_silhouette.png",
-                width: "32px",
-                height: "32px",
-                angle: 0
-            })
-        });
+    // **Add Plane Symbol for Animation**
+    planeGraphic = new Graphic({
+        geometry: new Point({
+            longitude: flightPath[0].longitude,
+            latitude: flightPath[0].latitude,
+            z: flightPath[0].altitude
+        }),
+        symbol: new PictureMarkerSymbol({
+            url: "https://upload.wikimedia.org/wikipedia/commons/e/ec/Airplane_silhouette.png",
+            width: "32px",
+            height: "32px",
+            angle: 0
+        })
+    });
 
-        graphicsLayer.add(planeGraphic);
-    };
+    graphicsLayer.add(planeGraphic);
+};
+
 
     window.startFlightSimulation = function() {
         if (!flightPath.length || animationRunning) return;
