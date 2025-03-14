@@ -104,8 +104,21 @@ require([
         graphicsLayer.add(lineGraphic);
 
         // **Adjust View to Fit the Flight Path**
-        const extent = new Extent({ xmin, ymin, xmax, ymax, spatialReference: { wkid: 4326 } });
+       const extent = new Extent({ xmin, ymin, xmax, ymax, spatialReference: { wkid: 4326 } });
         view.extent = extent.expand(1.2);
+
+// 🔥 Unlock the Camera Controls After Zooming
+    setTimeout(() => {
+        view.constraints = {
+            altitude: {
+                min: 10,    // Minimum altitude to prevent camera from going underground
+                max: 100000 // Maximum altitude for zooming out
+            },
+            tilt: {
+                max: 180   // Allow full tilting
+            }
+        };
+        }, 1000); // Delay to let the extent load first
 
         // **Add Plane Symbol for Animation**
         planeGraphic = new Graphic({
