@@ -36,74 +36,74 @@ require([
 
 window.loadFlightPath = function(flightData) {
     graphicsLayer.removeAll();
-    flightPath = flightData;
 
-    if (flightPath.length === 0) {
+    if (flightData.length === 0) {
         console.warn("No flight data provided.");
         return;
     }
 
-    let xmin = Infinity, ymin = Infinity, xmax = -Infinity, ymax = -Infinity;
+    let pathCoordinates = flightData.map(({ latitude, longitude, altitude }) => [longitude, latitude, altitude]);
 
-    const pathCoordinates = flightData.map(({ latitude, longitude, altitude }) => {
-        xmin = Math.min(xmin, longitude);
-        ymin = Math.min(ymin, latitude);
-        xmax = Math.max(xmax, longitude);
-        ymax = Math.max(ymax, latitude);
+    // **Generate Smooth Curve Using Catmull-Rom Spline**
+    const smoothPath = interpolatePath(pathCoordinates);
 
-        return [longitude, latitude, altitude];
-    });
+    // **Create Polyline with Altitude-Based Colors**
+    const polyline = new Polyline({ paths: [smoothPath] });
 
-    // **Draw Flight Path Polyline**
-    const polyline = new Polyline({ paths: [pathCoordinates] });
-
-    const lineSymbol = new SimpleLineSymbol({
-        color: [0, 255, 0, 0.7], // Green color for the flight path
-        width: 3,
+    const altitudeColor = {
+        type: "simple-line",
+        color: [255, 255, 255, 0.8], // White by default
+        width: 2,
         style: "solid"
-    });
+    };
 
-    const lineGraphic = new Graphic({
+    const altitudeGraphic = new Graphic({
         geometry: polyline,
-        symbol: lineSymbol
+        symbol: altitudeColor
     });
 
-    graphicsLayer.add(lineGraphic);
+    graphicsLayer.add(altitudeGraphic);
 
-    // **Adjust View to Fit the Flight Path**
-    const extent = new Extent({ xmin, ymin, xmax, ymax, spatialReference: { wkid: 4326 } });
-    view.extent = extent.expand(1.2);
+    // **Add Moving Plane Symbol**
+    const planeSymbol = new PictureMarkerSymbol({
+        url: "https://upload.wikimedia.org/wikipedia/commons/e/ec/Airplane_silhouette.png",
+        width: "32px",
+        height: "32px"
+    });
 
-    // 🔥 Unlock the Camera Controls After Zooming
-    setTimeout(() => {
-        view.constraints = {
-            altitude: {
-                min: 10,    // Minimum altitude to prevent camera from going underground
-                max: 100000 // Maximum altitude for zooming out
-            },
-            tilt: {
-                max: 180   // Allow full tilting
-            }
-        };
-    }, 1000); // Delay to let the extent load first
-
-    // **Add Plane Symbol for Animation**
-    planeGraphic = new Graphic({
-        geometry: new Point({
-            longitude: flightPath[0].longitude,
-            latitude: flightPath[0].latitude,
-            z: flightPath[0].altitude
-        }),
-        symbol: new PictureMarkerSymbol({
-            url: "https://upload.wikimedia.org/wikipedia/commons/e/ec/Airplane_silhouette.png",
-            width: "32px",
-            height: "32px",
-            angle: 0
-        })
+    const planeGraphic = new Graphic({
+        geometry: new Point(smoothPath[0]),
+        symbol: planeSymbol
     });
 
     graphicsLayer.add(planeGraphic);
+
+    // **Animate Plane Movement**
+    let index = 0;
+
+    const movePlane = () => {
+        if (index < smoothPath.length) {
+            const [lng, lat, alt] = smoothPath[index];
+            planeGraphic.geometry = new Point({ longitude: lng, latitude: lat, z: alt });
+            index++;
+            requestAnimationFrame(movePlane);
+        }
+    };
+
+    movePlane();
+
+    // **Focus the Camera to Fit the Flight Path**
+    const extent = polyline.extent;
+    view.extent = extent.expand(1.2);
 };
+
+// 🎯 Catmull-Rom Spline Interpolation for Smoother Path
+function interpolatePath(path) {
+    const points = path.map(p => turf.point(p));
+    const line = turf.lineString(path);
+    const smoothed = turf.bezierSpline(line);
+    return smoothed.geometry.coordinates;
+}
 
 
 
