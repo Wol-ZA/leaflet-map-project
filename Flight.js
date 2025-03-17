@@ -135,24 +135,131 @@ window.createGeoJSONLayer = function (url, colorHTML, alpha) {
                 }
             }
         },
+        fields: [
+            { name: "name", type: "string" } // Ensure 'name' is recognized as an attribute
+        ],
+        outFields: ["*"], // Load all properties from the GeoJSON file
         opacity: 0.5
     });
 
-    // Fetch GeoJSON data to populate geoJSONPolygons
-    fetch(url)
-        .then(response => response.json())
-        .then(geojson => {
-            geojson.features.forEach((feature, index) => {
-                if (feature.geometry.type === "Polygon" || feature.geometry.type === "MultiPolygon") {
-                    const polygonGeometry = convertGeoJSONGeometry(feature.geometry);
-                    geoJSONPolygons.push({ geometry: polygonGeometry, feature }); // Add to the shared array
-                }
-            });
-        })
-        .catch(error => console.error("Error fetching GeoJSON:", error));
-
     return layer;
 };
+
+let isPanelOpen = false;
+let startY = 0;
+let panelHeight = 300;
+
+const infoPanel = document.getElementById('infoPanel');
+const titleBar = document.getElementById('titleBar');
+titleBar.style.display = 'none';
+
+window.showInfoPanel = function(features) {
+    console.log("showInfoPanel called with:", features);
+
+    // Force blur any active input
+    document.activeElement?.blur();
+
+    // Force a small delay to let the DOM fully load
+    requestAnimationFrame(() => {
+        // Trigger the panel to slide up
+        infoPanel.style.bottom = '0';
+        titleBar.style.display = 'none';
+        isPanelOpen = true;
+
+        // Force a reflow before updating content (iOS WebKit Fix)
+        setTimeout(() => {
+            const featureDetailsContainer = document.getElementById('featureDetails');
+            featureDetailsContainer.innerHTML = ''; // Clear previous content
+
+            features.forEach(feature => {
+                const featureHtml = `
+                    <div class="feature">
+                        <h3>${feature.sName}</h3>
+                        <p><strong>Altitude:</strong> ${feature.nMinalt} ft - ${feature.nMaxalt} ft</p>
+                        <p><strong>Frequency:</strong> ${feature.sFreq}</p>
+                    </div>
+                    <hr>
+                `;
+                featureDetailsContainer.insertAdjacentHTML('beforeend', featureHtml);
+            });
+        }, 50); // A small 50ms delay forces iOS to re-render the DOM
+    });
+}
+
+
+	
+function hideInfoPanel() {
+    infoPanel.style.bottom = '-400px';
+    isPanelOpen = false;
+}
+
+document.getElementById('closeBtn').addEventListener('click', hideInfoPanel);
+
+// Click on title bar opens the panel
+view.on("click", function () {
+    if (isPanelOpen) {
+        hideInfoPanel();
+    } else {
+        console.log("Panel closed, waiting for input...");
+    }
+});
+
+// Drag to close functionality
+infoPanel.addEventListener('mousedown', function (e) {
+    if (isPanelOpen) {
+        startY = e.clientY;
+        document.addEventListener('mousemove', dragPanel);
+        document.addEventListener('mouseup', stopDragging);
+    }
+});
+
+function dragPanel(e) {
+    const deltaY = e.clientY - startY;
+    const newBottom = Math.max(-panelHeight, Math.min(0, panelHeight - deltaY));
+    infoPanel.style.bottom = newBottom + 'px';
+}
+
+function stopDragging() {
+    document.removeEventListener('mousemove', dragPanel);
+    document.removeEventListener('mouseup', stopDragging);
+    const currentBottom = parseInt(infoPanel.style.bottom, 10);
+    if (currentBottom < -150) {
+        hideInfoPanel();
+    } else {
+        infoPanel.style.bottom = '0';
+    }
+}
+	
+view.on("click", function (event) {
+    view.hitTest(event).then(function (response) {
+        if (response.results.length > 0) {
+            let layerNames = new Set(); // Use a Set to avoid duplicate names
+
+            response.results.forEach((result) => {
+                if (result.graphic) {
+                    const attributes = result.graphic.attributes;
+                    if (attributes && attributes.name) {
+                        layerNames.add(attributes.name || "Unknown Layer");
+                    }
+                }
+            });
+
+            if (layerNames.size > 0) {
+                const layerData = { layers: Array.from(layerNames) }; // Create JSON object
+                console.log("Clicked Layers:", layerData);
+                WL.Execute("GetSectorName", JSON.stringify(layerData)); // Send JSON string
+            } else {
+                console.log("Features clicked, but none had a 'name' property.");
+            }
+        } else {
+            console.log("No feature clicked.");
+        }
+    }).catch(error => {
+        console.error("Error in hitTest:", error);
+    });
+});
+
+
  // Function to create a GeoJSONLayer with a specific icon for points
  window.createIconGeoJSONLayer = function(url, iconUrl) {
     const layer = new GeoJSONLayer({
@@ -210,24 +317,26 @@ window.createGeoJSONLayer = function (url, colorHTML, alpha) {
     }
 
     // Function to create the GeoJSON graphic for each polygon
-    function createGeoJSONGraphic(feature, colorHTML, alpha) {
-        // Here, alpha is applied directly to the RGBA color array for the polygon's fill
-        const color = htmlToRGBA(colorHTML, alpha);  // Color with transparency
-        const outlineColor = darkenColor(colorHTML, 1);  // Darken for outline
-        const geometry = convertGeoJSONGeometry(feature.geometry);
+function createGeoJSONGraphic(feature, colorHTML, alpha) {
+    // Convert HTML color to RGBA with transparency
+    const color = htmlToRGBA(colorHTML, alpha);
+    const outlineColor = darkenColor(colorHTML, 1);
+    const geometry = convertGeoJSONGeometry(feature.geometry);
 
-        return new Graphic({
-            geometry: geometry,
-            symbol: {
-                type: "simple-fill",
-                color: color,  // Apply color with alpha transparency
-                outline: {
-                    color: outlineColor,  // Darken for outline
-                    width: 2
-                }
+    return new Graphic({
+        geometry: geometry,
+        symbol: {
+            type: "simple-fill",
+            color: color,  // Apply color with alpha transparency
+            outline: {
+                color: outlineColor,
+                width: 2
             }
-        });
-    }
+        },
+        attributes: feature.properties // Attach properties to attributes
+    });
+}
+
 
 window.updateMapLayers= function(layerStates) {
     for (const [layerToggleId, isVisible] of Object.entries(layerStates)) {
@@ -241,33 +350,38 @@ window.updateMapLayers= function(layerStates) {
         }
     }
 }
-    
- window.loadGeoJSONAndDisplay = function(url, opacity = 0.7) {
-         const graphicsLayer = new GraphicsLayer({
-            title: "GeoJSON Layer"
-        });
+	
+window.loadGeoJSONAndDisplay = function (url, opacity = 0.7, view) {
+    const graphicsLayer = new GraphicsLayer({
+        title: "GeoJSON Layer"
+    });
 
-        fetch(url)
-            .then(response => response.json())
-            .then(geojson => {
-                // Iterate through the GeoJSON features and create individual graphics
-                geojson.features.forEach((feature, index) => {
-                    const color = colorSequences[index % colorSequences.length];  // Cycle color
-                    const graphic = createGeoJSONGraphic(feature, color, opacity);  // Apply color with alpha and opacity
-                    
-                    if (feature.geometry.type === "Polygon" || feature.geometry.type === "MultiPolygon") {
+    fetch(url)
+        .then(response => response.json())
+        .then(geojson => {
+            // Iterate through the GeoJSON features and create individual graphics
+            geojson.features.forEach((feature, index) => {    
+                const color = colorSequences[index % colorSequences.length];  // Cycle color
+                const graphic = createGeoJSONGraphic(feature, color, opacity);  // Apply color with alpha and opacity
+                
+                if (feature.geometry.type === "Polygon" || feature.geometry.type === "MultiPolygon") {
                     const name = feature.properties.name || `Polygon ${index + 1}`; // Use `name` property or a default name
-                     geoJSONPolygons.push({ geometry: graphic.geometry, feature });
+                    geoJSONPolygons.push({ geometry: graphic.geometry, feature });
                 }
-                    // Add the graphic to the layer
-                    graphicsLayer.add(graphic);
-                });
-            })
-            .catch(error => console.error('Error loading GeoJSON:', error));
+                
+                // Add the graphic to the layer
+                graphicsLayer.add(graphic);
+            });
 
-        // Return the newly created GraphicsLayer
-        return graphicsLayer;
-    };
+            // Setup click event after loading graphics
+            setupGraphicsLayerClickEvent(view, graphicsLayer);
+        })
+        .catch(error => console.error('Error loading GeoJSON:', error));
+
+    // Return the newly created GraphicsLayer
+    return graphicsLayer;
+};
+
 
     // Define point layers and add to the map
    // const sacaaLayer = createIconGeoJSONLayer("SACAA.geojson", "SACAA_1.png");
@@ -599,8 +713,8 @@ window.windy = function(){
     var zoom = view.zoom;
     toggleWindyOverlay(center.latitude, center.longitude, zoom);
 }
-    
-window.toggleWindyOverlay = function (lat,lon,zoom) {
+
+window.toggleWindyOverlay = function (lat, lon, zoom) {
     // Check if the Windy iframe already exists
     const existingIframe = document.getElementById("windyIframe");
 
@@ -612,17 +726,7 @@ window.toggleWindyOverlay = function (lat,lon,zoom) {
         const windyIframe = document.createElement("iframe");
 
         // Customize the iframe settings to match Windy overlay size and settings
-        windyIframe.src = "https://embed.windy.com/embed2.html" +
-                          `?lat=${lat}` + // Use dynamic latitude
-                          `&lon=${lon}` + // Use dynamic longitude
-                          `&zoom=${zoom}` + // Use dynamic zoom level
-                          "&level=surface" +
-                          "&overlay=wind" +
-                          "&menu=&message=true" +
-                          "&marker=&calendar=&pressure=&type=map" +
-                          "&location=coordinates" +
-                          "&detail=&detailLat=" +
-                          "&metricWind=default&metricTemp=default";
+        windyIframe.src = `https://embed.windy.com/embed2.html?lat=${lat}&lon=${lon}&zoom=${zoom}&level=surface&overlay=wind&menu=&message=true&marker=&calendar=&pressure=&type=map&location=coordinates&detail=&detailLat=&metricWind=default&metricTemp=default`;
         windyIframe.id = "windyIframe"; // Add an ID to the iframe for toggling
         windyIframe.width = "100%"; // Set full width
         windyIframe.height = "100%"; // Set full height
@@ -725,51 +829,44 @@ window.addMarkersAndDrawLine = function (data) {
         symbol: { type: "simple-line", color: [0, 0, 255, 0.5], width: 4 }
     });
     draggableGraphicsLayer.add(polylineGraphic);
-    zoomToFlightPlan(polylineCoordinates,window.view);
+    zoomToFlightPlan(polylineCoordinates, window.view);
 
-function zoomToFlightPlan(data, view) {
-    if (!data || data.length < 2) {
-        console.error("Insufficient data to zoom. Data:", data);
-        return;
+    function zoomToFlightPlan(data, view) {
+        if (!data || data.length < 2) {
+            console.error("Insufficient data to zoom. Data:", data);
+            return;
+        }
+
+        // Extract the start and end points
+        const start = data[0];
+        const end = data[data.length - 1];
+
+        // Create an extent that covers the start and end points
+        const extent = {
+            xmin: Math.min(start[0], end[0]), // Min longitude
+            ymin: Math.min(start[1], end[1]), // Min latitude
+            xmax: Math.max(start[0], end[0]), // Max longitude
+            ymax: Math.max(start[1], end[1]), // Max latitude
+            spatialReference: { wkid: 4326 } // WGS 84 spatial reference
+        };
+
+        // Attempt to zoom to the extent
+        view.goTo(extent).then(() => {
+            console.log("Zoom to extent successful!");
+        }).catch((error) => {
+            console.error("Error zooming to extent:", error);
+        });
+
+        // Test direct zoom using a center and zoom level (for comparison)
+        view.goTo({
+            center: [(start[0] + end[0]) / 2, (start[1] + end[1]) / 2], // Center the map at midpoint
+            zoom: 6  // Set a reasonable zoom level for the flight path
+        }).then(() => {
+            console.log("Direct zoom successful!");
+        }).catch((error) => {
+            console.error("Error with direct zoom:", error);
+        });
     }
-
-    // Extract the start and end points
-    const start = data[0];
-    const end = data[data.length - 1];
-
-    // Log coordinates for debugging
-    console.log("Start point:", start);
-    console.log("End point:", end);
-
-    // Create an extent that covers the start and end points
-    const extent = {
-        xmin: Math.min(start[0], end[0]), // Min longitude
-        ymin: Math.min(start[1], end[1]), // Min latitude
-        xmax: Math.max(start[0], end[0]), // Max longitude
-        ymax: Math.max(start[1], end[1]), // Max latitude
-        spatialReference: { wkid: 4326 } // WGS 84 spatial reference
-    };
-
-    // Log extent for debugging
-    console.log("Calculated extent:", extent);
-
-    // Attempt to zoom to the extent
-    view.goTo(extent).then(() => {
-        console.log("Zoom to extent successful!");
-    }).catch((error) => {
-        console.error("Error zooming to extent:", error);
-    });
-
-    // Test direct zoom using a center and zoom level (for comparison)
-    view.goTo({
-        center: [(start[0] + end[0]) / 2, (start[1] + end[1]) / 2], // Center the map at midpoint
-        zoom: 6  // Set a reasonable zoom level for the flight path
-    }).then(() => {
-        console.log("Direct zoom successful!");
-    }).catch((error) => {
-        console.error("Error with direct zoom:", error);
-    });
-}
 
     
 
