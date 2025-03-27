@@ -119,15 +119,31 @@ flightData.forEach(({ latitude, longitude, altitude }) => {
             }),
             symbol: new SimpleMarkerSymbol({
                 color: [0, 0, 255], // Blue color for the dot
-                size: 8, // Adjust size as needed
-                outline: {
-                    color: [255, 255, 255], // White outline
-                    width: 1
-                }
+                size: 8,
+                outline: { color: [255, 255, 255], width: 1 }
             })
         });
 
         graphicsLayer.add(planeGraphic);
+
+        // **Add Label for Altitude & Speed**
+        labelGraphic = new Graphic({
+            geometry: new Point({
+                longitude: flightPath[0].longitude,
+                latitude: flightPath[0].latitude,
+                z: flightPath[0].altitude + 500 // Position slightly above the plane
+            }),
+            symbol: new TextSymbol({
+                text: `Altitude: ${flightPath[0].altitude}m\nSpeed: 0 km/h`,
+                color: "black",
+                haloColor: "white",
+                haloSize: 1,
+                font: { size: 12, weight: "bold" },
+                yoffset: 10 // Moves the text up slightly
+            })
+        });
+
+        graphicsLayer.add(labelGraphic);
     };
 
     window.startFlightSimulation = function() {
@@ -135,6 +151,7 @@ flightData.forEach(({ latitude, longitude, altitude }) => {
 
         animationRunning = true;
         let index = 0;
+        let lastTimestamp = Date.now();
 
         function animatePlane() {
             if (index >= flightPath.length) {
@@ -143,12 +160,41 @@ flightData.forEach(({ latitude, longitude, altitude }) => {
             }
 
             const { latitude, longitude, altitude } = flightPath[index];
+
+            // Calculate Speed (if we have at least one previous point)
+            let speed = 0;
+            if (index > 0) {
+                const prev = flightPath[index - 1];
+                const distance = getDistance(prev.latitude, prev.longitude, latitude, longitude);
+                const timeElapsed = (Date.now() - lastTimestamp) / 1000; // in seconds
+                speed = (distance / timeElapsed) * 3.6; // Convert m/s to km/h
+                lastTimestamp = Date.now();
+            }
+
+            // Update Plane Position
             planeGraphic.geometry = new Point({ latitude, longitude, z: altitude });
 
+            // Update Label Position and Text
+            labelGraphic.geometry = new Point({ latitude, longitude, z: altitude + 500 }); // Keep label slightly above
+            labelGraphic.symbol.text = `Altitude: ${altitude}m\nSpeed: ${speed.toFixed(2)} km/h`;
+
             index++;
-            setTimeout(animatePlane, 500); // Adjust speed as needed
+            setTimeout(animatePlane, 200); // Adjust speed as needed
         }
 
         animatePlane();
     };
+
+    // Function to calculate distance between two GPS points (Haversine Formula)
+    function getDistance(lat1, lon1, lat2, lon2) {
+        const R = 6371000; // Earth's radius in meters
+        const rad = Math.PI / 180;
+        const dLat = (lat2 - lat1) * rad;
+        const dLon = (lon2 - lon1) * rad;
+
+        const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * rad) * Math.cos(lat2 * rad) * Math.sin(dLon / 2) ** 2;
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+        return R * c; // Distance in meters
+    }
 });
