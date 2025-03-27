@@ -110,7 +110,7 @@ flightData.forEach(({ latitude, longitude, altitude }) => {
         };
     }, 1000); // Delay to let the extent load first
 
-   // **Add Plane Symbol as a Dot**
+    // **Add Plane Symbol as a Dot**
         planeGraphic = new Graphic({
             geometry: new Point({
                 longitude: flightPath[0].longitude,
@@ -126,7 +126,7 @@ flightData.forEach(({ latitude, longitude, altitude }) => {
 
         graphicsLayer.add(planeGraphic);
 
-        // **Add Label for Altitude & Speed**
+        // ✅ Ensure labelGraphic is initialized
         labelGraphic = new Graphic({
             geometry: new Point({
                 longitude: flightPath[0].longitude,
@@ -174,9 +174,11 @@ flightData.forEach(({ latitude, longitude, altitude }) => {
             // Update Plane Position
             planeGraphic.geometry = new Point({ latitude, longitude, z: altitude });
 
-            // Update Label Position and Text
-            labelGraphic.geometry = new Point({ latitude, longitude, z: altitude + 500 }); // Keep label slightly above
-            labelGraphic.symbol.text = `Altitude: ${altitude}m\nSpeed: ${speed.toFixed(2)} km/h`;
+            // ✅ Check if labelGraphic is defined before updating
+            if (labelGraphic) {
+                labelGraphic.geometry = new Point({ latitude, longitude, z: altitude + 500 }); // Keep label slightly above
+                labelGraphic.symbol.text = `Altitude: ${altitude}m\nSpeed: ${speed.toFixed(2)} km/h`;
+            }
 
             index++;
             setTimeout(animatePlane, 200); // Adjust speed as needed
