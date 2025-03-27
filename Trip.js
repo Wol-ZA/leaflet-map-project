@@ -57,11 +57,18 @@ window.loadFlightPath = function(flightData) {
         return [longitude, latitude, altitude];
     });
       // **Plot Waypoints**
-    const markerSymbol = new SimpleMarkerSymbol({
-        color: [0, 0, 255, 0.6],
-        size: 8,
-        outline: { color: "white", width: 2 }
-    });
+       const markerSymbol = new SimpleMarkerSymbol({
+                color: [0, 0, 255, 0.6],
+                size: 8,
+                outline: { color: "white", width: 2 }
+            });
+
+            const pointGraphic = new Graphic({
+                geometry: point,
+                symbol: markerSymbol
+            });
+            graphicsLayer.add(pointGraphic);
+    
     flightData.forEach(({ latitude, longitude, altitude }) => {
     const verticalLine = new Polyline({
         paths: [
