@@ -110,25 +110,25 @@ flightData.forEach(({ latitude, longitude, altitude }) => {
         };
     }, 1000); // Delay to let the extent load first
 
-    // **Add Plane Symbol for Animation**
-    planeGraphic = new Graphic({
-        geometry: new Point({
-            longitude: flightPath[0].longitude,
-            latitude: flightPath[0].latitude,
-            z: flightPath[0].altitude
-        }),
-        symbol: new PictureMarkerSymbol({
-            url: "https://upload.wikimedia.org/wikipedia/commons/e/ec/Airplane_silhouette.png",
-            width: "32px",
-            height: "32px",
-            angle: 0
-        })
-    });
+   // **Add Plane Symbol as a Dot**
+        planeGraphic = new Graphic({
+            geometry: new Point({
+                longitude: flightPath[0].longitude,
+                latitude: flightPath[0].latitude,
+                z: flightPath[0].altitude
+            }),
+            symbol: new SimpleMarkerSymbol({
+                color: [0, 0, 255], // Blue color for the dot
+                size: 8, // Adjust size as needed
+                outline: {
+                    color: [255, 255, 255], // White outline
+                    width: 1
+                }
+            })
+        });
 
-    graphicsLayer.add(planeGraphic);
-};
-
-
+        graphicsLayer.add(planeGraphic);
+    };
 
     window.startFlightSimulation = function() {
         if (!flightPath.length || animationRunning) return;
