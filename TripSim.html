@@ -21,10 +21,6 @@
 <body>
     <!-- Add this div to render the map -->
     <div id="viewDiv"></div>
-    <button id="pauseButton">Pause</button>
-    <button id="resumeButton">Resume</button>
-    <button id="rewindButton">Rewind</button>
-    <button id="resetButton">Reset</button>
     <div id="altitudeDisplay" style="
     position: absolute; 
     bottom: 10px; 
@@ -38,6 +34,23 @@
     font-weight: bold;
     z-index: 1000;">
     Altitude: 0FT
+</div>
+    <div id="Remotes" style="
+    position: absolute; 
+    bottom: 10px; 
+    left: 50%; 
+    transform: translateX(-50%); 
+    background: rgba(0, 0, 0, 0.7); 
+    color: white; 
+    padding: 10px 20px; 
+    border-radius: 10px;
+    font-size: 18px;
+    font-weight: bold;
+    z-index: 1000;">
+    <button id="pauseButton">Pause</button>
+    <button id="resumeButton">Resume</button>
+    <button id="rewindButton">Rewind</button>
+    <button id="resetButton">Reset</button>
 </div>
 
     <script src="Trip.js"></script>
