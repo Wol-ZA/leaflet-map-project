@@ -11,8 +11,10 @@ require([
     "esri/symbols/SimpleLineSymbol",
     "esri/symbols/PictureMarkerSymbol",
     "esri/symbols/TextSymbol",
+    "esri/layers/FeatureLayer",
+     "esri/layers/support/LabelClass",
     "esri/geometry/Extent"
-], function(Map, SceneView, Polygon,Graphic, GraphicsLayer, Point, Polyline, SimpleMarkerSymbol,SimpleFillSymbol, SimpleLineSymbol, PictureMarkerSymbol,TextSymbol, Extent) {
+], function(Map, SceneView, Polygon,Graphic, GraphicsLayer, Point, Polyline, SimpleMarkerSymbol,SimpleFillSymbol, SimpleLineSymbol, PictureMarkerSymbol,TextSymbol,FeatureLayer,LabelClass, Extent) {
 
     const map = new Map({
         basemap: "topo-vector",
@@ -127,81 +129,78 @@ window.loadFlightPath = function(flightData) {
 
         graphicsLayer.add(planeGraphic);
 
-        // **Add Altitude & Speed Label**
-        textGraphic = new Graphic({
-            geometry: new Point({
-                longitude: flightPath[0].longitude,
-                latitude: flightPath[0].latitude,
-                z: flightPath[0].altitude + 500 // ✅ Offset above plane
-            }),
-            symbol: new TextSymbol({
-                text: `Alt: ${flightPath[0].altitude}m\nSpeed: 0 km/h`,
+const labelLayer = new FeatureLayer({
+    source: [],  // Initially empty
+    objectIdField: "ObjectID",
+    renderer: new SimpleRenderer({
+        symbol: new SimpleMarkerSymbol({
+            color: [0, 0, 255], 
+            size: 8, 
+            outline: { color: [255, 255, 255], width: 1 }
+        })
+    }),
+    labelingInfo: [
+        new LabelClass({
+            labelExpressionInfo: { expression: "$feature.labelText" },
+            symbol: {
+                type: "text",
                 color: "white",
                 haloColor: "black",
                 haloSize: 1,
                 font: { size: 14, weight: "bold" }
-            })
-        });
+            }
+        })
+    ],
+    elevationInfo: { mode: "relative-to-ground" }
+});
 
-        graphicsLayer.add(textGraphic);
+map.add(labelLayer);
     };
 
- window.startFlightSimulation = function() {
-        if (!flightPath.length || animationRunning) return;
+window.startFlightSimulation = function() {
+    if (!flightPath.length || animationRunning) return;
 
-        animationRunning = true;
-        let index = 0;
-        let prevTimestamp = Date.now();
-        let prevPosition = flightPath[0];
+    animationRunning = true;
+    let index = 0;
+    let prevTimestamp = Date.now();
+    let prevPosition = flightPath[0];
 
-        function animatePlane() {
-            if (index >= flightPath.length) {
-                animationRunning = false;
-                return;
-            }
-
-            const { latitude, longitude, altitude } = flightPath[index];
-            const currentTimestamp = Date.now();
-            const timeDiff = (currentTimestamp - prevTimestamp) / 1000;
-
-            // ✅ Calculate Speed using Haversine formula
-            const distance = calculateDistance(prevPosition, flightPath[index]);
-            const speed = timeDiff > 0 ? (distance / timeDiff) * 3.6 : 0;
-
-            // ✅ Update Plane Position
-            planeGraphic.geometry = new Point({ latitude, longitude, z: altitude });
-
-            // ✅ Update Text Label Position
-            textGraphic.geometry = new Point({ latitude, longitude, z: altitude + 500 });
-            textGraphic.symbol.text = `Alt: ${Math.round(altitude)}m\nSpeed: ${Math.round(speed)} km/h`;
-
-            // ✅ Refresh Graphics Layer
-            graphicsLayer.remove(textGraphic);
-            graphicsLayer.add(textGraphic);
-
-            // ✅ Update Previous Values
-            prevPosition = flightPath[index];
-            prevTimestamp = currentTimestamp;
-
-            index++;
-            setTimeout(animatePlane, 500);
+    function animatePlane() {
+        if (index >= flightPath.length) {
+            animationRunning = false;
+            return;
         }
 
-        animatePlane();
-    };
+        const { latitude, longitude, altitude } = flightPath[index];
+        const currentTimestamp = Date.now();
+        const timeDiff = (currentTimestamp - prevTimestamp) / 1000;
 
-    // **Function to Calculate Distance Between Two Lat/Lon Points**
-    function calculateDistance(point1, point2) {
-        const R = 6371000;
-        const lat1 = point1.latitude * (Math.PI / 180);
-        const lat2 = point2.latitude * (Math.PI / 180);
-        const deltaLat = lat2 - lat1;
-        const deltaLon = (point2.longitude - point1.longitude) * (Math.PI / 180);
+        // ✅ Calculate Speed using Haversine formula
+        const distance = calculateDistance(prevPosition, flightPath[index]);
+        const speed = timeDiff > 0 ? (distance / timeDiff) * 3.6 : 0;
 
-        const a = Math.sin(deltaLat / 2) ** 2 +
-                  Math.cos(lat1) * Math.cos(lat2) * Math.sin(deltaLon / 2) ** 2;
+        // ✅ Update Plane Position
+        planeGraphic.geometry = new Point({ latitude, longitude, z: altitude });
 
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        return R * c;
+        // ✅ Create or Update Label
+        const labelGraphic = new Graphic({
+            geometry: new Point({ latitude, longitude, z: altitude + 500 }),
+            attributes: {
+                ObjectID: 1,  
+                labelText: `Alt: ${Math.round(altitude)}m\nSpeed: ${Math.round(speed)} km/h`
+            }
+        });
+
+        labelLayer.source.removeAll();  // Clear previous label
+        labelLayer.source.add(labelGraphic);  // Add updated label
+
+        // ✅ Update Previous Values
+        prevPosition = flightPath[index];
+        prevTimestamp = currentTimestamp;
+
+        index++;
+        setTimeout(animatePlane, 500);
     }
-});
+
+    animatePlane();
+};
