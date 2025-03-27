@@ -36,7 +36,6 @@ require([
 
     let flightPath = [];
     let planeGraphic = null;
-    let animationRunning = false;
 
 window.loadFlightPath = function(flightData) {
     graphicsLayer.removeAll();
