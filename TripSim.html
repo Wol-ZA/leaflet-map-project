@@ -16,44 +16,75 @@
             height: 100%; /* Set height of the viewDiv to fill the screen */
             width: 100%;  /* Set width of the viewDiv to fill the screen */
         }
+        
+        /* Altitude Display Styling */
+        #altitudeDisplay {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            z-index: 1000;
+        }
+
+        /* Remote Buttons Styling */
+        #Remotes {
+            position: absolute;
+            right: 10px;
+            bottom: 10px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column; /* Stack buttons vertically */
+            gap: 10px; /* Add space between buttons */
+        }
+
+        /* Button Styling */
+        button {
+            background-color: #007bff; /* Blue background */
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        /* Button Hover Effect */
+        button:hover {
+            background-color: #0056b3; /* Darker blue */
+            transform: scale(1.05); /* Slightly enlarge the button on hover */
+        }
+
+        /* Button Focus Effect */
+        button:focus {
+            outline: none;
+        }
     </style>
 </head>
 <body>
     <!-- Add this div to render the map -->
     <div id="viewDiv"></div>
-    <div id="altitudeDisplay" style="
-    position: absolute; 
-    bottom: 10px; 
-    left: 50%; 
-    transform: translateX(-50%); 
-    background: rgba(0, 0, 0, 0.7); 
-    color: white; 
-    padding: 10px 20px; 
-    border-radius: 10px;
-    font-size: 18px;
-    font-weight: bold;
-    z-index: 1000;">
-    Altitude: 0FT
-</div>
-    <div id="Remotes" style="
-    position: absolute; 
-    bottom: 10px; 
-    left: 50%; 
-    transform: translateX(-50%); 
-    background: rgba(0, 0, 0, 0.7); 
-    color: white; 
-    padding: 10px 20px; 
-    border-radius: 10px;
-    font-size: 18px;
-    font-weight: bold;
-    z-index: 1000;">
-    <button id="pauseButton">Pause</button>
-    <button id="resumeButton">Resume</button>
-    <button id="rewindButton">Rewind</button>
-    <button id="resetButton">Reset</button>
-</div>
+
+    <!-- Altitude Display -->
+    <div id="altitudeDisplay">
+        Altitude: 0FT
+    </div>
+
+    <!-- Remote Control Buttons -->
+    <div id="Remotes">
+        <button id="pauseButton">Pause</button>
+        <button id="resumeButton">Resume</button>
+        <button id="rewindButton">Rewind</button>
+        <button id="resetButton">Reset</button>
+    </div>
 
     <script src="Trip.js"></script>
 </body>
 </html>
-
