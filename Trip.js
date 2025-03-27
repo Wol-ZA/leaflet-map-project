@@ -10,8 +10,9 @@ require([
     "esri/symbols/SimpleFillSymbol",
     "esri/symbols/SimpleLineSymbol",
     "esri/symbols/PictureMarkerSymbol",
+    "esri/symbols/TextSymbol",
     "esri/geometry/Extent"
-], function(Map, SceneView, Polygon,Graphic, GraphicsLayer, Point, Polyline, SimpleMarkerSymbol,SimpleFillSymbol, SimpleLineSymbol, PictureMarkerSymbol, Extent) {
+], function(Map, SceneView, Polygon,Graphic, GraphicsLayer, Point, Polyline, SimpleMarkerSymbol,SimpleFillSymbol, SimpleLineSymbol, PictureMarkerSymbol,TextSymbol, Extent) {
 
     const map = new Map({
         basemap: "topo-vector",
@@ -125,79 +126,82 @@ window.loadFlightPath = function(flightData) {
         });
 
         graphicsLayer.add(planeGraphic);
+
+        // **Add Altitude & Speed Label**
+        textGraphic = new Graphic({
+            geometry: new Point({
+                longitude: flightPath[0].longitude,
+                latitude: flightPath[0].latitude,
+                z: flightPath[0].altitude + 500 // ✅ Offset above plane
+            }),
+            symbol: new TextSymbol({
+                text: `Alt: ${flightPath[0].altitude}m\nSpeed: 0 km/h`,
+                color: "white",
+                haloColor: "black",
+                haloSize: 1,
+                font: { size: 14, weight: "bold" }
+            })
+        });
+
+        graphicsLayer.add(textGraphic);
     };
 
-window.startFlightSimulation = function() {
-    if (!flightPath.length || animationRunning) return;
+ window.startFlightSimulation = function() {
+        if (!flightPath.length || animationRunning) return;
 
-    animationRunning = true;
-    let index = 0;
-    let prevTimestamp = Date.now();
-    let prevPosition = flightPath[0];
+        animationRunning = true;
+        let index = 0;
+        let prevTimestamp = Date.now();
+        let prevPosition = flightPath[0];
 
-    // Create a text symbol graphic for altitude and speed
-    let textGraphic = new Graphic({
-        geometry: new Point({
-            longitude: prevPosition.longitude,
-            latitude: prevPosition.latitude,
-            z: prevPosition.altitude + 500 // Offset above the plane
-        }),
-        symbol: {
-            type: "text",
-            color: "white",
-            haloColor: "black",
-            haloSize: 1,
-            text: `Alt: ${prevPosition.altitude}m\nSpeed: 0 km/h`,
-            font: { size: 12, weight: "bold" }
+        function animatePlane() {
+            if (index >= flightPath.length) {
+                animationRunning = false;
+                return;
+            }
+
+            const { latitude, longitude, altitude } = flightPath[index];
+            const currentTimestamp = Date.now();
+            const timeDiff = (currentTimestamp - prevTimestamp) / 1000;
+
+            // ✅ Calculate Speed using Haversine formula
+            const distance = calculateDistance(prevPosition, flightPath[index]);
+            const speed = timeDiff > 0 ? (distance / timeDiff) * 3.6 : 0;
+
+            // ✅ Update Plane Position
+            planeGraphic.geometry = new Point({ latitude, longitude, z: altitude });
+
+            // ✅ Update Text Label Position
+            textGraphic.geometry = new Point({ latitude, longitude, z: altitude + 500 });
+            textGraphic.symbol.text = `Alt: ${Math.round(altitude)}m\nSpeed: ${Math.round(speed)} km/h`;
+
+            // ✅ Refresh Graphics Layer
+            graphicsLayer.remove(textGraphic);
+            graphicsLayer.add(textGraphic);
+
+            // ✅ Update Previous Values
+            prevPosition = flightPath[index];
+            prevTimestamp = currentTimestamp;
+
+            index++;
+            setTimeout(animatePlane, 500);
         }
-    });
 
-    graphicsLayer.add(textGraphic);
+        animatePlane();
+    };
 
-    function animatePlane() {
-        if (index >= flightPath.length) {
-            animationRunning = false;
-            return;
-        }
+    // **Function to Calculate Distance Between Two Lat/Lon Points**
+    function calculateDistance(point1, point2) {
+        const R = 6371000;
+        const lat1 = point1.latitude * (Math.PI / 180);
+        const lat2 = point2.latitude * (Math.PI / 180);
+        const deltaLat = lat2 - lat1;
+        const deltaLon = (point2.longitude - point1.longitude) * (Math.PI / 180);
 
-        const { latitude, longitude, altitude } = flightPath[index];
-        const currentTimestamp = Date.now();
-        const timeDiff = (currentTimestamp - prevTimestamp) / 1000; // Time in seconds
+        const a = Math.sin(deltaLat / 2) ** 2 +
+                  Math.cos(lat1) * Math.cos(lat2) * Math.sin(deltaLon / 2) ** 2;
 
-        // Calculate speed (assuming straight-line movement)
-        const distance = calculateDistance(prevPosition, flightPath[index]); // In meters
-        const speed = timeDiff > 0 ? (distance / timeDiff) * 3.6 : 0; // Convert m/s to km/h
-
-        // Update plane position
-        planeGraphic.geometry = new Point({ latitude, longitude, z: altitude });
-
-        // Update text position and content
-        textGraphic.geometry = new Point({ latitude, longitude, z: altitude + 500 });
-        textGraphic.symbol.text = `Alt: ${Math.round(altitude)}m\nSpeed: ${Math.round(speed)} km/h`;
-
-        // Update previous values
-        prevPosition = flightPath[index];
-        prevTimestamp = currentTimestamp;
-
-        index++;
-        setTimeout(animatePlane, 500); // Adjust speed as needed
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
     }
-
-    animatePlane();
-};
-
-// Function to calculate distance between two lat/lon points using Haversine formula
-function calculateDistance(point1, point2) {
-    const R = 6371000; // Radius of Earth in meters
-    const lat1 = point1.latitude * (Math.PI / 180);
-    const lat2 = point2.latitude * (Math.PI / 180);
-    const deltaLat = lat2 - lat1;
-    const deltaLon = (point2.longitude - point1.longitude) * (Math.PI / 180);
-
-    const a = Math.sin(deltaLat / 2) ** 2 +
-              Math.cos(lat1) * Math.cos(lat2) * Math.sin(deltaLon / 2) ** 2;
-
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c; // Distance in meters
-}
 });
