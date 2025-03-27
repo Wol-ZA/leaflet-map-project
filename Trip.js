@@ -178,87 +178,134 @@ const labelLayer = new FeatureLayer({
 map.add(labelLayer);
     };
 
+let animationRunning = false;
+let paused = false;
+let rewinding = false;
+let index = 0;
+let animationTimeout;
+
 window.startFlightSimulation = function () {
     if (!flightPath.length || animationRunning) return;
 
     // Remove all markers and lines before starting the simulation
     graphicsLayer.removeAll();
-
     animationRunning = true;
-    let index = 0;
+    index = 0; // Reset index for new simulation
+    animatePlane();
+};
 
-    function animatePlane() {
+function animatePlane() {
+    if (index >= flightPath.length || paused || rewinding) {
         if (index >= flightPath.length) {
             animationRunning = false;
-            return;
         }
+        return; // Exit if paused or rewinding or end of trip
+    }
 
-        const { latitude, longitude, altitude } = flightPath[index];
+    const { latitude, longitude, altitude } = flightPath[index];
 
-        // ✅ Add Waypoint
-        const waypointGraphic = new Graphic({
-            geometry: new Point({ longitude, latitude, z: altitude }),
+    // ✅ Add Waypoint
+    const waypointGraphic = new Graphic({
+        geometry: new Point({ longitude, latitude, z: altitude }),
+        symbol: new SimpleMarkerSymbol({
+            color: [255, 0, 0], // Red
+            size: 6,
+            outline: { color: [255, 255, 255], width: 1 }
+        })
+    });
+    graphicsLayer.add(waypointGraphic);
+
+    const altitudeFeet = Math.round(altitude * 3.28084);
+
+    // ✅ Update Altitude Display in feet
+    document.getElementById("altitudeDisplay").innerText = `Altitude: ${altitudeFeet} ft`;
+
+    // ✅ Draw Vertical Line
+    const verticalLine = new Polyline({
+        paths: [[[longitude, latitude, altitude], [longitude, latitude, 0]]],
+        spatialReference: { wkid: 4326 }
+    });
+
+    const verticalLineGraphic = new Graphic({
+        geometry: verticalLine,
+        symbol: new SimpleLineSymbol({ color: [255, 0, 0, 0.7], width: 2, style: "dash" })
+    });
+    graphicsLayer.add(verticalLineGraphic);
+
+    // ✅ Update Plane Position
+    if (!planeGraphic) {
+        planeGraphic = new Graphic({
+            geometry: new Point({ latitude, longitude, z: altitude }),
             symbol: new SimpleMarkerSymbol({
-                color: [255, 0, 0], // Red
-                size: 6,
+                color: [0, 0, 255], // Blue
+                size: 8,
                 outline: { color: [255, 255, 255], width: 1 }
             })
         });
-        graphicsLayer.add(waypointGraphic);
-         const altitudeFeet = Math.round(altitude * 3.28084);
+        graphicsLayer.add(planeGraphic);
+    } else {
+        planeGraphic.geometry = new Point({ latitude, longitude, z: altitude });
+    }
 
-        // ✅ Update Altitude Display in feet
-        document.getElementById("altitudeDisplay").innerText = `Altitude: ${altitudeFeet} ft`;
-        // ✅ Draw Vertical Line
-        const verticalLine = new Polyline({
-            paths: [[[longitude, latitude, altitude], [longitude, latitude, 0]]],
+    // ✅ Draw Flight Path Polyline incrementally
+    if (index > 0) {
+        const previousPoint = flightPath[index - 1];
+        const segment = new Polyline({
+            paths: [[[previousPoint.longitude, previousPoint.latitude, previousPoint.altitude],
+                    [longitude, latitude, altitude]]],
             spatialReference: { wkid: 4326 }
         });
 
-        const verticalLineGraphic = new Graphic({
-            geometry: verticalLine,
-            symbol: new SimpleLineSymbol({ color: [255, 0, 0, 0.7], width: 2, style: "dash" })
+        const segmentGraphic = new Graphic({
+            geometry: segment,
+            symbol: new SimpleLineSymbol({ color: [0, 0, 0, 0.5], width: 3, style: "solid" })
         });
-        graphicsLayer.add(verticalLineGraphic);
 
-        // ✅ Update Plane Position
-        if (!planeGraphic) {
-            planeGraphic = new Graphic({
-                geometry: new Point({ latitude, longitude, z: altitude }),
-                symbol: new SimpleMarkerSymbol({
-                    color: [0, 0, 255], // Blue
-                    size: 8,
-                    outline: { color: [255, 255, 255], width: 1 }
-                })
-            });
-            graphicsLayer.add(planeGraphic);
-        } else {
-            planeGraphic.geometry = new Point({ latitude, longitude, z: altitude });
-        }
-
-        // ✅ Draw Flight Path Polyline incrementally
-        if (index > 0) {
-            const previousPoint = flightPath[index - 1];
-            const segment = new Polyline({
-                paths: [[[previousPoint.longitude, previousPoint.latitude, previousPoint.altitude],
-                        [longitude, latitude, altitude]]],
-                spatialReference: { wkid: 4326 }
-            });
-
-            const segmentGraphic = new Graphic({
-                geometry: segment,
-                symbol: new SimpleLineSymbol({ color: [0, 0, 0, 0.5], width: 3, style: "solid" })
-            });
-
-            graphicsLayer.add(segmentGraphic);
-        }
-
-        index++;
-        setTimeout(animatePlane, 500);
+        graphicsLayer.add(segmentGraphic);
     }
 
-    animatePlane();
-};
+    index++;
+
+    // Continue the animation if it's not paused or rewinding
+    if (animationRunning) {
+        animationTimeout = setTimeout(animatePlane, 500); // Set a timeout for smooth animation
+    }
+}
+
+function pauseSimulation() {
+    paused = true;
+    clearTimeout(animationTimeout); // Stop the animation when paused
+}
+
+function resumeSimulation() {
+    paused = false;
+    animatePlane(); // Resume the animation from where it was paused
+}
+
+function rewindSimulation() {
+    if (index > 0) {
+        rewinding = true;
+        index--; // Go back one step
+        graphicsLayer.removeAll(); // Remove current graphics to prevent overlap
+        animatePlane(); // Restart animation from previous position
+    }
+}
+
+function resetSimulation() {
+    clearTimeout(animationTimeout); // Clear any pending timeouts
+    index = 0;
+    graphicsLayer.removeAll(); // Reset the map to its initial state
+    animationRunning = false;
+    paused = false;
+    rewinding = false;
+}
+
+// Add event listeners to buttons for controlling the simulation
+document.getElementById("pauseButton").addEventListener("click", pauseSimulation);
+document.getElementById("resumeButton").addEventListener("click", resumeSimulation);
+document.getElementById("rewindButton").addEventListener("click", rewindSimulation);
+document.getElementById("resetButton").addEventListener("click", resetSimulation);
+
 
      function calculateDistance(point1, point2) {
         const R = 6371000;
