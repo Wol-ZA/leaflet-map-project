@@ -146,7 +146,7 @@ flightData.forEach(({ latitude, longitude, altitude }) => {
             planeGraphic.geometry = new Point({ latitude, longitude, z: altitude });
 
             index++;
-            setTimeout(animatePlane, 200); // Adjust speed as needed
+            setTimeout(animatePlane, 500); // Adjust speed as needed
         }
 
         animatePlane();
