@@ -83,7 +83,7 @@ window.loadFlightPath = function(flightData) {
     const polyline = new Polyline({ paths: [pathCoordinates] });
 
     const lineSymbol = new SimpleLineSymbol({
-        color: [0, 255, 0, 0.7], // Green color for the flight path
+        color: [0, 0, 0, 0.5], // Black color with 50% transparency
         width: 3,
         style: "solid"
     });
