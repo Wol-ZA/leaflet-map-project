@@ -54,7 +54,7 @@ require([
 
         const lineGraphic = new Graphic({ geometry: polyline, symbol: lineSymbol });
         graphicsLayer.add(lineGraphic);
-
+        
         // **Add Plane Symbol as a Dot**
         planeGraphic = new Graphic({
             geometry: new Point({
@@ -70,7 +70,29 @@ require([
         });
 
         graphicsLayer.add(planeGraphic);
+        // **Draw Dotted Vertical Lines to Ground**
+flightData.forEach(({ latitude, longitude, altitude }) => {
+    const verticalLine = new Polyline({
+        paths: [
+            [[longitude, latitude, altitude], [longitude, latitude, 0]]
+        ],
+        spatialReference: { wkid: 4326 }
+    });
 
+    const dottedLineSymbol = new SimpleLineSymbol({
+        color: [255, 0, 0, 0.7], // Red color for visibility
+        width: 2,
+        style: "dash"
+    });
+
+    const verticalLineGraphic = new Graphic({
+        geometry: verticalLine,
+        symbol: dottedLineSymbol
+    });
+
+    graphicsLayer.add(verticalLineGraphic);
+});
+        
         // ✅ Initialize labelGraphic before animation starts
         labelGraphic = new Graphic({
             geometry: new Point({
