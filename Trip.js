@@ -34,6 +34,7 @@ require([
 
     window.loadFlightPath = function(flightData) {
         graphicsLayer.removeAll();
+        view.graphics.removeAll(); // ✅ Clear previous labels
         flightPath = flightData;
 
         if (flightPath.length === 0) {
@@ -54,7 +55,7 @@ require([
 
         const lineGraphic = new Graphic({ geometry: polyline, symbol: lineSymbol });
         graphicsLayer.add(lineGraphic);
-        
+
         // **Add Plane Symbol as a Dot**
         planeGraphic = new Graphic({
             geometry: new Point({
@@ -68,8 +69,6 @@ require([
                 outline: { color: [255, 255, 255], width: 1 }
             })
         });
-
-        graphicsLayer.add(planeGraphic);
         // **Draw Dotted Vertical Lines to Ground**
 flightData.forEach(({ latitude, longitude, altitude }) => {
     const verticalLine = new Polyline({
@@ -92,25 +91,28 @@ flightData.forEach(({ latitude, longitude, altitude }) => {
 
     graphicsLayer.add(verticalLineGraphic);
 });
-        
-        // ✅ Initialize labelGraphic before animation starts
+
+        graphicsLayer.add(planeGraphic);
+
+        // ✅ Initialize labelGraphic and use view.graphics instead of graphicsLayer
         labelGraphic = new Graphic({
             geometry: new Point({
                 longitude: flightPath[0].longitude,
                 latitude: flightPath[0].latitude,
-                z: flightPath[0].altitude + 500 // Position above the plane
+                z: flightPath[0].altitude + 500 // Keep label above plane
             }),
             symbol: new TextSymbol({
                 text: `Altitude: ${flightPath[0].altitude}m\nSpeed: 0 km/h`,
                 color: "black",
                 haloColor: "white",
-                haloSize: 1,
-                font: { size: 12, weight: "bold" },
-                yoffset: 10 // Moves the text up slightly
+                haloSize: 2,
+                font: { size: 14, weight: "bold" },
+                verticalAlignment: "bottom",
+                yoffset: 15 // Moves text slightly above the plane
             })
         });
 
-        graphicsLayer.add(labelGraphic);
+        view.graphics.add(labelGraphic); // ✅ Use view.graphics for the label
     };
 
     window.startFlightSimulation = function() {
@@ -141,16 +143,17 @@ flightData.forEach(({ latitude, longitude, altitude }) => {
             // Update Plane Position
             planeGraphic.geometry = new Point({ latitude, longitude, z: altitude });
 
-            // ✅ Ensure labelGraphic is updated safely
+            // ✅ Update Label Graphic Position and Text
             if (labelGraphic) {
                 labelGraphic.geometry = new Point({ latitude, longitude, z: altitude + 500 }); // Keep label above
                 labelGraphic.symbol = new TextSymbol({
                     text: `Altitude: ${altitude}m\nSpeed: ${speed.toFixed(2)} km/h`,
                     color: "black",
                     haloColor: "white",
-                    haloSize: 1,
-                    font: { size: 12, weight: "bold" },
-                    yoffset: 10
+                    haloSize: 2,
+                    font: { size: 14, weight: "bold" },
+                    verticalAlignment: "bottom",
+                    yoffset: 15
                 });
             }
 
