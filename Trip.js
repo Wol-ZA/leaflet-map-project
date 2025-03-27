@@ -283,20 +283,66 @@ function resumeSimulation() {
 
 function rewindSimulation() {
     if (index > 0) {
-        rewinding = true;
-        index--; // Go back one step
-        graphicsLayer.removeAll(); // Remove current graphics to prevent overlap
-        animatePlane(); // Restart animation from previous position
+        // Move back one step
+        index--;
+        const { latitude, longitude, altitude } = flightPath[index];
+
+        // Update the plane position to the previous waypoint
+        planeGraphic.geometry = new Point({ latitude, longitude, z: altitude });
+
+        // Update the altitude display
+        const altitudeFeet = Math.round(altitude * 3.28084);
+        document.getElementById("altitudeDisplay").innerText = `Altitude: ${altitudeFeet} ft`;
+
+        // Update the graphics layer by removing the last waypoint and vertical line
+        graphicsLayer.remove(graphicsLayer.graphics.items[graphicsLayer.graphics.length - 1]); // Remove last waypoint
+
+        // Optionally remove the last vertical line if desired
+        if (graphicsLayer.graphics.items[graphicsLayer.graphics.length - 1].geometry.type === "polyline") {
+            graphicsLayer.remove(graphicsLayer.graphics.items[graphicsLayer.graphics.length - 1]); // Remove last vertical line
+        }
+
+        // Redraw the previous waypoint (the one before the last)
+        const previousPoint = flightPath[index - 1];
+        const waypointGraphic = new Graphic({
+            geometry: new Point({ longitude: previousPoint.longitude, latitude: previousPoint.latitude, z: previousPoint.altitude }),
+            symbol: new SimpleMarkerSymbol({
+                color: [255, 0, 0], // Red
+                size: 6,
+                outline: { color: [255, 255, 255], width: 1 }
+            })
+        });
+        graphicsLayer.add(waypointGraphic);
+
+        // Draw a polyline from the previous point to the current point
+        if (index > 0) {
+            const previousPoint = flightPath[index - 1];
+            const segment = new Polyline({
+                paths: [[[previousPoint.longitude, previousPoint.latitude, previousPoint.altitude],
+                        [longitude, latitude, altitude]]],
+                spatialReference: { wkid: 4326 }
+            });
+
+            const segmentGraphic = new Graphic({
+                geometry: segment,
+                symbol: new SimpleLineSymbol({ color: [0, 0, 0, 0.5], width: 3, style: "solid" })
+            });
+
+            graphicsLayer.add(segmentGraphic);
+        }
     }
 }
 
 function resetSimulation() {
-    clearTimeout(animationTimeout); // Clear any pending timeouts
+    // Reset the index to 0 to start from the beginning
     index = 0;
-    graphicsLayer.removeAll(); // Reset the map to its initial state
-    animationRunning = false;
-    paused = false;
-    rewinding = false;
+
+    // Remove all graphics (markers, paths, etc.)
+    graphicsLayer.removeAll();
+
+    // Restart the animation
+    animationRunning = false; // Stop any ongoing animation
+    startFlightSimulation();  // Restart the flight simulation process
 }
 
 // Add event listeners to buttons for controlling the simulation
