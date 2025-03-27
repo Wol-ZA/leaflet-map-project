@@ -127,25 +127,77 @@ window.loadFlightPath = function(flightData) {
         graphicsLayer.add(planeGraphic);
     };
 
-    window.startFlightSimulation = function() {
-        if (!flightPath.length || animationRunning) return;
+window.startFlightSimulation = function() {
+    if (!flightPath.length || animationRunning) return;
 
-        animationRunning = true;
-        let index = 0;
+    animationRunning = true;
+    let index = 0;
+    let prevTimestamp = Date.now();
+    let prevPosition = flightPath[0];
 
-        function animatePlane() {
-            if (index >= flightPath.length) {
-                animationRunning = false;
-                return;
-            }
+    // Create a text symbol graphic for altitude and speed
+    let textGraphic = new Graphic({
+        geometry: new Point({
+            longitude: prevPosition.longitude,
+            latitude: prevPosition.latitude,
+            z: prevPosition.altitude + 500 // Offset above the plane
+        }),
+        symbol: {
+            type: "text",
+            color: "white",
+            haloColor: "black",
+            haloSize: 1,
+            text: `Alt: ${prevPosition.altitude}m\nSpeed: 0 km/h`,
+            font: { size: 12, weight: "bold" }
+        }
+    });
 
-            const { latitude, longitude, altitude } = flightPath[index];
-            planeGraphic.geometry = new Point({ latitude, longitude, z: altitude });
+    graphicsLayer.add(textGraphic);
 
-            index++;
-            setTimeout(animatePlane, 500); // Adjust speed as needed
+    function animatePlane() {
+        if (index >= flightPath.length) {
+            animationRunning = false;
+            return;
         }
 
-        animatePlane();
-    };
+        const { latitude, longitude, altitude } = flightPath[index];
+        const currentTimestamp = Date.now();
+        const timeDiff = (currentTimestamp - prevTimestamp) / 1000; // Time in seconds
+
+        // Calculate speed (assuming straight-line movement)
+        const distance = calculateDistance(prevPosition, flightPath[index]); // In meters
+        const speed = timeDiff > 0 ? (distance / timeDiff) * 3.6 : 0; // Convert m/s to km/h
+
+        // Update plane position
+        planeGraphic.geometry = new Point({ latitude, longitude, z: altitude });
+
+        // Update text position and content
+        textGraphic.geometry = new Point({ latitude, longitude, z: altitude + 500 });
+        textGraphic.symbol.text = `Alt: ${Math.round(altitude)}m\nSpeed: ${Math.round(speed)} km/h`;
+
+        // Update previous values
+        prevPosition = flightPath[index];
+        prevTimestamp = currentTimestamp;
+
+        index++;
+        setTimeout(animatePlane, 500); // Adjust speed as needed
+    }
+
+    animatePlane();
+};
+
+// Function to calculate distance between two lat/lon points using Haversine formula
+function calculateDistance(point1, point2) {
+    const R = 6371000; // Radius of Earth in meters
+    const lat1 = point1.latitude * (Math.PI / 180);
+    const lat2 = point2.latitude * (Math.PI / 180);
+    const deltaLat = lat2 - lat1;
+    const deltaLon = (point2.longitude - point1.longitude) * (Math.PI / 180);
+
+    const a = Math.sin(deltaLat / 2) ** 2 +
+              Math.cos(lat1) * Math.cos(lat2) * Math.sin(deltaLon / 2) ** 2;
+
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c; // Distance in meters
+}
 });
