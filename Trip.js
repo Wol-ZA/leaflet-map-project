@@ -15,7 +15,7 @@ require([
      "esri/layers/support/LabelClass",
     "esri/geometry/Extent"
 ], function(Map, SceneView, Polygon,Graphic, GraphicsLayer, Point, Polyline, SimpleMarkerSymbol,SimpleFillSymbol, SimpleLineSymbol, PictureMarkerSymbol,TextSymbol,FeatureLayer,LabelClass, Extent) {
-
+    let labelLayer; // Define globally so it's accessible everywhere
     const map = new Map({
         basemap: "topo-vector",
         ground: "world-elevation"
