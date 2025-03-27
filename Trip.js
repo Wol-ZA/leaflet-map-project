@@ -204,7 +204,10 @@ window.startFlightSimulation = function () {
             })
         });
         graphicsLayer.add(waypointGraphic);
-          document.getElementById("altitudeDisplay").innerText = `Altitude: ${Math.round(altitude)}m`;
+         const altitudeFeet = Math.round(altitude * 3.28084);
+
+        // ✅ Update Altitude Display in feet
+        document.getElementById("altitudeDisplay").innerText = `Altitude: ${altitudeFeet} ft`;
         // ✅ Draw Vertical Line
         const verticalLine = new Polyline({
             paths: [[[longitude, latitude, altitude], [longitude, latitude, 0]]],
