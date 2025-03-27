@@ -204,3 +204,4 @@ window.startFlightSimulation = function() {
 
     animatePlane();
 };
+});
