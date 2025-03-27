@@ -30,7 +30,7 @@ require([
             tilt: 75
         }
     });
-
+     view.ui.remove("zoom");
     const graphicsLayer = new GraphicsLayer();
     map.add(graphicsLayer);
 
