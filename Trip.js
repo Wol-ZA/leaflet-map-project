@@ -285,6 +285,8 @@ function rewindSimulation() {
     if (index > 0) {
         // Move back one step
         index--;
+
+        // Get the previous point (since we want to go back to it)
         const { latitude, longitude, altitude } = flightPath[index];
 
         // Update the plane position to the previous waypoint
@@ -294,15 +296,21 @@ function rewindSimulation() {
         const altitudeFeet = Math.round(altitude * 3.28084);
         document.getElementById("altitudeDisplay").innerText = `Altitude: ${altitudeFeet} ft`;
 
-        // Remove the last waypoint and vertical line (remove last graphic twice)
-        graphicsLayer.remove(graphicsLayer.graphics.items[graphicsLayer.graphics.length - 1]); // Remove last waypoint
-        if (graphicsLayer.graphics.items[graphicsLayer.graphics.length - 1].geometry.type === "polyline") {
-            graphicsLayer.remove(graphicsLayer.graphics.items[graphicsLayer.graphics.length - 1]); // Remove last vertical line
+        // Remove the last waypoint (marker) and polyline (path)
+        const lastGraphic = graphicsLayer.graphics.items[graphicsLayer.graphics.length - 1];
+        const secondLastGraphic = graphicsLayer.graphics.items[graphicsLayer.graphics.length - 2];
+
+        // Remove the last waypoint (marker) and vertical line (if it exists)
+        if (lastGraphic) {
+            graphicsLayer.remove(lastGraphic);
+        }
+        if (secondLastGraphic && secondLastGraphic.geometry.type === "polyline") {
+            graphicsLayer.remove(secondLastGraphic); // Remove the last polyline (path)
         }
 
         // Redraw the previous waypoint (the one before the last)
         if (index > 0) {
-            const previousPoint = flightPath[index - 1];  // Correctly access the previous point
+            const previousPoint = flightPath[index - 1];
             const waypointGraphic = new Graphic({
                 geometry: new Point({ longitude: previousPoint.longitude, latitude: previousPoint.latitude, z: previousPoint.altitude }),
                 symbol: new SimpleMarkerSymbol({
@@ -312,15 +320,14 @@ function rewindSimulation() {
                 })
             });
             graphicsLayer.add(waypointGraphic);
-        }
 
-        // Draw a polyline from the previous point to the current point (which is now the previous point)
-        if (index > 0) {
-            const previousPoint = flightPath[index - 1];
+            // Redraw the path (polyline) from the previous point to the current point
             const segment = new Polyline({
                 paths: [
-                    [ [previousPoint.longitude, previousPoint.latitude, previousPoint.altitude],
-                      [longitude, latitude, altitude] ]
+                    [
+                        [previousPoint.longitude, previousPoint.latitude, previousPoint.altitude],
+                        [longitude, latitude, altitude]
+                    ]
                 ],
                 spatialReference: { wkid: 4326 }
             });
@@ -332,9 +339,21 @@ function rewindSimulation() {
 
             graphicsLayer.add(segmentGraphic);
         }
+
+        // Optionally, if the vertical line should be part of the path, redraw it:
+        const verticalLine = new Polyline({
+            paths: [[[longitude, latitude, altitude], [longitude, latitude, 0]]],
+            spatialReference: { wkid: 4326 }
+        });
+
+        const verticalLineGraphic = new Graphic({
+            geometry: verticalLine,
+            symbol: new SimpleLineSymbol({ color: [255, 0, 0, 0.7], width: 2, style: "dash" })
+        });
+
+        graphicsLayer.add(verticalLineGraphic);
     }
 }
-
 
 function resetSimulation() {
     // Reset the index to 0 to start from the beginning
