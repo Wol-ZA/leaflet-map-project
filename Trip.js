@@ -1,17 +1,14 @@
 require([
     "esri/Map",
     "esri/views/SceneView",
-    "esri/geometry/Polygon",
-    "esri/Graphic",
-    "esri/layers/GraphicsLayer",
     "esri/geometry/Point",
     "esri/geometry/Polyline",
+    "esri/Graphic",
+    "esri/layers/GraphicsLayer",
     "esri/symbols/SimpleMarkerSymbol",
-    "esri/symbols/SimpleFillSymbol",
     "esri/symbols/SimpleLineSymbol",
-    "esri/symbols/PictureMarkerSymbol",
-    "esri/geometry/Extent"
-], function(Map, SceneView, Polygon,Graphic, GraphicsLayer, Point, Polyline, SimpleMarkerSymbol,SimpleFillSymbol, SimpleLineSymbol, PictureMarkerSymbol, Extent) {
+    "esri/symbols/TextSymbol"
+], function(Map, SceneView, Point, Polyline, Graphic, GraphicsLayer, SimpleMarkerSymbol, SimpleLineSymbol, TextSymbol) {
 
     const map = new Map({
         basemap: "topo-vector",
@@ -32,85 +29,33 @@ require([
 
     let flightPath = [];
     let planeGraphic = null;
+    let labelGraphic = null;  // ✅ Define labelGraphic globally
     let animationRunning = false;
 
-window.loadFlightPath = function(flightData) {
-    graphicsLayer.removeAll();
-    flightPath = flightData;
+    window.loadFlightPath = function(flightData) {
+        graphicsLayer.removeAll();
+        flightPath = flightData;
 
-    if (flightPath.length === 0) {
-        console.warn("No flight data provided.");
-        return;
-    }
+        if (flightPath.length === 0) {
+            console.warn("No flight data provided.");
+            return;
+        }
 
-    let xmin = Infinity, ymin = Infinity, xmax = -Infinity, ymax = -Infinity;
+        const pathCoordinates = flightData.map(({ latitude, longitude, altitude }) => [longitude, latitude, altitude]);
 
-    const pathCoordinates = flightData.map(({ latitude, longitude, altitude }) => {
-        xmin = Math.min(xmin, longitude);
-        ymin = Math.min(ymin, latitude);
-        xmax = Math.max(xmax, longitude);
-        ymax = Math.max(ymax, latitude);
+        // **Draw Flight Path Polyline**
+        const polyline = new Polyline({ paths: [pathCoordinates] });
 
-        return [longitude, latitude, altitude];
-    });
+        const lineSymbol = new SimpleLineSymbol({
+            color: [0, 255, 0, 0.7], // Green color for the flight path
+            width: 3,
+            style: "solid"
+        });
 
-    // **Draw Flight Path Polyline**
-    const polyline = new Polyline({ paths: [pathCoordinates] });
+        const lineGraphic = new Graphic({ geometry: polyline, symbol: lineSymbol });
+        graphicsLayer.add(lineGraphic);
 
-    const lineSymbol = new SimpleLineSymbol({
-        color: [0, 255, 0, 0.7], // Green color for the flight path
-        width: 3,
-        style: "solid"
-    });
-
-    const lineGraphic = new Graphic({
-        geometry: polyline,
-        symbol: lineSymbol
-    });
-
-    graphicsLayer.add(lineGraphic);
-
-    // **Draw Dotted Vertical Lines to Ground**
-flightData.forEach(({ latitude, longitude, altitude }) => {
-    const verticalLine = new Polyline({
-        paths: [
-            [[longitude, latitude, altitude], [longitude, latitude, 0]]
-        ],
-        spatialReference: { wkid: 4326 }
-    });
-
-    const dottedLineSymbol = new SimpleLineSymbol({
-        color: [255, 0, 0, 0.7], // Red color for visibility
-        width: 2,
-        style: "dash"
-    });
-
-    const verticalLineGraphic = new Graphic({
-        geometry: verticalLine,
-        symbol: dottedLineSymbol
-    });
-
-    graphicsLayer.add(verticalLineGraphic);
-});
-    
-    // **Adjust View to Fit the Flight Path**
-    const extent = new Extent({ xmin, ymin, xmax, ymax, spatialReference: { wkid: 4326 } });
-    view.extent = extent.expand(1.2);
-
-    // 🔥 Unlock the Camera Controls After Zooming
-    setTimeout(() => {
-        view.constraints = {
-            altitude: {
-                min: 10,    // Minimum altitude to prevent camera from going underground
-                max: 100000 // Maximum altitude for zooming out
-            },
-            tilt: {
-                max: 180   // Allow full tilting
-            }
-        };
-    }, 1000); // Delay to let the extent load first
-
-    // **Add Plane Symbol as a Dot**
+        // **Add Plane Symbol as a Dot**
         planeGraphic = new Graphic({
             geometry: new Point({
                 longitude: flightPath[0].longitude,
@@ -126,12 +71,12 @@ flightData.forEach(({ latitude, longitude, altitude }) => {
 
         graphicsLayer.add(planeGraphic);
 
-        // ✅ Ensure labelGraphic is initialized
+        // ✅ Initialize labelGraphic before animation starts
         labelGraphic = new Graphic({
             geometry: new Point({
                 longitude: flightPath[0].longitude,
                 latitude: flightPath[0].latitude,
-                z: flightPath[0].altitude + 500 // Position slightly above the plane
+                z: flightPath[0].altitude + 500 // Position above the plane
             }),
             symbol: new TextSymbol({
                 text: `Altitude: ${flightPath[0].altitude}m\nSpeed: 0 km/h`,
@@ -174,10 +119,17 @@ flightData.forEach(({ latitude, longitude, altitude }) => {
             // Update Plane Position
             planeGraphic.geometry = new Point({ latitude, longitude, z: altitude });
 
-            // ✅ Check if labelGraphic is defined before updating
+            // ✅ Ensure labelGraphic is updated safely
             if (labelGraphic) {
-                labelGraphic.geometry = new Point({ latitude, longitude, z: altitude + 500 }); // Keep label slightly above
-                labelGraphic.symbol.text = `Altitude: ${altitude}m\nSpeed: ${speed.toFixed(2)} km/h`;
+                labelGraphic.geometry = new Point({ latitude, longitude, z: altitude + 500 }); // Keep label above
+                labelGraphic.symbol = new TextSymbol({
+                    text: `Altitude: ${altitude}m\nSpeed: ${speed.toFixed(2)} km/h`,
+                    color: "black",
+                    haloColor: "white",
+                    haloSize: 1,
+                    font: { size: 12, weight: "bold" },
+                    yoffset: 10
+                });
             }
 
             index++;
