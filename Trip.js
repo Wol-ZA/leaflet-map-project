@@ -70,6 +70,29 @@ window.loadFlightPath = function(flightData) {
 
     graphicsLayer.add(lineGraphic);
 
+    // **Draw Dotted Vertical Lines to Ground**
+flightData.forEach(({ latitude, longitude, altitude }) => {
+    const verticalLine = new Polyline({
+        paths: [
+            [[longitude, latitude, altitude], [longitude, latitude, 0]]
+        ],
+        spatialReference: { wkid: 4326 }
+    });
+
+    const dottedLineSymbol = new SimpleLineSymbol({
+        color: [255, 0, 0, 0.7], // Red color for visibility
+        width: 2,
+        style: "dash"
+    });
+
+    const verticalLineGraphic = new Graphic({
+        geometry: verticalLine,
+        symbol: dottedLineSymbol
+    });
+
+    graphicsLayer.add(verticalLineGraphic);
+});
+    
     // **Adjust View to Fit the Flight Path**
     const extent = new Extent({ xmin, ymin, xmax, ymax, spatialReference: { wkid: 4326 } });
     view.extent = extent.expand(1.2);
