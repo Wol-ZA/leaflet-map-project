@@ -152,13 +152,6 @@ window.loadFlightPath = function(flightData) {
 const labelLayer = new FeatureLayer({
     source: [],  // Initially empty
     objectIdField: "ObjectID",
-    renderer: new SimpleRenderer({
-        symbol: new SimpleMarkerSymbol({
-            color: [0, 0, 255], 
-            size: 8, 
-            outline: { color: [255, 255, 255], width: 1 }
-        })
-    }),
     labelingInfo: [
         new LabelClass({
             labelExpressionInfo: { expression: "$feature.labelText" },
