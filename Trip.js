@@ -389,7 +389,7 @@ function removeGraphicsAfterIndex(currentIndex) {
 
 function resetSimulation() {
     // Reset the index to 0 to start from the beginning
-    index = 0;
+    index = 1;
 
     // Remove all graphics (markers, paths, etc.)
     graphicsLayer.removeAll();
