@@ -300,7 +300,6 @@ function resumeSimulation() {
 
 function rewindSimulation() {
     if (index > 0) {
-        index--; // Move back one step
 
         const { latitude, longitude, altitude } = flightPath[index];
 
@@ -313,7 +312,7 @@ function rewindSimulation() {
 
         // ✅ REMOVE ALL GRAPHICS AHEAD OF CURRENT INDEX
         removeGraphicsAfterIndex(index);
-
+        index--;
         // ✅ Redraw the previous waypoint if there is one
         if (index > 0) {
             const previousPoint = flightPath[index - 1];
