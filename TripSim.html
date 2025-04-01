@@ -6,6 +6,7 @@
     <title>2D Flight Path from George to Bloemfontein</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link rel="stylesheet" href="https://js.arcgis.com/4.26/esri/themes/light/main.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://js.arcgis.com/4.26/"></script>
     <style>
         html, body {
@@ -43,6 +44,15 @@
     display: none;
     flex-direction: column; /* Stack buttons vertically */
     gap: 10px; /* Add space between buttons */
+}
+        #altitudeChart {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 150px;
+    background: rgba(0, 0, 0, 0.7);
+    border-top: 2px solid white;
 }
 
         /* Button Styling */
@@ -88,7 +98,7 @@
         <button id="rewindButton"><i class="fas fa-backward"></i></button>
         <button id="resetButton"><i class="fas fa-sync-alt"></i></button>
     </div>
-
+    <canvas id="altitudeChart"></canvas>
     <script src="Trip.js"></script>
 </body>
 </html>
