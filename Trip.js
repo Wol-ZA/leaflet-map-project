@@ -300,21 +300,21 @@ function resumeSimulation() {
 
 function rewindSimulation() {
     if (index > 0) {
-        index--; 
+        index--; // Move back one step
 
         const { latitude, longitude, altitude } = flightPath[index];
 
-        // Update plane position
+        // ✅ Update plane position
         planeGraphic.geometry = new Point({ latitude, longitude, z: altitude });
 
-        // Update altitude display
+        // ✅ Update altitude display
         const altitudeFeet = Math.round(altitude * 3.28084);
         document.getElementById("altitudeDisplay").innerText = `Altitude: ${altitudeFeet} ft`;
 
-        // **REMOVE LAST WAYPOINT, POLYLINE, AND VERTICAL LINE**
-        removeLastGraphics();
+        // ✅ REMOVE ALL GRAPHICS AHEAD OF CURRENT INDEX
+        removeGraphicsAfterIndex(index);
 
-        // ✅ Redraw previous waypoint (if any)
+        // ✅ Redraw the previous waypoint if there is one
         if (index > 0) {
             const previousPoint = flightPath[index - 1];
 
@@ -365,17 +365,17 @@ function rewindSimulation() {
     }
 }
 
-// ✅ **Ensuring Proper Removal**
-function removeLastGraphics() {
-    if (waypointGraphics.length > 0) {
+// ✅ **New Function to Remove Graphics After Current Index**
+function removeGraphicsAfterIndex(currentIndex) {
+    while (waypointGraphics.length > currentIndex) {
         let lastWaypoint = waypointGraphics.pop();
         graphicsLayer.remove(lastWaypoint);
     }
-    if (polylineGraphics.length > 0) {
+    while (polylineGraphics.length > currentIndex) {
         let lastPolyline = polylineGraphics.pop();
         graphicsLayer.remove(lastPolyline);
     }
-    if (verticalLineGraphics.length > 0) {
+    while (verticalLineGraphics.length > currentIndex) {
         let lastVerticalLine = verticalLineGraphics.pop();
         graphicsLayer.remove(lastVerticalLine);
     }
