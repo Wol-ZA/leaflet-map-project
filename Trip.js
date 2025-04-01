@@ -311,18 +311,10 @@ function rewindSimulation() {
         const altitudeFeet = Math.round(altitude * 3.28084);
         document.getElementById("altitudeDisplay").innerText = `Altitude: ${altitudeFeet} ft`;
 
-        // Remove the last waypoint, polyline, and vertical line
-        if (waypointGraphics.length > 0) {
-            graphicsLayer.remove(waypointGraphics.pop());
-        }
-        if (polylineGraphics.length > 0) {
-            graphicsLayer.remove(polylineGraphics.pop());
-        }
-        if (verticalLineGraphics.length > 0) {
-            graphicsLayer.remove(verticalLineGraphics.pop());
-        }
+        // **REMOVE PREVIOUS WAYPOINT, POLYLINE, AND VERTICAL LINE**
+        removeLastGraphics();
 
-        // Redraw previous waypoint
+        // **Redraw previous waypoint**
         if (index > 0) {
             const previousPoint = flightPath[index - 1];
 
@@ -337,7 +329,7 @@ function rewindSimulation() {
             graphicsLayer.add(waypointGraphic);
             waypointGraphics.push(waypointGraphic);
 
-            // Redraw polyline
+            // **Redraw the polyline**
             const segment = new Polyline({
                 paths: [
                     [
@@ -357,7 +349,7 @@ function rewindSimulation() {
             polylineGraphics.push(segmentGraphic);
         }
 
-        // Redraw vertical line
+        // **Redraw vertical line**
         const verticalLine = new Polyline({
             paths: [[[longitude, latitude, altitude], [longitude, latitude, 0]]],
             spatialReference: { wkid: 4326 }
@@ -370,6 +362,22 @@ function rewindSimulation() {
 
         graphicsLayer.add(verticalLineGraphic);
         verticalLineGraphics.push(verticalLineGraphic);
+    }
+}
+
+// **Function to Remove Last Drawn Graphics**
+function removeLastGraphics() {
+    if (waypointGraphics.length > 0) {
+        let lastWaypoint = waypointGraphics.pop();
+        graphicsLayer.remove(lastWaypoint);
+    }
+    if (polylineGraphics.length > 0) {
+        let lastPolyline = polylineGraphics.pop();
+        graphicsLayer.remove(lastPolyline);
+    }
+    if (verticalLineGraphics.length > 0) {
+        let lastVerticalLine = verticalLineGraphics.pop();
+        graphicsLayer.remove(lastVerticalLine);
     }
 }
 
