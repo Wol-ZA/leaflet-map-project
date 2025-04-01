@@ -61,30 +61,35 @@ function loadAltitudeGraph(flightData) {
     let altitudeData = flightData.map(point => parseInt(point.altitude));
     let pointIndices = flightData.map((_, index) => index); // X-axis based on point index
 
-    // Initialize Chart.js
-    const ctx = document.getElementById('altitudeChart').getContext('2d');
-    new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: pointIndices,
-            datasets: [{
-                label: 'Altitude (FT)',
-                data: altitudeData,
-                borderColor: 'rgba(0, 123, 255, 1)',
-                backgroundColor: 'rgba(0, 123, 255, 0.2)',
-                borderWidth: 2,
-                tension: 0.3
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                x: { title: { display: true, text: 'Flight Points' } },
-                y: { title: { display: true, text: 'Altitude (FT)' }, min: 0 }
-            }
+const ctx = document.getElementById('altitudeChart').getContext('2d');
+
+const altitudeData = flightData.map(point => ({
+    x: point.longitude, // Or use index if you want a time-based x-axis
+    y: parseInt(point.altitude)
+}));
+
+new Chart(ctx, {
+    type: 'line',
+    data: {
+        datasets: [{
+            label: 'Altitude (ft)',
+            data: altitudeData,
+            borderColor: 'blue',
+            borderWidth: 2,
+            fill: false,
+            pointRadius: 0, // << REMOVE MARKERS
+            tension: 0.3 // << Makes the line smoother
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            x: { title: { display: true, text: 'Longitude' } },
+            y: { title: { display: true, text: 'Altitude (ft)' } }
         }
-    });
+    }
+});
 }
 
 // Call the function when the flight path loads
