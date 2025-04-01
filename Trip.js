@@ -300,7 +300,7 @@ function resumeSimulation() {
 
 function rewindSimulation() {
     if (index > 0) {
-
+        index--;
         const { latitude, longitude, altitude } = flightPath[index];
 
         // ✅ Update plane position
@@ -312,7 +312,7 @@ function rewindSimulation() {
 
         // ✅ REMOVE ALL GRAPHICS AHEAD OF CURRENT INDEX
         removeGraphicsAfterIndex(index);
-        index--;
+
         // ✅ Redraw the previous waypoint if there is one
         if (index > 0) {
             const previousPoint = flightPath[index - 1];
@@ -374,7 +374,7 @@ function removeGraphicsAfterIndex(currentIndex) {
         let lastPolyline = polylineGraphics.pop();
         graphicsLayer.remove(lastPolyline);
     }
-    while (verticalLineGraphics.length > currentIndex) {
+    while (verticalLineGraphics.length > currentIndex-1) {
         let lastVerticalLine = verticalLineGraphics.pop();
         graphicsLayer.remove(lastVerticalLine);
     }
