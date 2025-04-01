@@ -232,6 +232,11 @@ window.startFlightSimulation = function () {
     if (!flightPath.length || animationRunning) return;
     document.getElementById("Remotes").style.display = "flex";
     // Remove all markers and lines before starting the simulation
+    if (altitudeChartInstance) {
+        altitudeChartInstance.data.labels = []; // Clear the X-axis labels
+        altitudeChartInstance.data.datasets[0].data = []; // Clear the altitude data
+        altitudeChartInstance.update(); // Re-render the chart
+    }
     graphicsLayer.removeAll();
     animationRunning = true;
     index = 0; // Reset index for new simulation
