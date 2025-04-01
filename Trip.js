@@ -73,6 +73,7 @@ function loadAltitudeGraph(flightData) {
                 borderColor: 'rgba(0, 123, 255, 1)',
                 backgroundColor: 'rgba(0, 123, 255, 0.2)',
                 borderWidth: 2,
+                pointRadius: 0,
                 tension: 0.3
             }]
         },
@@ -86,6 +87,7 @@ function loadAltitudeGraph(flightData) {
         }
     });
 }
+// Call the function when the flight path loads
 
     
 window.loadFlightPath = function(flightData) {
@@ -248,7 +250,7 @@ function animatePlane() {
         }
         return;
     }
-
+    
     const { latitude, longitude, altitude } = flightPath[index];
 
     // ✅ Add Waypoint & Store It
@@ -264,7 +266,7 @@ function animatePlane() {
     waypointGraphics.push(waypointGraphic); // 🔴 Store in array
 
     const altitudeFeet = Math.round(altitude * 3.28084);
-    document.getElementById("altitudeDisplay").innerText = Altitude: ${altitudeFeet} ft;
+    document.getElementById("altitudeDisplay").innerText = `Altitude: ${altitudeFeet} ft`;
 
     // ✅ Draw & Store Vertical Line
     const verticalLine = new Polyline({
@@ -294,6 +296,21 @@ function animatePlane() {
         planeGraphic.geometry = new Point({ latitude, longitude, z: altitude });
     }
 
+        if (index >= flightPath.length || paused || rewinding) {
+        if (index >= flightPath.length) {
+            animationRunning = false;
+        }
+        return;
+    }
+
+    // Convert altitude to feet
+    document.getElementById("altitudeDisplay").innerText = `Altitude: ${altitudeFeet} ft`;
+
+    // ✅ Update Altitude Chart
+    altitudeChart.data.labels.push(index); // X-Axis (Flight Step)
+    altitudeChart.data.datasets[0].data.push(altitudeFeet); // Y-Axis (Altitude in ft)
+    altitudeChart.update(); // Refresh the chart
+    
     // ✅ Draw & Store Flight Path Polyline
     if (index > 0) {
         const previousPoint = flightPath[index - 1];
