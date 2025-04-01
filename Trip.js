@@ -304,20 +304,20 @@ function rewindSimulation() {
 
         const { latitude, longitude, altitude } = flightPath[index];
 
-        // ✅ Move the plane to the previous point
+        // ✅ Update plane position
         planeGraphic.geometry = new Point({ latitude, longitude, z: altitude });
 
         // ✅ Update altitude display
         const altitudeFeet = Math.round(altitude * 3.28084);
         document.getElementById("altitudeDisplay").innerText = `Altitude: ${altitudeFeet} ft`;
 
-        // ✅ REMOVE previous graphics before adding new ones
-        removeLastGraphics();
+        // ✅ REMOVE ALL GRAPHICS AHEAD OF CURRENT INDEX
+        removeGraphicsAfterIndex(index);
 
+        // ✅ Redraw the previous waypoint if there is one
         if (index > 0) {
             const previousPoint = flightPath[index - 1];
 
-            // ✅ Add the previous waypoint
             const waypointGraphic = new Graphic({
                 geometry: new Point({ longitude: previousPoint.longitude, latitude: previousPoint.latitude, z: previousPoint.altitude }),
                 symbol: new SimpleMarkerSymbol({
@@ -329,7 +329,7 @@ function rewindSimulation() {
             graphicsLayer.add(waypointGraphic);
             waypointGraphics.push(waypointGraphic);
 
-            // ✅ Add the polyline from the previous point to the current point
+            // ✅ Redraw the polyline
             const segment = new Polyline({
                 paths: [
                     [
@@ -349,7 +349,7 @@ function rewindSimulation() {
             polylineGraphics.push(segmentGraphic);
         }
 
-        // ✅ Now add the vertical line for the CURRENT point
+        // ✅ Redraw vertical line
         const verticalLine = new Polyline({
             paths: [[[longitude, latitude, altitude], [longitude, latitude, 0]]],
             spatialReference: { wkid: 4326 }
@@ -365,23 +365,21 @@ function rewindSimulation() {
     }
 }
 
-// ✅ Fixing removeLastGraphics()
-function removeLastGraphics() {
-    if (waypointGraphics.length > 0) {
+// ✅ **New Function to Remove Graphics After Current Index**
+function removeGraphicsAfterIndex(currentIndex) {
+    while (waypointGraphics.length > currentIndex) {
         let lastWaypoint = waypointGraphics.pop();
         graphicsLayer.remove(lastWaypoint);
     }
-    if (polylineGraphics.length > 0) {
+    while (polylineGraphics.length > currentIndex) {
         let lastPolyline = polylineGraphics.pop();
         graphicsLayer.remove(lastPolyline);
     }
-    if (verticalLineGraphics.length > 0) {
+    while (verticalLineGraphics.length > currentIndex) {
         let lastVerticalLine = verticalLineGraphics.pop();
         graphicsLayer.remove(lastVerticalLine);
     }
 }
-
-
 
 
 function resetSimulation() {
