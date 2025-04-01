@@ -198,7 +198,7 @@ let animationTimeout;
 
 window.startFlightSimulation = function () {
     if (!flightPath.length || animationRunning) return;
-
+    document.getElementById("Remotes").style.display = "flex";
     // Remove all markers and lines before starting the simulation
     graphicsLayer.removeAll();
     animationRunning = true;
