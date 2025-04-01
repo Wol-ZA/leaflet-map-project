@@ -311,13 +311,13 @@ function rewindSimulation() {
         const altitudeFeet = Math.round(altitude * 3.28084);
         document.getElementById("altitudeDisplay").innerText = `Altitude: ${altitudeFeet} ft`;
 
-        // ✅ REMOVE ONLY THE LAST WAYPOINT, POLYLINE, AND ITS CORRESPONDING VERTICAL LINE
+        // ✅ REMOVE last waypoint, polyline, and vertical line correctly
         removeLastGraphics();
 
-        // ✅ Redraw the previous waypoint if there is one
         if (index > 0) {
             const previousPoint = flightPath[index - 1];
 
+            // ✅ Redraw the previous waypoint
             const waypointGraphic = new Graphic({
                 geometry: new Point({ longitude: previousPoint.longitude, latitude: previousPoint.latitude, z: previousPoint.altitude }),
                 symbol: new SimpleMarkerSymbol({
@@ -327,7 +327,7 @@ function rewindSimulation() {
                 })
             });
             graphicsLayer.add(waypointGraphic);
-            waypointGraphics.push(waypointGraphic);
+            waypointGraphics.push(waypointGraphic); // ✅ Track correctly
 
             // ✅ Redraw the polyline
             const segment = new Polyline({
@@ -346,10 +346,10 @@ function rewindSimulation() {
             });
 
             graphicsLayer.add(segmentGraphic);
-            polylineGraphics.push(segmentGraphic);
+            polylineGraphics.push(segmentGraphic); // ✅ Track correctly
         }
 
-        // ✅ Redraw vertical line for the **current index**
+        // ✅ Redraw the vertical line for the **current** index
         const verticalLine = new Polyline({
             paths: [[[longitude, latitude, altitude], [longitude, latitude, 0]]],
             spatialReference: { wkid: 4326 }
@@ -361,25 +361,23 @@ function rewindSimulation() {
         });
 
         graphicsLayer.add(verticalLineGraphic);
-        verticalLineGraphics.push(verticalLineGraphic);
+        verticalLineGraphics.push(verticalLineGraphic); // ✅ Track correctly
     }
 }
 
-// ✅ **Updated removeLastGraphics() to properly track removals**
+// ✅ **Updated removeLastGraphics() to remove the correct elements every time**
 function removeLastGraphics() {
     if (waypointGraphics.length > 0) {
-        let lastWaypoint = waypointGraphics.pop();
-        graphicsLayer.remove(lastWaypoint);
+        graphicsLayer.remove(waypointGraphics.pop());
     }
     if (polylineGraphics.length > 0) {
-        let lastPolyline = polylineGraphics.pop();
-        graphicsLayer.remove(lastPolyline);
+        graphicsLayer.remove(polylineGraphics.pop());
     }
     if (verticalLineGraphics.length > 0) {
-        let lastVerticalLine = verticalLineGraphics.pop();
-        graphicsLayer.remove(lastVerticalLine);
+        graphicsLayer.remove(verticalLineGraphics.pop());
     }
 }
+
 
 
 function resetSimulation() {
