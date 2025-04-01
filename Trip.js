@@ -366,21 +366,23 @@ function rewindSimulation() {
 
 // ✅ **New Function to Remove Graphics After Current Index**
 function removeGraphicsAfterIndex(currentIndex) {
-    console.log(currentIndex);
-    console.log(waypointGraphics);
-    console.log(polylineGraphics);
-    console.log(lastVerticalLine);
-    while (waypointGraphics.length > currentIndex) {
+    while (waypointGraphics.length > currentIndex + 1) {
         let lastWaypoint = waypointGraphics.pop();
         graphicsLayer.remove(lastWaypoint);
     }
     while (polylineGraphics.length > currentIndex) {
-        let lastPolyline = polylineGraphics.pop();
-        graphicsLayer.remove(lastPolyline);
+        let lastPolyline = polylineGraphics[currentIndex]; // Get the correct polyline
+        if (lastPolyline) {
+            graphicsLayer.remove(lastPolyline);
+            polylineGraphics.splice(currentIndex, 1); // Remove the correct one from the array
+        }
     }
     while (verticalLineGraphics.length > currentIndex) {
-        let lastVerticalLine = verticalLineGraphics.pop();
-        graphicsLayer.remove(lastVerticalLine);
+        let lastVerticalLine = verticalLineGraphics[currentIndex]; // Get the correct vertical line
+        if (lastVerticalLine) {
+            graphicsLayer.remove(lastVerticalLine);
+            verticalLineGraphics.splice(currentIndex, 1); // Remove it properly
+        }
     }
 }
 
