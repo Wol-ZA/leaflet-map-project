@@ -21,7 +21,7 @@ require([
         basemap: "topo-vector",
         ground: "world-elevation"
     });
-
+let altitudeChartInstance = null;
 const view = new SceneView({
     container: "viewDiv",
     map: map,
@@ -61,9 +61,8 @@ function loadAltitudeGraph(flightData) {
     let altitudeData = flightData.map(point => parseInt(point.altitude));
     let pointIndices = flightData.map((_, index) => index); // X-axis based on point index
 
-    // Initialize Chart.js
     const ctx = document.getElementById('altitudeChart').getContext('2d');
-    new Chart(ctx, {
+    altitudeChartInstance = new Chart(ctx, {
         type: 'line',
         data: {
             labels: pointIndices,
@@ -263,25 +262,22 @@ function animatePlane() {
         })
     });
     graphicsLayer.add(waypointGraphic);
-    waypointGraphics.push(waypointGraphic); // 🔴 Store in array
+    waypointGraphics.push(waypointGraphic);
+
+    // Update altitude graph (sync with the simulation)
+    if (altitudeChartInstance) {
+        // Add the new altitude to the graph
+        altitudeChartInstance.data.datasets[0].data.push(Math.round(altitude * 3.28084)); // Convert to feet
+        altitudeChartInstance.data.labels.push(index); // X-axis (point index)
+        
+        // Update the chart
+        altitudeChartInstance.update();
+    }
 
     const altitudeFeet = Math.round(altitude * 3.28084);
     document.getElementById("altitudeDisplay").innerText = `Altitude: ${altitudeFeet} ft`;
 
-    // ✅ Draw & Store Vertical Line
-    const verticalLine = new Polyline({
-        paths: [[[longitude, latitude, altitude], [longitude, latitude, 0]]],
-        spatialReference: { wkid: 4326 }
-    });
-
-    const verticalLineGraphic = new Graphic({
-        geometry: verticalLine,
-        symbol: new SimpleLineSymbol({ color: [255, 0, 0, 0.7], width: 2, style: "dash" })
-    });
-    graphicsLayer.add(verticalLineGraphic);
-    verticalLineGraphics.push(verticalLineGraphic); // 🔴 Store in array
-
-    // ✅ Update Plane Position
+    // ✅ Update Plane Position (same as before)
     if (!planeGraphic) {
         planeGraphic = new Graphic({
             geometry: new Point({ latitude, longitude, z: altitude }),
@@ -295,8 +291,8 @@ function animatePlane() {
     } else {
         planeGraphic.geometry = new Point({ latitude, longitude, z: altitude });
     }
-   
-    // ✅ Draw & Store Flight Path Polyline
+
+    // ✅ Draw & Store Flight Path Polyline (same as before)
     if (index > 0) {
         const previousPoint = flightPath[index - 1];
         const segment = new Polyline({
@@ -311,13 +307,13 @@ function animatePlane() {
         });
 
         graphicsLayer.add(segmentGraphic);
-        polylineGraphics.push(segmentGraphic); // 🔴 Store in array
+        polylineGraphics.push(segmentGraphic);
     }
 
     index++;
 
     if (animationRunning) {
-        animationTimeout = setTimeout(animatePlane, 500);
+        animationTimeout = setTimeout(animatePlane, 500); // Repeat the animation
     }
 }
 
