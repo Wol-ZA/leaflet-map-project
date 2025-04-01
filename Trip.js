@@ -272,16 +272,27 @@ function animatePlane() {
     // Update altitude graph (sync with the simulation)
     if (altitudeChartInstance) {
         // Add the new altitude to the graph
-        altitudeChartInstance.data.datasets[0].data.push(Math.round(altitude * 3.28084)); // Convert to feet
+        altitudeChartInstance.data.datasets[0].data.push(altitude * 3.28084); // Convert to feet
         altitudeChartInstance.data.labels.push(index); // X-axis (point index)
         
         // Update the chart
         altitudeChartInstance.update();
     }
 
-    const altitudeFeet = Math.round(altitude * 3.28084);
+    const altitudeFeet = altitude * 3.28084;
     document.getElementById("altitudeDisplay").innerText = `Altitude: ${altitudeFeet} ft`;
+    
+     const verticalLine = new Polyline({
+        paths: [[[longitude, latitude, altitude], [longitude, latitude, 0]]],
+        spatialReference: { wkid: 4326 }
+    });
 
+    const verticalLineGraphic = new Graphic({
+        geometry: verticalLine,
+        symbol: new SimpleLineSymbol({ color: [255, 0, 0, 0.7], width: 2, style: "dash" })
+    });
+    graphicsLayer.add(verticalLineGraphic);
+    verticalLineGraphics.push(verticalLineGraphic); // 🔴 Store in array
     // ✅ Update Plane Position (same as before)
     if (!planeGraphic) {
         planeGraphic = new Graphic({
