@@ -311,8 +311,8 @@ function rewindSimulation() {
         const altitudeFeet = Math.round(altitude * 3.28084);
         document.getElementById("altitudeDisplay").innerText = `Altitude: ${altitudeFeet} ft`;
 
-        // ✅ REMOVE ALL GRAPHICS AHEAD OF CURRENT INDEX
-        removeGraphicsAfterIndex(index);
+        // ✅ REMOVE ONLY THE LAST WAYPOINT, POLYLINE, AND ITS CORRESPONDING VERTICAL LINE
+        removeLastGraphics();
 
         // ✅ Redraw the previous waypoint if there is one
         if (index > 0) {
@@ -349,7 +349,7 @@ function rewindSimulation() {
             polylineGraphics.push(segmentGraphic);
         }
 
-        // ✅ Redraw vertical line
+        // ✅ Redraw vertical line for the **current index**
         const verticalLine = new Polyline({
             paths: [[[longitude, latitude, altitude], [longitude, latitude, 0]]],
             spatialReference: { wkid: 4326 }
@@ -365,17 +365,17 @@ function rewindSimulation() {
     }
 }
 
-// ✅ **New Function to Remove Graphics After Current Index**
-function removeGraphicsAfterIndex(currentIndex) {
-    while (waypointGraphics.length > currentIndex) {
+// ✅ **Updated removeLastGraphics() to properly track removals**
+function removeLastGraphics() {
+    if (waypointGraphics.length > 0) {
         let lastWaypoint = waypointGraphics.pop();
         graphicsLayer.remove(lastWaypoint);
     }
-    while (polylineGraphics.length > currentIndex) {
+    if (polylineGraphics.length > 0) {
         let lastPolyline = polylineGraphics.pop();
         graphicsLayer.remove(lastPolyline);
     }
-    while (verticalLineGraphics.length > currentIndex) {
+    if (verticalLineGraphics.length > 0) {
         let lastVerticalLine = verticalLineGraphics.pop();
         graphicsLayer.remove(lastVerticalLine);
     }
