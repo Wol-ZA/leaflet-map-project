@@ -304,20 +304,20 @@ function rewindSimulation() {
 
         const { latitude, longitude, altitude } = flightPath[index];
 
-        // ✅ Update plane position
+        // ✅ Move the plane to the previous point
         planeGraphic.geometry = new Point({ latitude, longitude, z: altitude });
 
         // ✅ Update altitude display
         const altitudeFeet = Math.round(altitude * 3.28084);
         document.getElementById("altitudeDisplay").innerText = `Altitude: ${altitudeFeet} ft`;
 
-        // ✅ REMOVE last waypoint, polyline, and vertical line correctly
+        // ✅ REMOVE previous graphics before adding new ones
         removeLastGraphics();
 
         if (index > 0) {
             const previousPoint = flightPath[index - 1];
 
-            // ✅ Redraw the previous waypoint
+            // ✅ Add the previous waypoint
             const waypointGraphic = new Graphic({
                 geometry: new Point({ longitude: previousPoint.longitude, latitude: previousPoint.latitude, z: previousPoint.altitude }),
                 symbol: new SimpleMarkerSymbol({
@@ -327,9 +327,9 @@ function rewindSimulation() {
                 })
             });
             graphicsLayer.add(waypointGraphic);
-            waypointGraphics.push(waypointGraphic); // ✅ Track correctly
+            waypointGraphics.push(waypointGraphic);
 
-            // ✅ Redraw the polyline
+            // ✅ Add the polyline from the previous point to the current point
             const segment = new Polyline({
                 paths: [
                     [
@@ -346,10 +346,10 @@ function rewindSimulation() {
             });
 
             graphicsLayer.add(segmentGraphic);
-            polylineGraphics.push(segmentGraphic); // ✅ Track correctly
+            polylineGraphics.push(segmentGraphic);
         }
 
-        // ✅ Redraw the vertical line for the **current** index
+        // ✅ Now add the vertical line for the CURRENT point
         const verticalLine = new Polyline({
             paths: [[[longitude, latitude, altitude], [longitude, latitude, 0]]],
             spatialReference: { wkid: 4326 }
@@ -361,22 +361,26 @@ function rewindSimulation() {
         });
 
         graphicsLayer.add(verticalLineGraphic);
-        verticalLineGraphics.push(verticalLineGraphic); // ✅ Track correctly
+        verticalLineGraphics.push(verticalLineGraphic);
     }
 }
 
-// ✅ **Updated removeLastGraphics() to remove the correct elements every time**
+// ✅ Fixing removeLastGraphics()
 function removeLastGraphics() {
     if (waypointGraphics.length > 0) {
-        graphicsLayer.remove(waypointGraphics.pop());
+        let lastWaypoint = waypointGraphics.pop();
+        graphicsLayer.remove(lastWaypoint);
     }
     if (polylineGraphics.length > 0) {
-        graphicsLayer.remove(polylineGraphics.pop());
+        let lastPolyline = polylineGraphics.pop();
+        graphicsLayer.remove(lastPolyline);
     }
     if (verticalLineGraphics.length > 0) {
-        graphicsLayer.remove(verticalLineGraphics.pop());
+        let lastVerticalLine = verticalLineGraphics.pop();
+        graphicsLayer.remove(lastVerticalLine);
     }
 }
+
 
 
 
