@@ -206,33 +206,36 @@ window.startFlightSimulation = function () {
     animatePlane();
 };
 
+let waypointGraphics = [];
+let polylineGraphics = [];
+let verticalLineGraphics = [];
+
 function animatePlane() {
     if (index >= flightPath.length || paused || rewinding) {
         if (index >= flightPath.length) {
             animationRunning = false;
         }
-        return; // Exit if paused or rewinding or end of trip
+        return;
     }
 
     const { latitude, longitude, altitude } = flightPath[index];
 
-    // ✅ Add Waypoint
+    // ✅ Add Waypoint & Store It
     const waypointGraphic = new Graphic({
         geometry: new Point({ longitude, latitude, z: altitude }),
         symbol: new SimpleMarkerSymbol({
-            color: [255, 0, 0], // Red
+            color: [255, 0, 0],
             size: 6,
             outline: { color: [255, 255, 255], width: 1 }
         })
     });
     graphicsLayer.add(waypointGraphic);
+    waypointGraphics.push(waypointGraphic); // 🔴 Store in array
 
     const altitudeFeet = Math.round(altitude * 3.28084);
-
-    // ✅ Update Altitude Display in feet
     document.getElementById("altitudeDisplay").innerText = `Altitude: ${altitudeFeet} ft`;
 
-    // ✅ Draw Vertical Line
+    // ✅ Draw & Store Vertical Line
     const verticalLine = new Polyline({
         paths: [[[longitude, latitude, altitude], [longitude, latitude, 0]]],
         spatialReference: { wkid: 4326 }
@@ -243,13 +246,14 @@ function animatePlane() {
         symbol: new SimpleLineSymbol({ color: [255, 0, 0, 0.7], width: 2, style: "dash" })
     });
     graphicsLayer.add(verticalLineGraphic);
+    verticalLineGraphics.push(verticalLineGraphic); // 🔴 Store in array
 
     // ✅ Update Plane Position
     if (!planeGraphic) {
         planeGraphic = new Graphic({
             geometry: new Point({ latitude, longitude, z: altitude }),
             symbol: new SimpleMarkerSymbol({
-                color: [0, 0, 255], // Blue
+                color: [0, 0, 255],
                 size: 8,
                 outline: { color: [255, 255, 255], width: 1 }
             })
@@ -259,7 +263,7 @@ function animatePlane() {
         planeGraphic.geometry = new Point({ latitude, longitude, z: altitude });
     }
 
-    // ✅ Draw Flight Path Polyline incrementally
+    // ✅ Draw & Store Flight Path Polyline
     if (index > 0) {
         const previousPoint = flightPath[index - 1];
         const segment = new Polyline({
@@ -274,13 +278,13 @@ function animatePlane() {
         });
 
         graphicsLayer.add(segmentGraphic);
+        polylineGraphics.push(segmentGraphic); // 🔴 Store in array
     }
 
     index++;
 
-    // Continue the animation if it's not paused or rewinding
     if (animationRunning) {
-        animationTimeout = setTimeout(animatePlane, 500); // Set a timeout for smooth animation
+        animationTimeout = setTimeout(animatePlane, 500);
     }
 }
 
@@ -294,13 +298,9 @@ function resumeSimulation() {
     animatePlane(); // Resume the animation from where it was paused
 }
 
-let waypointGraphics = [];
-let polylineGraphics = [];
-let verticalLineGraphics = [];
-
 function rewindSimulation() {
     if (index > 0) {
-        index--; // Move back one step
+        index--; 
 
         const { latitude, longitude, altitude } = flightPath[index];
 
@@ -311,10 +311,10 @@ function rewindSimulation() {
         const altitudeFeet = Math.round(altitude * 3.28084);
         document.getElementById("altitudeDisplay").innerText = `Altitude: ${altitudeFeet} ft`;
 
-        // **REMOVE PREVIOUS WAYPOINT, POLYLINE, AND VERTICAL LINE**
+        // **REMOVE LAST WAYPOINT, POLYLINE, AND VERTICAL LINE**
         removeLastGraphics();
 
-        // **Redraw previous waypoint**
+        // ✅ Redraw previous waypoint (if any)
         if (index > 0) {
             const previousPoint = flightPath[index - 1];
 
@@ -329,7 +329,7 @@ function rewindSimulation() {
             graphicsLayer.add(waypointGraphic);
             waypointGraphics.push(waypointGraphic);
 
-            // **Redraw the polyline**
+            // ✅ Redraw the polyline
             const segment = new Polyline({
                 paths: [
                     [
@@ -349,7 +349,7 @@ function rewindSimulation() {
             polylineGraphics.push(segmentGraphic);
         }
 
-        // **Redraw vertical line**
+        // ✅ Redraw vertical line
         const verticalLine = new Polyline({
             paths: [[[longitude, latitude, altitude], [longitude, latitude, 0]]],
             spatialReference: { wkid: 4326 }
@@ -365,7 +365,7 @@ function rewindSimulation() {
     }
 }
 
-// **Function to Remove Last Drawn Graphics**
+// ✅ **Ensuring Proper Removal**
 function removeLastGraphics() {
     if (waypointGraphics.length > 0) {
         let lastWaypoint = waypointGraphics.pop();
@@ -380,6 +380,7 @@ function removeLastGraphics() {
         graphicsLayer.remove(lastVerticalLine);
     }
 }
+
 
 function resetSimulation() {
     // Reset the index to 0 to start from the beginning
