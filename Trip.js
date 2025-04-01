@@ -374,7 +374,7 @@ function removeGraphicsAfterIndex(currentIndex) {
         let lastPolyline = polylineGraphics.pop();
         graphicsLayer.remove(lastPolyline);
     }
-    while (verticalLineGraphics.length > currentIndex-1) {
+    while (verticalLineGraphics.length > currentIndex+1) {
         let lastVerticalLine = verticalLineGraphics.pop();
         graphicsLayer.remove(lastVerticalLine);
     }
