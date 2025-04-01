@@ -58,7 +58,6 @@ view.constraints = {
     let planeGraphic = null;
 
 function loadAltitudeGraph(flightData) {
-    let altitudeData = flightData.map(point => parseInt(point.altitude));
     let pointIndices = flightData.map((_, index) => index); // X-axis based on point index
 
 const ctx = document.getElementById('altitudeChart').getContext('2d');
