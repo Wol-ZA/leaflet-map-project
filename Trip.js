@@ -303,8 +303,6 @@ function animatePlane() {
         return;
     }
 
-    const { latitude, longitude, altitude } = flightPath[index];
-
     // Convert altitude to feet
     const altitudeFeet = Math.round(altitude * 3.28084);
     document.getElementById("altitudeDisplay").innerText = `Altitude: ${altitudeFeet} ft`;
