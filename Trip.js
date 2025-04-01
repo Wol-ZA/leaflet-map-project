@@ -86,6 +86,7 @@ let altitudeChart = new Chart(ctx, {  // Store chart instance globally
         }
     }
 });
+}
 // Call the function when the flight path loads
 
     
