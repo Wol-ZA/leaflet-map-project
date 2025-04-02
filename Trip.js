@@ -114,7 +114,7 @@ window.loadFlightPath = function(flightData) {
         geometry: new Point({
             longitude,
             latitude,
-            z: altitude
+            z: altitude * 3.28084
         }),
         symbol: new SimpleMarkerSymbol({
             color: [255, 0, 0], // Red color
@@ -187,7 +187,7 @@ window.loadFlightPath = function(flightData) {
             geometry: new Point({
                 longitude: flightPath[0].longitude,
                 latitude: flightPath[0].latitude,
-                z: flightPath[0].altitude
+                z: flightPath[0].altitude * 3.28084
             }),
             symbol: new SimpleMarkerSymbol({
                 color: [0, 0, 255], // Blue color for the dot
