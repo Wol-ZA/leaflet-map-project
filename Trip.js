@@ -68,7 +68,7 @@ function loadAltitudeGraph(flightData) {
             labels: pointIndices,
             datasets: [{
                 label: 'Altitude (FT)',
-                data: altitudeData * 3.28084,
+                data: altitudeData,
                 borderColor: 'rgba(0, 123, 255, 1)',
                 backgroundColor: 'rgba(0, 123, 255, 0.2)',
                 borderWidth: 2,
