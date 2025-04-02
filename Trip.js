@@ -106,7 +106,7 @@ window.loadFlightPath = function(flightData) {
         xmax = Math.max(xmax, longitude);
         ymax = Math.max(ymax, latitude);
 
-        return [longitude, latitude, altitude];
+        return [longitude, latitude, altitude  * 3.28084];
     });
       // **Plot Waypoints**
     flightData.forEach(({ latitude, longitude, altitude }) => {
