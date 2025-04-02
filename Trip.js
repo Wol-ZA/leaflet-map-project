@@ -58,7 +58,7 @@ view.constraints = {
     let planeGraphic = null;
 
 function loadAltitudeGraph(flightData) {
-    let altitudeData = flightData.map(point => parseInt(point.altitude));
+    let altitudeData = flightData.map(point => parseInt(point.altitude * 3.28084));
     let pointIndices = flightData.map((_, index) => index); // X-axis based on point index
 
     const ctx = document.getElementById('altitudeChart').getContext('2d');
@@ -131,7 +131,7 @@ window.loadFlightPath = function(flightData) {
     flightData.forEach(({ latitude, longitude, altitude }) => {
     const verticalLine = new Polyline({
         paths: [
-            [[longitude, latitude, altitude], [longitude, latitude, 0]]
+            [[longitude, latitude, altitude * 3.28084], [longitude, latitude, 0]]
         ],
         spatialReference: { wkid: 4326 }
     });
