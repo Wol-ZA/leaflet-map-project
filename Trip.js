@@ -279,7 +279,7 @@ function animatePlane() {
         altitudeChartInstance.update();
     }
 
-    const altitudeFeet = altitude;
+    const altitudeFeet = altitude * 3.28084;
     document.getElementById("altitudeDisplay").innerText = `Altitude: ${altitudeFeet} ft`;
     
      const verticalLine = new Polyline({
@@ -352,7 +352,7 @@ function rewindSimulation() {
         planeGraphic.geometry = new Point({ latitude, longitude, z: altitude });
 
         // ✅ Update altitude display
-        const altitudeFeet = Math.round(altitude);
+        const altitudeFeet = Math.round(altitude * 3.28084);
         document.getElementById("altitudeDisplay").innerText = `Altitude: ${altitudeFeet} ft`;
 
         // ✅ REMOVE ALL GRAPHICS AHEAD OF CURRENT INDEX
