@@ -4,8 +4,8 @@ const CACHE_NAME = 'arcgis-map-cache-v1';
 const urlsToCache = [
   '/leaflet-map-project/',                     // your index.html
   '/leaflet-map-project/Offline.html',           // explicitly cache index.html
-  'https://js.arcgis.com/4.28/',                       // ArcGIS API base
-  'https://js.arcgis.com/4.28/esri/themes/light/main.css', // ArcGIS CSS
+  '/leaflet-map-project/arcgis/init.js',
+  '/leaflet-map-project/arcgis/esri/themes/light/main.css', // ArcGIS CSS
 ];
 
 // Install event: cache files
