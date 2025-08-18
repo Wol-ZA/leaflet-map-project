@@ -58,223 +58,165 @@
 
     #controls {
       position: absolute; left: 370px; top: 10px; z-index: 1000;
-      background: rgba(255,255,255,0.95); padding: 10px 12px; border-radius: 10px; 
-      box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+      background: rgba(255,255,255,0.95); padding: 10px 12px; border-radius: 10px; box-shadow: 0 6px 20px rgba(0,0,0,0.15);
       font: 14px/1.3 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif;
     }
-
     button { cursor:pointer; border:0; border-radius: 8px; padding: 8px 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
   </style>
 </head>
 <body>
-<div id="map"></div>
-<div id="controls">
-  <button id="startBtn">Start</button>
-  <button id="pauseBtn">Pause</button>
-  <button id="resetBtn">Reset</button>
-</div>
-<div id="leaderboard">
-  <h3>🏁 Accuracy Leaderboard</h3>
-  <small>(Lower avg deviation wins)</small>
-  <ol id="lb"></ol>
-</div>
+  <div id="map"></div>
+  <div id="controls">
+    <button id="startBtn">Start</button>
+    <button id="pauseBtn">Pause</button>
+    <button id="resetBtn">Reset</button>
+  </div>
+  <div id="leaderboard">
+    <h3>🏁 Accuracy Leaderboard</h3>
+    <small>(Lower avg deviation wins)</small>
+    <ol id="lb"></ol>
+  </div>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script>
-  // --- Map setup
-  const map = L.map('map').setView([-27.0215, 26.2227], 13);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap contributors'
-  }).addTo(map);
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    const map = L.map('map').setView([-27.3, 26], 8);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap contributors' }).addTo(map);
 
-  // --- Helpers
-  const LAT_METERS = 111320;
-  const LNG_METERS_AT_LAT = (lat) => 111320 * Math.cos(lat * Math.PI/180);
-  const metersToDeg = (lat, dxMeters, dyMeters) => {
-    const dLat = dyMeters / LAT_METERS;
-    const dLng = dxMeters / LNG_METERS_AT_LAT(lat);
-    return [dLat, dLng];
-  };
+    let route = [];
+    let segments = [];
+    let pilots = [];
+    const pilotColors = ['#ef4444', '#3b82f6', '#22c55e', '#f59e0b', '#a855f7'];
+    const pilotNames = ['Alpha', 'Bravo', 'Charlie', 'Delta', 'Echo'];
+    let raceData = [];
 
-  // --- Pilot setup constants
-  const pilotColors = ['#ef4444', '#3b82f6', '#22c55e', '#f59e0b', '#a855f7'];
-  const pilotNames = ['Alpha', 'Bravo', 'Charlie', 'Delta', 'Echo'];
-  const SPEED_MPS = 470;
-  const TICK_MS = 50;
-  const START_STAGGER_MS = 8000;
-  const MAX_XTRACK_METERS = 80;
-  const NOISE_PER_TICK_METERS = 10.0;
-  const CORRECTION_GAIN = 0.015;
-  const SMOOTHING = 0.90;
-  let pilots = [];
-  let route = [];
-  let segments = [];
+    // --- Helpers
+    const LAT_METERS = 111320;
+    const LNG_METERS_AT_LAT = (lat) => 111320 * Math.cos(lat * Math.PI/180);
+    const metersToDeg = (lat, dxMeters, dyMeters) => {
+      const dLat = dyMeters / LAT_METERS;
+      const dLng = dxMeters / LNG_METERS_AT_LAT(lat);
+      return [dLat, dLng];
+    };
 
-  // --- Load route from GeoJSON
-  fetch("route.geojson")
-    .then(res => res.json())
-    .then(data => {
-      // Sort features by route order (FP → T1 → T2 → ... → SP)
-      const order = ["Fp","T1","T2","T3","T4","T5","T6","T7","T8","T9","SP"];
-      const sorted = order.map(name => data.features.find(f => f.properties.name === name));
+    // --- Load route.geojson
+    fetch("route.geojson")
+      .then(res => res.json())
+      .then(data => {
+        const order = ["Fp","T1","T2","T3","T4","T5","T6","T7","T8","T9","SP"];
+        const sorted = order.map(name => data.features.find(f => f.properties.name === name));
+        route = sorted.map(f => [f.geometry.coordinates[1], f.geometry.coordinates[0]]);
+        const routeLine = L.polyline(route, { color: 'black', weight: 3, dashArray: '6,10' }).addTo(map);
+        map.fitBounds(routeLine.getBounds().pad(0.2));
 
-      route = sorted.map(f => [f.geometry.coordinates[1], f.geometry.coordinates[0]]);
+        // Build segments
+        segments = [];
+        for (let i = 0; i < route.length - 1; i++) {
+          const a = L.latLng(route[i]);
+          const b = L.latLng(route[i+1]);
+          segments.push({ a, b, len: a.distanceTo(b) });
+        }
 
-      // Draw polyline
-      const routeLine = L.polyline(route, { color: 'black', weight: 3, dashArray: '6,10' }).addTo(map);
-      map.fitBounds(routeLine.getBounds().pad(0.2));
+        // Load race GeoJSON files
+        const raceFiles = ["Race1.geojson","Race2.geojson","Race3.geojson","Race4.geojson","Race5.geojson"];
+        return Promise.all(raceFiles.map(f => fetch(f).then(res => res.json())));
+      })
+      .then(races => {
+        raceData = races.map(r => r.features[0].geometry.coordinates.map(c => L.latLng(c[1], c[0], c[2] || 100)));
+        createPilotsFromData();
+        start();
+      })
+      .catch(err => console.error("Error loading route or races:", err));
 
-      // Build segments
-      segments = [];
-      for (let i = 0; i < route.length - 1; i++) {
-        const a = L.latLng(route[i]);
-        const b = L.latLng(route[i+1]);
-        const len = a.distanceTo(b);
-        segments.push({ a, b, len });
+    function createPilotsFromData() {
+      pilots = [];
+      for (let i = 0; i < raceData.length; i++) {
+        const coords = raceData[i];
+        const marker = L.circleMarker(coords[0], { color: pilotColors[i], radius: 7, weight: 3, fillOpacity: 0.9 }).addTo(map);
+        const trail = L.polyline([coords[0]], { color: pilotColors[i], weight: 3, opacity: 0.9 }).addTo(map);
+        pilots.push({
+          name: pilotNames[i],
+          color: pilotColors[i],
+          marker,
+          trail,
+          coords,
+          index: 0,
+          started: true,
+          finished: false,
+          totalMeters: 0,
+          avgDevSum: 0,
+          avgDevCount: 0,
+          altitude: coords[0].alt || 100
+        });
       }
+    }
 
-      // Create pilots and start simulation
-      createPilots();
-      start();
-    })
-    .catch(err => console.error("Error loading route:", err));
+    // --- Animate pilots
+    let timer = null;
+    let lastTs = null;
+    const SPEED_MPS = 1870;
 
-  function createPilots() {
-    pilots = [];
-    for (let i = 0; i < 5; i++) {
-      const marker = L.circleMarker(route[0], { color: pilotColors[i], radius: 7, weight: 3, fillOpacity: 0.9 }).addTo(map);
-      const trail = L.polyline([route[0]], { color: pilotColors[i], weight: 3, opacity: 0.9 }).addTo(map);
-      const altitude = 100 + Math.random()*50;
+    function tick(ts) {
+      if (!lastTs) lastTs = ts;
+      const dt = (ts - lastTs) / 1000;
+      lastTs = ts;
 
-      pilots.push({
-        name: pilotNames[i],
-        color: pilotColors[i],
-        marker,
-        trail,
-        segIndex: 0,
-        segMeters: 0,
-        totalMeters: 0,
-        started: false,
-        finished: false,
-        avgDevSum: 0,
-        avgDevCount: 0,
-        xtrack: 0,
-        xtrackVel: 0,
-        driftBias: (Math.random()*2-1) * 5.0,
-        altitude: altitude
+      pilots.forEach(p => {
+        if (p.finished) return;
+
+        const nextIndex = Math.min(p.index + 1, p.coords.length - 1);
+        const current = p.coords[p.index];
+        const next = p.coords[nextIndex];
+        const stepDist = current.distanceTo(next);
+        p.totalMeters += stepDist;
+
+        const xtrack = 0; // or add drift if desired
+        p.avgDevSum += Math.abs(xtrack);
+        p.avgDevCount += 1;
+
+        p.altitude = next.alt || 100;
+
+        p.marker.setLatLng(next);
+        p.trail.addLatLng(next);
+
+        p.index = nextIndex;
+        if (p.index >= p.coords.length - 1) p.finished = true;
       });
 
-      setTimeout(() => { pilots[i].started = true; }, i * START_STAGGER_MS);
+      updateLeaderboard();
+      timer = requestAnimationFrame(tick);
     }
-  }
 
-  function advanceAlongRoute(p, meters) {
-    if (p.finished) return segments[segments.length-1].b;
-    let m = meters;
-    while (m > 0 && !p.finished) {
-      const seg = segments[p.segIndex];
-      const remaining = seg.len - p.segMeters;
-      if (m < remaining) {
-        p.segMeters += m;
-        m = 0;
-      } else {
-        m -= remaining;
-        p.segIndex++;
-        p.segMeters = 0;
-        if (p.segIndex >= segments.length) {
-          p.finished = true;
-          p.segIndex = segments.length - 1;
-          p.segMeters = segments[segments.length-1].len;
-          break;
-        }
-      }
+    function start() { if (!timer) { lastTs=null; timer=requestAnimationFrame(tick); } }
+    function pause() { if (timer) { cancelAnimationFrame(timer); timer=null; } }
+    function reset() {
+      pause();
+      pilots.forEach(p => { map.removeLayer(p.marker); map.removeLayer(p.trail); });
+      createPilotsFromData();
     }
-    const seg = segments[p.segIndex];
-    const t = Math.min(1, seg.len === 0 ? 1 : p.segMeters / seg.len);
-    return L.latLng(seg.a.lat + (seg.b.lat - seg.a.lat)*t, seg.a.lng + (seg.b.lng - seg.a.lng)*t);
-  }
 
-  function segmentRightNormal(seg) {
-    const dx = seg.b.lng - seg.a.lng;
-    const dy = seg.b.lat - seg.a.lat;
-    const mag = Math.sqrt(dx*dx + dy*dy) || 1;
-    return { nx: dy / mag, ny: -dx / mag };
-  }
+    document.getElementById('startBtn').onclick = start;
+    document.getElementById('pauseBtn').onclick = pause;
+    document.getElementById('resetBtn').onclick = reset;
 
-  let timer = null;
-  let lastTs = null;
+    function updateLeaderboard() {
+      const lb = document.getElementById('lb');
+      const ranked = [...pilots].map(p => ({
+        name: p.name,
+        color: p.color,
+        avgDev: p.avgDevCount ? p.avgDevSum/p.avgDevCount : Infinity,
+        distKm: p.totalMeters/1000,
+        altitude: p.altitude.toFixed(1),
+        finished: p.finished
+      })).sort((a,b)=>a.avgDev-b.avgDev);
 
-  function tick(ts) {
-    if (!lastTs) lastTs = ts;
-    const dt = (ts - lastTs) / 1000;
-    lastTs = ts;
-
-    pilots.forEach(p => {
-      if (!p.started || p.finished) return;
-
-      const centerBefore = advanceAlongRoute(p, SPEED_MPS * dt);
-
-      const noise = (Math.random()*2 - 1) * NOISE_PER_TICK_METERS;
-      p.xtrackVel = SMOOTHING*p.xtrackVel + (1-SMOOTHING)*(noise + p.driftBias*0.02);
-      const correction = -CORRECTION_GAIN * p.xtrack;
-      p.xtrack += (p.xtrackVel + correction);
-      if (p.xtrack > MAX_XTRACK_METERS) p.xtrack = MAX_XTRACK_METERS;
-      if (p.xtrack < -MAX_XTRACK_METERS) p.xtrack = -MAX_XTRACK_METERS;
-
-      const seg = segments[p.segIndex];
-      const { nx, ny } = segmentRightNormal(seg);
-      const lat = centerBefore.lat;
-      const [dLat, dLng] = metersToDeg(lat, p.xtrack*nx, p.xtrack*ny);
-      const pos = L.latLng(centerBefore.lat+dLat, centerBefore.lng+dLng);
-
-      const last = p.marker.getLatLng();
-      const stepDist = pos.distanceTo(last);
-      p.totalMeters += stepDist;
-      p.avgDevSum += Math.abs(p.xtrack);
-      p.avgDevCount += 1;
-
-      p.altitude += (Math.random()*2-1) * 0.5;
-
-      p.marker.setLatLng(pos);
-      p.trail.addLatLng(pos);
-    });
-
-    updateLeaderboard();
-    timer = requestAnimationFrame(tick);
-  }
-
-  function start() { if (!timer) { lastTs=null; timer=requestAnimationFrame(tick); } }
-  function pause() { if (timer) { cancelAnimationFrame(timer); timer=null; } }
-  function reset() { 
-    pause();
-    pilots.forEach(p => { map.removeLayer(p.marker); map.removeLayer(p.trail); });
-    createPilots(); 
-  }
-
-  document.getElementById('startBtn').onclick = start;
-  document.getElementById('pauseBtn').onclick = pause;
-  document.getElementById('resetBtn').onclick = reset;
-
-  function updateLeaderboard() {
-    const lb = document.getElementById('lb');
-    const ranked = [...pilots].map(p => ({
-      name: p.name,
-      color: p.color,
-      avgDev: p.avgDevCount ? p.avgDevSum/p.avgDevCount : Infinity,
-      distKm: p.totalMeters/1000,
-      altitude: p.altitude.toFixed(1),
-      finished: p.finished,
-      started: p.started
-    })).sort((a,b)=>a.avgDev-b.avgDev);
-
-    lb.innerHTML = '';
-    ranked.forEach(r => {
-      const li = document.createElement('li');
-      li.innerHTML = `<span style="color:${r.color}; font-weight:bold">${r.name}</span>
-                      <span class="stats">Dev: ${isFinite(r.avgDev)?r.avgDev.toFixed(1)+' m':'—'} · Dist: ${r.distKm.toFixed(2)} km · Alt: ${r.altitude} m ${r.finished?'✅':''} ${!r.started?'(waiting)':''}</span>`;
-      lb.appendChild(li);
-    });
-  }
-</script>
+      lb.innerHTML = '';
+      ranked.forEach(r => {
+        const li = document.createElement('li');
+        li.innerHTML = `<span style="color:${r.color}; font-weight:bold">${r.name}</span>
+                        <span class="stats">Dev: ${isFinite(r.avgDev)?r.avgDev.toFixed(1)+' m':'—'} · Dist: ${r.distKm.toFixed(2)} km · Alt: ${r.altitude} m ${r.finished?'✅':''}</span>`;
+        lb.appendChild(li);
+      });
+    }
+  </script>
 </body>
-</html>
+</html
