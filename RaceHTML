@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>George Accuracy Race – Tiny Drift Simulation</title>
+  <title>George Accuracy Race – Real Data</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <style>
     html, body { height: 100%; margin: 0; }
@@ -79,153 +79,77 @@
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
-    // --- Map setup (George, South Africa)
     const map = L.map('map').setView([-33.963, 22.461], 13);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap contributors'
     }).addTo(map);
 
-    // --- Race route
-    const route = [
-      [-33.9675, 22.4150],
-      [-33.9640, 22.4320],
-      [-33.9630, 22.4475],
-      [-33.9615, 22.4630],
-      [-33.9628, 22.4790],
-      [-33.9647, 22.4945],
-      [-33.9672, 22.5098]
-    ];
-    const routeLine = L.polyline(route, { color: 'black', weight: 3, dashArray: '6,10' }).addTo(map);
-    map.fitBounds(routeLine.getBounds().pad(0.2));
-
-    // --- Helpers
-    const LAT_METERS = 111320;
-    const LNG_METERS_AT_LAT = (lat) => 111320 * Math.cos(lat * Math.PI/180);
-    const metersToDeg = (lat, dxMeters, dyMeters) => {
-      const dLat = dyMeters / LAT_METERS;
-      const dLng = dxMeters / LNG_METERS_AT_LAT(lat);
-      return [dLat, dLng];
-    };
-
-    // --- Build segments
-    const segments = [];
-    for (let i = 0; i < route.length - 1; i++) {
-      const a = L.latLng(route[i]);
-      const b = L.latLng(route[i+1]);
-      const len = a.distanceTo(b);
-      segments.push({ a, b, len });
-    }
-
-    // --- Pilot setup
-    const pilotColors = ['#ef4444', '#3b82f6', '#22c55e', '#f59e0b', '#a855f7'];
-    const pilotNames  = ['Alpha', 'Bravo', 'Charlie', 'Delta', 'Echo'];
-    const SPEED_MPS = 170;
-    const TICK_MS = 50;
-    const START_STAGGER_MS = 8000;
-    const MAX_XTRACK_METERS = 80;
-    const NOISE_PER_TICK_METERS = 10.0;
-    const CORRECTION_GAIN = 0.015;
-    const SMOOTHING = 0.90;
-
+    let route = null;
     let pilots = [];
-
-    function createPilots() {
-      pilots = [];
-      for (let i = 0; i < 5; i++) {
-        const marker = L.circleMarker(route[0], { color: pilotColors[i], radius: 7, weight: 3, fillOpacity: 0.9 }).addTo(map);
-        const trail = L.polyline([route[0]], { color: pilotColors[i], weight: 3, opacity: 0.9 }).addTo(map);
-        const altitude = 100 + Math.random()*50; // initial altitude meters
-
-        pilots.push({
-          name: pilotNames[i],
-          color: pilotColors[i],
-          marker, trail,
-          segIndex: 0,
-          segMeters: 0,
-          totalMeters: 0,
-          started: false,
-          finished: false,
-          avgDevSum: 0,
-          avgDevCount: 0,
-          xtrack: 0,
-          xtrackVel: 0,
-          driftBias: (Math.random()*2-1) * 5.0,
-          altitude: altitude
-        });
-        setTimeout(() => { pilots[i].started = true; }, i * START_STAGGER_MS);
-      }
-    }
-
-    createPilots();
-
-    function advanceAlongRoute(p, meters) {
-      if (p.finished) return segments[segments.length-1].b;
-      let m = meters;
-      while (m > 0 && !p.finished) {
-        const seg = segments[p.segIndex];
-        const remaining = seg.len - p.segMeters;
-        if (m < remaining) {
-          p.segMeters += m;
-          m = 0;
-        } else {
-          m -= remaining;
-          p.segIndex++;
-          p.segMeters = 0;
-          if (p.segIndex >= segments.length) {
-            p.finished = true;
-            p.segIndex = segments.length - 1;
-            p.segMeters = segments[segments.length-1].len;
-            break;
-          }
-        }
-      }
-      const seg = segments[p.segIndex];
-      const t = Math.min(1, seg.len === 0 ? 1 : p.segMeters / seg.len);
-      return L.latLng(seg.a.lat + (seg.b.lat - seg.a.lat)*t, seg.a.lng + (seg.b.lng - seg.a.lng)*t);
-    }
-
-    function segmentRightNormal(seg) {
-      const dx = seg.b.lng - seg.a.lng;
-      const dy = seg.b.lat - seg.a.lat;
-      const mag = Math.sqrt(dx*dx + dy*dy) || 1;
-      return { nx: dy / mag, ny: -dx / mag };
-    }
-
     let timer = null;
     let lastTs = null;
+    const TICK_MS = 200; // playback step (ms)
+
+    // --- Load route.geojson
+    fetch("route.geojson")
+      .then(r => r.json())
+      .then(data => {
+        route = data.features[0].geometry.coordinates.map(c => [c[1], c[0]]);
+        const routeLine = L.polyline(route, { color: 'black', weight: 3, dashArray: '6,10' }).addTo(map);
+        map.fitBounds(routeLine.getBounds().pad(0.2));
+      });
+
+    // --- Load Race1 … Race10.geojson
+    const pilotColors = ['#ef4444','#3b82f6','#22c55e','#f59e0b','#a855f7','#06b6d4','#84cc16','#d946ef','#f97316','#6366f1'];
+
+    function loadPilots() {
+      pilots = [];
+      for (let i = 1; i <= 10; i++) {
+        fetch(`Race${i}.geojson`)
+          .then(r => r.json())
+          .then(data => {
+            const coords = data.features[0].geometry.coordinates.map(c => [c[1], c[0]]);
+            const marker = L.circleMarker(coords[0], { color: pilotColors[i-1], radius: 7, weight: 3, fillOpacity: 0.9 }).addTo(map);
+            const trail = L.polyline([coords[0]], { color: pilotColors[i-1], weight: 3, opacity: 0.9 }).addTo(map);
+
+            pilots.push({
+              name: `Race${i}`,
+              color: pilotColors[i-1],
+              coords,
+              marker,
+              trail,
+              index: 0,
+              totalMeters: 0,
+              avgDevSum: 0,
+              avgDevCount: 0,
+              altitude: 100 + Math.random()*50,
+              finished: false
+            });
+          });
+      }
+    }
+
+    loadPilots();
 
     function tick(ts) {
       if (!lastTs) lastTs = ts;
-      const dt = (ts - lastTs) / 1000;
+      const dt = (ts - lastTs);
+      if (dt < TICK_MS) { requestAnimationFrame(tick); return; }
       lastTs = ts;
 
       pilots.forEach(p => {
-        if (!p.started || p.finished) return;
+        if (p.finished || p.coords.length === 0) return;
+        p.index++;
+        if (p.index >= p.coords.length) {
+          p.finished = true;
+          return;
+        }
 
-        const centerBefore = advanceAlongRoute(p, SPEED_MPS * dt);
-
-        const noise = (Math.random()*2 - 1) * NOISE_PER_TICK_METERS;
-        p.xtrackVel = SMOOTHING*p.xtrackVel + (1-SMOOTHING)*(noise + p.driftBias*0.02);
-        const correction = -CORRECTION_GAIN * p.xtrack;
-        p.xtrack += (p.xtrackVel + correction);
-
-        if (p.xtrack > MAX_XTRACK_METERS) p.xtrack = MAX_XTRACK_METERS;
-        if (p.xtrack < -MAX_XTRACK_METERS) p.xtrack = -MAX_XTRACK_METERS;
-
-        const seg = segments[p.segIndex];
-        const { nx, ny } = segmentRightNormal(seg);
-        const lat = centerBefore.lat;
-        const [dLat, dLng] = metersToDeg(lat, p.xtrack*nx, p.xtrack*ny);
-        const pos = L.latLng(centerBefore.lat+dLat, centerBefore.lng+dLng);
-
+        const pos = L.latLng(p.coords[p.index]);
         const last = p.marker.getLatLng();
-        const stepDist = pos.distanceTo(last);
-        p.totalMeters += stepDist;
+        p.totalMeters += pos.distanceTo(last);
 
-        p.avgDevSum += Math.abs(p.xtrack);
-        p.avgDevCount += 1;
-
-        // Simple altitude variation
+        // Update altitude slightly
         p.altitude += (Math.random()*2-1) * 0.5;
 
         p.marker.setLatLng(pos);
@@ -241,32 +165,28 @@
     function reset() {
       pause();
       pilots.forEach(p => { map.removeLayer(p.marker); map.removeLayer(p.trail); });
-      createPilots();
+      loadPilots();
     }
 
     document.getElementById('startBtn').onclick = start;
     document.getElementById('pauseBtn').onclick = pause;
     document.getElementById('resetBtn').onclick = reset;
 
-    start();
-
     function updateLeaderboard() {
       const lb = document.getElementById('lb');
       const ranked = [...pilots].map(p => ({
         name: p.name,
         color: p.color,
-        avgDev: p.avgDevCount ? p.avgDevSum/p.avgDevCount : Infinity,
         distKm: p.totalMeters/1000,
         altitude: p.altitude.toFixed(1),
-        finished: p.finished,
-        started: p.started
-      })).sort((a,b)=>a.avgDev-b.avgDev);
+        finished: p.finished
+      })).sort((a,b)=>b.distKm - a.distKm);
 
       lb.innerHTML = '';
       ranked.forEach(r => {
         const li = document.createElement('li');
         li.innerHTML = `<span style="color:${r.color}; font-weight:bold">${r.name}</span>
-                        <span class="stats">Dev: ${isFinite(r.avgDev)?r.avgDev.toFixed(1)+' m':'—'} · Dist: ${r.distKm.toFixed(2)} km · Alt: ${r.altitude} m ${r.finished?'✅':''} ${!r.started?'(waiting)':''}</span>`;
+                        <span class="stats">Dist: ${r.distKm.toFixed(2)} km · Alt: ${r.altitude} m ${r.finished?'✅':''}</span>`;
         lb.appendChild(li);
       });
     }
