@@ -1,0 +1,159 @@
+{
+    "features": [
+        {
+            "geometry": {
+                "coordinates": [
+                    26.22181746775173,
+                    -27.02307253243665
+                ],
+                "type": "Point"
+            },
+            "properties": {
+                "description": "SP",
+                "name": "SP"
+            },
+            "type": "Feature"
+        },
+        {
+            "geometry": {
+                "coordinates": [
+                    25.62735968934131,
+                    -27.40436813466263
+                ],
+                "type": "Point"
+            },
+            "properties": {
+                "description": "T1",
+                "name": "T1"
+            },
+            "type": "Feature"
+        },
+        {
+            "geometry": {
+                "coordinates": [
+                    25.61731368328278,
+                    -27.6678489936236
+                ],
+                "type": "Point"
+            },
+            "properties": {
+                "description": "T2",
+                "name": "T2"
+            },
+            "type": "Feature"
+        },
+        {
+            "geometry": {
+                "coordinates": [
+                    26.16040637579649,
+                    -27.66283035992419
+                ],
+                "type": "Point"
+            },
+            "properties": {
+                "description": "T3",
+                "name": "T3"
+            },
+            "type": "Feature"
+        },
+        {
+            "geometry": {
+                "coordinates": [
+                    26.48785154188435,
+                    -27.34203874775895
+                ],
+                "type": "Point"
+            },
+            "properties": {
+                "description": "T4",
+                "name": "T4"
+            },
+            "type": "Feature"
+        },
+        {
+            "geometry": {
+                "coordinates": [
+                    26.14633120205459,
+                    -26.92032828178679
+                ],
+                "type": "Point"
+            },
+            "properties": {
+                "description": "T5",
+                "name": "T5"
+            },
+            "type": "Feature"
+        },
+        {
+            "geometry": {
+                "coordinates": [
+                    25.45548300649683,
+                    -26.90283465826764
+                ],
+                "type": "Point"
+            },
+            "properties": {
+                "description": "T6",
+                "name": "T6"
+            },
+            "type": "Feature"
+        },
+        {
+            "geometry": {
+                "coordinates": [
+                    25.34555325740988,
+                    -27.18081284250963
+                ],
+                "type": "Point"
+            },
+            "properties": {
+                "description": "T7",
+                "name": "T7"
+            },
+            "type": "Feature"
+        },
+        {
+            "geometry": {
+                "coordinates": [
+                    25.62372832371687,
+                    -27.32860049120963
+                ],
+                "type": "Point"
+            },
+            "properties": {
+                "description": "T8",
+                "name": "T8"
+            },
+            "type": "Feature"
+        },
+        {
+            "geometry": {
+                "coordinates": [
+                    25.96255124613364,
+                    -27.12056981906102
+                ],
+                "type": "Point"
+            },
+            "properties": {
+                "description": "T9",
+                "name": "T9"
+            },
+            "type": "Feature"
+        },
+        {
+            "geometry": {
+                "coordinates": [
+                    26.21908102794546,
+                    -27.01783175055003
+                ],
+                "type": "Point"
+            },
+            "properties": {
+                "description": "Fp",
+                "name": "Fp"
+            },
+            "type": "Feature"
+        }
+    ],
+    "type": "FeatureCollection"
+}
