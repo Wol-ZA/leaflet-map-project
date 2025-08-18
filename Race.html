@@ -102,7 +102,7 @@
     fetch("route.geojson")
       .then(res => res.json())
       .then(data => {
-        const order = ["Fp","T1","T2","T3","T4","T5","T6","T7","T8","T9","SP"];
+        const order = ["SP","T1","T2","T3","T4","T5","T6","T7","T8","T9","Fp"];
         const sorted = order.map(name => data.features.find(f => f.properties.name === name));
         route = sorted.map(f => [f.geometry.coordinates[1], f.geometry.coordinates[0]]);
         const routeLine = L.polyline(route, { color: 'black', weight: 3, dashArray: '6,10' }).addTo(map);
@@ -117,7 +117,7 @@
         }
 
         // Load race GeoJSON files
-        const raceFiles = ["Race1.geojson","Race2.geojson","Race3.geojson","Race4.geojson","Race5.geojson"];
+        const raceFiles = ["Race1.geojson","Race2.geojson","Race3.geojson","Race4.geojson","Race10.geojson"];
         return Promise.all(raceFiles.map(f => fetch(f).then(res => res.json())));
       })
       .then(races => {
