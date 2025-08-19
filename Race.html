@@ -164,6 +164,17 @@ function advanceAlongCoords(p) {
   p.totalMeters += L.latLng(current).distanceTo(L.latLng(next));
   p.altitude = alt;
 
+  // compute deviation to nearest route segment
+  let minDev = Infinity;
+  segments.forEach(s=>{
+    const dev = L.GeometryUtil.distanceSegment(map, pos, s.a, s.b);
+    if (dev < minDev) minDev = dev;
+  });
+  if (isFinite(minDev)) {
+    p.avgDevSum += minDev;
+    p.avgDevCount++;
+  }
+
   if (p.index >= p.coords.length-1) p.finished = true;
 }
 
