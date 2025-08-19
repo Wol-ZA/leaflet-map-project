@@ -191,14 +191,14 @@ function advanceAlongCoords(p) {
     p.index++;
     p.totalMeters += L.latLng(current).distanceTo(L.latLng(next));
 
-    // Calculate deviation from route
-    let totalDeviation = 0;
+    // Calculate deviation from nearest route segment
+    let minDev = Infinity;
     segments.forEach(seg => {
         const d = pointToSegmentDistance(pos, seg.a, seg.b);
-        if (!isNaN(d)) totalDeviation += d;
+        if (!isNaN(d) && d < minDev) minDev = d;
     });
-    const avgDeviation = totalDeviation / segments.length;
-    p.avgDevSum += avgDeviation;
+    const deviation = minDev !== Infinity ? minDev : 0;
+    p.avgDevSum += deviation;
     p.avgDevCount++;
 
     if (p.index >= p.coords.length - 1) p.finished = true;
