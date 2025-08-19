@@ -212,15 +212,13 @@ lb.querySelectorAll('input[type="checkbox"]').forEach(cb=>{
     const pilot = pilots[idx];
     pilot.enabled = e.target.checked;
 
-    if (pilot.marker && pilot.path) {
+    if (pilot.marker && pilot.trail) {
       if (pilot.enabled) {
-        // Re-add marker and polyline to the map
-        pilot.marker.setMap(map);
-        pilot.path.setMap(map);
+        map.addLayer(pilot.marker);
+        map.addLayer(pilot.trail);
       } else {
-        // Remove marker and polyline from the map
-        pilot.marker.setMap(null);
-        pilot.path.setMap(null);
+        map.removeLayer(pilot.marker);
+        map.removeLayer(pilot.trail);
       }
     }
   };
