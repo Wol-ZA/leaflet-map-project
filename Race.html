@@ -146,6 +146,26 @@ function loadRacers() {
   });
 }
 
+// Calculates distance from point P to segment AB
+function pointToSegmentDistance(p, a, b) {
+    const P = L.latLng(p);
+    const A = L.latLng(a);
+    const B = L.latLng(b);
+
+    const ABx = B.lng - A.lng;
+    const ABy = B.lat - A.lat;
+    const APx = P.lng - A.lng;
+    const APy = P.lat - A.lat;
+
+    const ab2 = ABx*ABx + ABy*ABy;
+    const ap_ab = APx*ABx + APy*ABy;
+    let t = ap_ab / ab2;
+    t = Math.max(0, Math.min(1, t)); // clamp to segment
+
+    const closest = L.latLng(A.lat + ABy*t, A.lng + ABx*t);
+    return P.distanceTo(closest);
+}
+
 function advanceAlongCoords(p) {
     if (p.finished || !p.enabled) return;
     if (p.index >= p.coords.length - 1) {
@@ -165,10 +185,21 @@ function advanceAlongCoords(p) {
     const lng = (current.lng + next.lng) / 2;
     const pos = L.latLng(lat, lng);
 
+    // Update marker and trail
     p.marker.setLatLng(pos);
     p.trail.addLatLng(pos);
     p.index++;
     p.totalMeters += L.latLng(current).distanceTo(L.latLng(next));
+
+    // Calculate deviation from route
+    let totalDeviation = 0;
+    segments.forEach(seg => {
+        const d = pointToSegmentDistance(pos, seg.a, seg.b);
+        if (!isNaN(d)) totalDeviation += d;
+    });
+    const avgDeviation = totalDeviation / segments.length;
+    p.avgDevSum += avgDeviation;
+    p.avgDevCount++;
 
     if (p.index >= p.coords.length - 1) p.finished = true;
 }
