@@ -147,35 +147,23 @@ function loadRacers() {
 }
 
 function advanceAlongCoords(p) {
-  if (p.finished || !p.enabled) return;
-  if (p.index >= p.coords.length-1) { p.finished=true; return; }
-
-  const current = p.coords[p.index];
-  const next = p.coords[p.index+1];
-  const lat = (current.lat + next.lat) / 2;
-  const lng = (current.lng + next.lng) / 2;
-  const alt = (current.alt + next.alt) / 2;
-
-  const pos = L.latLng(lat, lng);
-  p.marker.setLatLng(pos);
-  p.trail.addLatLng(pos);
-
-  p.index++;
-  p.totalMeters += L.latLng(current).distanceTo(L.latLng(next));
-  p.altitude = alt;
-
-  // compute deviation to nearest route segment
-  let minDev = Infinity;
-  segments.forEach(s=>{
-    const dev = L.GeometryUtil.distanceSegment(map, pos, s.a, s.b);
-    if (dev < minDev) minDev = dev;
-  });
-  if (isFinite(minDev)) {
-    p.avgDevSum += minDev;
-    p.avgDevCount++;
-  }
-
-  if (p.index >= p.coords.length-1) p.finished = true;
+    if (p.finished || !p.enabled) return;
+    if (p.index >= p.coords.length - 1) {
+        p.finished = true;
+        return;
+    }
+    const current = p.coords[p.index];
+    const next = p.coords[p.index + 1];
+    const lat = (current.lat + next.lat) / 2;
+    const lng = (current.lng + next.lng) / 2;
+    const alt = (current.alt + next.alt) / 2;
+    const pos = L.latLng(lat, lng);
+    p.marker.setLatLng(pos);
+    p.trail.addLatLng(pos);
+    p.index++;
+    p.totalMeters += L.latLng(current).distanceTo(L.latLng(next));
+    p.altitude = alt;
+    if (p.index >= p.coords.length - 1) p.finished = true;
 }
 
 function tick(ts){
