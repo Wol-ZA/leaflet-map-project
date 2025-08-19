@@ -117,8 +117,8 @@ const metersToDeg = (lat, dxMeters, dyMeters) => {
 };
 
 // --- Pilot setup ---
-const pilotColors = ['#ef4444', '#3b82f6', '#22c55e', '#f59e0b', '#a855f7','#ff66cc','#66ccff','#ffcc66','#66ff66','#9966ff'];
-const pilotNames  = ['Alpha','Bravo','Charlie','Delta','Echo','Foxtrot','Golf','Hotel','India','Juliet'];
+const pilotColors = ['#ef4444', '#3b82f6', '#22c55e', '#f59e0b', '#a855f7'];
+const pilotNames  = ['Alpha','Eric','Etienne','Delta','Echo'];
 const SPEED_MPS = 1170;
 const TICK_MS = 50;
 
@@ -128,7 +128,7 @@ let lastTs = null;
 
 function loadRacers() {
   let promises = [];
-  for (let i=1;i<=10;i++){
+  for (let i=1;i<=5;i++){
     promises.push(fetch(`Race${i}.geojson`).then(r=>r.json()));
   }
   Promise.all(promises).then(datas=>{
