@@ -79,15 +79,12 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution: '© OpenStreetMap contributors'
 }).addTo(map);
 
-// --- Load route from route.geojson ---
 let route = [];
 let segments = [];
 
 fetch('route.geojson').then(r => r.json()).then(data => {
-  // convert GeoJSON to [lat,lng] array
   route = data.features
     .sort((a,b) => {
-      // sort by description to get FP first then T1..T9 then SP
       const order = { 'Fp':0,'T1':1,'T2':2,'T3':3,'T4':4,'T5':5,'T6':6,'T7':7,'T8':8,'T9':9,'SP':10 };
       return order[a.properties.description] - order[b.properties.description];
     })
@@ -95,7 +92,6 @@ fetch('route.geojson').then(r => r.json()).then(data => {
   const routeLine = L.polyline(route, { color: 'black', weight: 3, dashArray: '6,10' }).addTo(map);
   map.fitBounds(routeLine.getBounds().pad(0.2));
 
-  // Build segments
   segments = [];
   for (let i = 0; i < route.length - 1; i++) {
     const a = L.latLng(route[i]);
@@ -107,20 +103,8 @@ fetch('route.geojson').then(r => r.json()).then(data => {
   loadRacers();
 });
 
-// --- Helpers ---
-const LAT_METERS = 111320;
-const LNG_METERS_AT_LAT = (lat) => 111320 * Math.cos(lat * Math.PI/180);
-const metersToDeg = (lat, dxMeters, dyMeters) => {
-  const dLat = dyMeters / LAT_METERS;
-  const dLng = dxMeters / LNG_METERS_AT_LAT(lat);
-  return [dLat, dLng];
-};
-
-// --- Pilot setup ---
 const pilotColors = ['#ef4444', '#3b82f6', '#22c55e', '#f59e0b', '#a855f7'];
 const pilotNames  = ['Alpha','Eric','Etienne','Delta','Echo'];
-const SPEED_MPS = 1170;
-const TICK_MS = 50;
 
 let pilots = [];
 let timer = null;
@@ -151,36 +135,39 @@ function loadRacers() {
         enabled:true
       };
     });
+    buildLeaderboard(); // build once
     start();
   });
 }
 
-function advanceAlongCoords(p, dt) {
+function advanceAlongCoords(p) {
   if (p.finished || !p.enabled) return;
-  const nextIdx = Math.min(p.index+1, p.coords.length-1);
+  if (p.index >= p.coords.length-1) { p.finished=true; return; }
+
   const current = p.coords[p.index];
-  const next = p.coords[nextIdx];
-  const stepDist = L.latLng(current).distanceTo(L.latLng(next));
-  p.totalMeters += stepDist;
-  const t = dt; // here dt is small fraction, you can adjust for smoother movement
-  const lat = current.lat + (next.lat - current.lat)*t;
-  const lng = current.lng + (next.lng - current.lng)*t;
+  const next = p.coords[p.index+1];
+  const lat = (current.lat + next.lat) / 2;
+  const lng = (current.lng + next.lng) / 2;
+  const alt = (current.alt + next.alt) / 2;
+
   const pos = L.latLng(lat, lng);
   p.marker.setLatLng(pos);
   p.trail.addLatLng(pos);
-  p.index = nextIdx;
-  p.altitude = next.alt || p.altitude;
+
+  p.index++;
+  p.totalMeters += L.latLng(current).distanceTo(L.latLng(next));
+  p.altitude = alt;
+
   if (p.index >= p.coords.length-1) p.finished = true;
 }
 
 function tick(ts){
   if (!lastTs) lastTs = ts;
-  const dt = (ts - lastTs)/1000;
   lastTs = ts;
 
   pilots.forEach(p => {
     if (!p.enabled || p.finished) return;
-    advanceAlongCoords(p, 0.1); // dt factor can be tuned
+    advanceAlongCoords(p);
   });
 
   updateLeaderboard();
@@ -199,36 +186,20 @@ document.getElementById('startBtn').onclick = start;
 document.getElementById('pauseBtn').onclick = pause;
 document.getElementById('resetBtn').onclick = reset;
 
-// --- Leaderboard ---
-function updateLeaderboard(){
+// Leaderboard build once
+function buildLeaderboard(){
   const lb = document.getElementById('lb');
-  const ranked = [...pilots].map((p,i)=>({
-    name:p.name,
-    color:p.color,
-    avgDev: p.avgDevCount ? p.avgDevSum/p.avgDevCount : Infinity,
-    distKm: p.totalMeters/1000,
-    altitude: p.altitude.toFixed(1),
-    finished: p.finished,
-    enabled: p.enabled,
-    idx:i
-  })).sort((a,b)=>a.avgDev-b.avgDev);
-
   lb.innerHTML = '';
-  ranked.forEach(r=>{
+  pilots.forEach((p,i)=>{
     const li = document.createElement('li');
     li.innerHTML = `
       <label>
-        <input type="checkbox" ${r.enabled?'checked':''} data-idx="${r.idx}"> 
-        <span style="color:${r.color}; font-weight:bold">${r.name}</span>
+        <input type="checkbox" checked data-idx="${i}"> 
+        <span style="color:${p.color}; font-weight:bold">${p.name}</span>
       </label>
-      <span class="stats">
-        Dev: ${isFinite(r.avgDev)?r.avgDev.toFixed(1)+' m':'—'} · 
-        Dist: ${r.distKm.toFixed(2)} km · 
-        Alt: ${r.altitude} m ${r.finished?'✅':''}
-      </span>`;
+      <span class="stats" id="stats-${i}"></span>`;
     lb.appendChild(li);
   });
-
   lb.querySelectorAll('input[type="checkbox"]').forEach(cb=>{
     cb.onchange = e=>{
       const idx = parseInt(e.target.dataset.idx);
@@ -236,6 +207,18 @@ function updateLeaderboard(){
     };
   });
 }
+
+function updateLeaderboard(){
+  pilots.forEach((p,i)=>{
+    const statsEl = document.getElementById(`stats-${i}`);
+    if (!statsEl) return;
+    statsEl.innerHTML = `
+      Dev: ${p.avgDevCount?(p.avgDevSum/p.avgDevCount).toFixed(1)+' m':'—'} · 
+      Dist: ${(p.totalMeters/1000).toFixed(2)} km · 
+      Alt: ${p.altitude.toFixed(1)} m ${p.finished?'✅':''}`;
+  });
+}
 </script>
+
 </body>
 </html>
