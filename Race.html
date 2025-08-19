@@ -152,17 +152,35 @@ function advanceAlongCoords(p) {
         p.finished = true;
         return;
     }
+
     const current = p.coords[p.index];
     const next = p.coords[p.index + 1];
+
+    // Determine valid altitudes
+    const currentAlt = (current.alt && current.alt !== 99999) ? current.alt : null;
+    const nextAlt    = (next.alt && next.alt !== 99999) ? next.alt : null;
+
+    let alt;
+    if (currentAlt !== null && nextAlt !== null) {
+        alt = (currentAlt + nextAlt) / 2;
+    } else if (currentAlt !== null) {
+        alt = currentAlt;
+    } else if (nextAlt !== null) {
+        alt = nextAlt;
+    } else {
+        alt = 100; // fallback if neither has valid altitude
+    }
+
     const lat = (current.lat + next.lat) / 2;
     const lng = (current.lng + next.lng) / 2;
-    const alt = (current.alt + next.alt) / 2;
     const pos = L.latLng(lat, lng);
+
     p.marker.setLatLng(pos);
     p.trail.addLatLng(pos);
     p.index++;
     p.totalMeters += L.latLng(current).distanceTo(L.latLng(next));
     p.altitude = alt;
+
     if (p.index >= p.coords.length - 1) p.finished = true;
 }
 
