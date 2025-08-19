@@ -197,38 +197,48 @@ function buildLeaderboard(){
   lb.innerHTML = '';
   pilots.forEach((p,i)=>{
     const li = document.createElement('li');
+    const statsEl = document.createElement('span');
+    statsEl.className = 'stats';
+    statsEl.style.whiteSpace = 'nowrap';
+    statsEl.style.textAlign = 'right';
+    statsEl.style.color = '#ccc';
+    statsEl.id = `stats-${i}`;
+
     li.innerHTML = `
       <label>
         <input type="checkbox" checked data-idx="${i}"> 
         <span style="color:${p.color}; font-weight:bold">${p.name}</span>
       </label>
-      <span class="stats" id="stats-${i}"></span>`;
+    `;
+    li.appendChild(statsEl);
     lb.appendChild(li);
+
+    // store reference in pilot object
+    p.statsEl = statsEl;
   });
-lb.querySelectorAll('input[type="checkbox"]').forEach(cb=>{
-  cb.onchange = e=>{
-    const idx = parseInt(e.target.dataset.idx);
-    const pilot = pilots[idx];
-    pilot.enabled = e.target.checked;
 
-    if (pilot.marker && pilot.trail) {
-      if (pilot.enabled) {
-        map.addLayer(pilot.marker);
-        map.addLayer(pilot.trail);
-      } else {
-        map.removeLayer(pilot.marker);
-        map.removeLayer(pilot.trail);
+  lb.querySelectorAll('input[type="checkbox"]').forEach(cb=>{
+    cb.onchange = e=>{
+      const idx = parseInt(e.target.dataset.idx);
+      const pilot = pilots[idx];
+      pilot.enabled = e.target.checked;
+
+      if (pilot.marker && pilot.trail) {
+        if (pilot.enabled) {
+          map.addLayer(pilot.marker);
+          map.addLayer(pilot.trail);
+        } else {
+          map.removeLayer(pilot.marker);
+          map.removeLayer(pilot.trail);
+        }
       }
-    }
-  };
-});
+    };
+  });
 }
-
 function updateLeaderboard(){
-  pilots.forEach((p,i)=>{
-    const statsEl = document.getElementById(`stats-${i}`);
-    if (!statsEl) return;
-    statsEl.innerHTML = `
+  pilots.forEach(p=>{
+    if (!p.statsEl) return;
+    p.statsEl.innerHTML = `
       Dev: ${p.avgDevCount?(p.avgDevSum/p.avgDevCount).toFixed(1)+' m':'—'} · 
       Dist: ${(p.totalMeters/1000).toFixed(2)} km · 
       Alt: ${p.altitude.toFixed(1)} m ${p.finished?'✅':''}`;
