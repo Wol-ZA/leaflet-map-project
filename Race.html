@@ -117,7 +117,13 @@ function loadRacers() {
   }
   Promise.all(promises).then(datas=>{
     pilots = datas.map((data,i)=>{
-      const coords = data.features[0].geometry.coordinates.map(c => ({ lat: c[1], lng: c[0], alt: c[2] }));
+      const coords = data.features.flatMap(f =>
+        f.geometry.coordinates.map(c => ({
+        lat: c[1],
+        lng: c[0],
+        alt: c[2]
+          }))
+        );
       const marker = L.circleMarker([coords[0].lat, coords[0].lng], { color: pilotColors[i], radius: 7, weight: 3, fillOpacity:0.9 }).addTo(map);
       const trail = L.polyline([[coords[0].lat, coords[0].lng]], { color: pilotColors[i], weight:3, opacity:0.9 }).addTo(map);
       return {
@@ -200,12 +206,25 @@ function buildLeaderboard(){
       <span class="stats" id="stats-${i}"></span>`;
     lb.appendChild(li);
   });
-  lb.querySelectorAll('input[type="checkbox"]').forEach(cb=>{
-    cb.onchange = e=>{
-      const idx = parseInt(e.target.dataset.idx);
-      pilots[idx].enabled = e.target.checked;
-    };
-  });
+lb.querySelectorAll('input[type="checkbox"]').forEach(cb=>{
+  cb.onchange = e=>{
+    const idx = parseInt(e.target.dataset.idx);
+    const pilot = pilots[idx];
+    pilot.enabled = e.target.checked;
+
+    if (pilot.marker && pilot.path) {
+      if (pilot.enabled) {
+        // Re-add marker and polyline to the map
+        pilot.marker.setMap(map);
+        pilot.path.setMap(map);
+      } else {
+        // Remove marker and polyline from the map
+        pilot.marker.setMap(null);
+        pilot.path.setMap(null);
+      }
+    }
+  };
+});
 }
 
 function updateLeaderboard(){
