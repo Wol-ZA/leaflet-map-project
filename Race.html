@@ -119,11 +119,11 @@ function loadRacers() {
     pilots = datas.map((data,i)=>{
       const coords = data.features.flatMap(f =>
         f.geometry.coordinates.map(c => ({
-        lat: c[1],
-        lng: c[0],
-        alt: c[2]
-          }))
-        );
+          lat: c[1],
+          lng: c[0],
+          alt: c[2]
+        }))
+      );
       const marker = L.circleMarker([coords[0].lat, coords[0].lng], { color: pilotColors[i], radius: 7, weight: 3, fillOpacity:0.9 }).addTo(map);
       const trail = L.polyline([[coords[0].lat, coords[0].lng]], { color: pilotColors[i], weight:3, opacity:0.9 }).addTo(map);
       return {
@@ -136,7 +136,7 @@ function loadRacers() {
         totalMeters:0,
         avgDevSum:0,
         avgDevCount:0,
-        altitude: coords[0].alt || 100,
+        altitude: (coords[0].alt !== 99999 ? coords[0].alt : null),
         finished:false,
         enabled:true
       };
@@ -157,12 +157,9 @@ function advanceAlongCoords(p) {
     const next = p.coords[p.index + 1];
 
     const validAltitudes = [current.alt, next.alt].filter(a => a !== undefined && a !== 99999);
-
     if (validAltitudes.length > 0) {
-        // Average the valid altitudes
         p.altitude = validAltitudes.reduce((a,b)=>a+b,0) / validAltitudes.length;
     }
-    // If no valid altitude, leave p.altitude as-is (do not overwrite)
 
     const lat = (current.lat + next.lat) / 2;
     const lng = (current.lng + next.lng) / 2;
@@ -245,13 +242,15 @@ function buildLeaderboard(){
     };
   });
 }
+
 function updateLeaderboard(){
   pilots.forEach(p=>{
     if (!p.statsEl) return;
+    const altDisplay = (p.altitude !== null) ? p.altitude.toFixed(1)+' m' : '—';
     p.statsEl.innerHTML = `
       Dev: ${p.avgDevCount?(p.avgDevSum/p.avgDevCount).toFixed(1)+' m':'—'} · 
       Dist: ${(p.totalMeters/1000).toFixed(2)} km · 
-      Alt: ${p.altitude.toFixed(1)} m ${p.finished?'✅':''}`;
+      Alt: ${altDisplay} ${p.finished?'✅':''}`;
   });
 }
 </script>
