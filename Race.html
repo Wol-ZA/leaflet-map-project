@@ -103,8 +103,8 @@ fetch('route.geojson').then(r => r.json()).then(data => {
   loadRacers();
 });
 
-const pilotColors = ['#ef4444', '#3b82f6', '#22c55e', '#f59e0b', '#a855f7'];
-const pilotNames  = ['Alpha','Eric','Etienne','Delta','Echo'];
+const pilotColors = ['#ef4444', '#3b82f6', '#22c55e', '#f59e0b', '#a855f7', '#14b8a6'];
+const pilotNames  = ['Alpha','Eric','Etienne','Delta','Echo','Winner'];
 
 let pilots = [];
 let timer = null;
@@ -112,7 +112,7 @@ let lastTs = null;
 
 function loadRacers() {
   let promises = [];
-  for (let i=1;i<=5;i++){
+  for (let i=1;i<=6;i++){
     promises.push(fetch(`Race${i}.geojson`).then(r=>r.json()));
   }
   Promise.all(promises).then(datas=>{
