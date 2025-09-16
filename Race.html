@@ -73,6 +73,19 @@
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
+<script>
+let raceBuffer;
+
+fetch('route.geojson').then(r=>r.json()).then(data=>{
+    const turfRoute = turf.lineString(
+        data.features.map(f => f.geometry.coordinates)
+    );
+    // create 150 m buffer around route
+    raceBuffer = turf.buffer(turfRoute, 0.15, { units:'kilometers' });
+    L.geoJSON(raceBuffer, { color:'green', weight:2, fillOpacity:0.1 }).addTo(map);
+});
+</script>
 <script>
 const map = L.map('map').setView([-33.963, 22.461], 13);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -202,6 +215,15 @@ function advanceAlongCoords(p) {
     p.avgDevCount++;
 
     if (p.index >= p.coords.length - 1) p.finished = true;
+  if (raceBuffer) {
+    const pt = turf.point([pos.lng, pos.lat]);
+    const inside = turf.booleanPointInPolygon(pt, raceBuffer);
+    if (!inside) {
+        // Racer left legal corridor – possible cut
+        p.marker.setStyle({ color:'orange' }); // highlight on map
+        p.cutViolation = true;
+    }
+}
 }
 
 function tick(ts){
