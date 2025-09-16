@@ -100,6 +100,7 @@
 
     let route = [];
     let segments = [];
+    let cornerZones = [];
 
     fetch('route.geojson').then(r => r.json()).then(data => {
       route = data.features
@@ -128,7 +129,7 @@
         const len = a.distanceTo(b);
         segments.push({ a, b, len });
       }
-      let cornerZones = [];  // store as turf polygons
+
 const cornerRadius = 0.05; // km (≈50 m radius) – adjust as needed
 
 data.features.forEach(f => {
