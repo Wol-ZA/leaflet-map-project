@@ -1,235 +1,362 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>George Accuracy Race – Tiny Drift Simulation</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <style>
-      html,
-      body {
-        height: 100%;
-        margin: 0;
-      }
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>George Accuracy Race – Tiny Drift Simulation</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+    }
+    #map {
+      height: 100%;
+    }
+    #leaderboard {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(0,0,0,0.85);
+      color: #fff;
+      padding: 16px 18px;
+      border-radius: 10px;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      z-index: 1000;
+      width: 500px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+      max-height: 90%;
+      overflow-y: auto;
+    }
+    #leaderboard h3 {
+      margin: 0 0 8px;
+      font-size: 22px;
+      color: #ffd700;
+      text-align: center;
+    }
+    #leaderboard small {
+      display: block;
+      font-size: 12px;
+      color: #ccc;
+      text-align: center;
+      margin-bottom: 8px;
+    }
+    #lb li {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 10px;
+      font-size: 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.2);
+    }
+    #lb li .stats {
+      font-size: 14px;
+      white-space: nowrap;
+      text-align: right;
+      color: #ccc;
+    }
+    #controls {
+      position: absolute;
+      left: 370px;
+      top: 10px;
+      z-index: 1000;
+      background: rgba(255,255,255,0.95);
+      padding: 10px 12px;
+      border-radius: 10px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+      font: 14px/1.3 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif;
+    }
+    button {
+      cursor: pointer;
+      border: 0;
+      border-radius: 8px;
+      padding: 8px 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
 
-      #map {
-        height: 100%;
-      }
+  <div id="controls">
+    <button id="startBtn">Start</button>
+    <button id="pauseBtn">Pause</button>
+    <button id="resetBtn">Reset</button>
+  </div>
 
-      #leaderboard {
-        position: absolute;
-        top: 10px;
-        left: 10px;
-        background: rgba(0, 0, 0, 0.85);
-        color: #fff;
-        padding: 16px 18px;
-        border-radius: 10px;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        z-index: 1000;
-        width: 500px;
-        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
-        max-height: 90%;
-        overflow-y: auto;
-      }
+  <div id="leaderboard">
+    <h3>🏁 Accuracy Leaderboard</h3>
+    <small>(Lower avg deviation wins)</small>
+    <ol id="lb"></ol>
+  </div>
 
-      #leaderboard h3 {
-        margin: 0 0 8px;
-        font-size: 22px;
-        color: #ffd700;
-        text-align: center;
-      }
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    const map = L.map('map').setView([-33.963, 22.461], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
 
-      #leaderboard small {
-        display: block;
-        font-size: 12px;
-        color: #ccc;
-        text-align: center;
-        margin-bottom: 8px;
-      }
+    let route = [];
+    let segments = [];
 
-      #lb li {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 8px 10px;
-        font-size: 16px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-      }
-
-      #lb li .stats {
-        font-size: 14px;
-        white-space: nowrap;
-        text-align: right;
-        color: #ccc;
-      }
-
-      #controls {
-        position: absolute;
-        left: 370px;
-        top: 10px;
-        z-index: 1000;
-        background: rgba(255, 255, 255, 0.95);
-        padding: 10px 12px;
-        border-radius: 10px;
-        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
-        font: 14px/1.3 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif;
-      }
-
-      button {
-        cursor: pointer;
-        border: 0;
-        border-radius: 8px;
-        padding: 8px 10px;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-      }
-    </style>
-  </head>
-  <body>
-    <div id="map"></div>
-    <div id="controls">
-      <button id="startBtn">Start</button>
-      <button id="pauseBtn">Pause</button>
-      <button id="resetBtn">Reset</button>
-    </div>
-    <div id="leaderboard">
-      <h3>🏁 Accuracy Leaderboard</h3>
-      <small>(Lower avg deviation wins)</small>
-      <ol id="lb"></ol>
-    </div>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script>
-      const map = L.map('map').setView([-33.963, 22.461], 13);
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors'
-      }).addTo(map);
-      let route = [];
-      let segments = [];
-      fetch('route.geojson').then(r => r.json()).then(data => {
-        route = data.features.sort((a, b) => {
+    fetch('route.geojson').then(r => r.json()).then(data => {
+      route = data.features
+        .sort((a, b) => {
           const order = {
-            'Fp': 0,
-            'T1': 1,
-            'T2': 2,
-            'T3': 3,
-            'T4': 4,
-            'T5': 5,
-            'T6': 6,
-            'T7': 7,
-            'T8': 8,
-            'T9': 9,
-            'SP': 10
+            'Fp': 0, 'T1': 1, 'T2': 2, 'T3': 3,
+            'T4': 4, 'T5': 5, 'T6': 6, 'T7': 7,
+            'T8': 8, 'T9': 9, 'SP': 10
           };
           return order[a.properties.description] - order[b.properties.description];
-        }).map(f => [f.geometry.coordinates[1], f.geometry.coordinates[0]]);
-        const routeLine = L.polyline(route, {
-          color: 'black',
-          weight: 3,
-          dashArray: '6,10'
-        }).addTo(map);
-        map.fitBounds(routeLine.getBounds().pad(0.2));
-        segments = [];
-        for (let i = 0; i < route.length - 1; i++) {
-          const a = L.latLng(route[i]);
-          const b = L.latLng(route[i + 1]);
-          const len = a.distanceTo(b);
-          segments.push({
-            a,
-            b,
-            len
-          });
-        }
-        loadRacers();
-      });
-      const pilotColors = ['#ef4444', '#3b82f6', '#22c55e', '#f59e0b', '#a855f7', '#14b8a6'];
-      const pilotNames = ['Alpha', 'Eric', 'Etienne', 'Delta', 'Echo', 'Winner'];
-      let pilots = [];
-      let timer = null;
-      let lastTs = null;
+        })
+        .map(f => [f.geometry.coordinates[1], f.geometry.coordinates[0]]);
 
-      function loadRacers() {
-        let promises = [];
-        for (let i = 1; i <= 6; i++) {
-          promises.push(fetch(Race$ {
-            i
-          }.geojson).then(r => r.json()));
-        }
-        Promise.all(promises).then(datas => {
-          pilots = datas.map((data, i) => {
-            const coords = data.features.flatMap(f => f.geometry.coordinates.map(c => ({
+      const routeLine = L.polyline(route, {
+        color: 'black',
+        weight: 3,
+        dashArray: '6,10'
+      }).addTo(map);
+
+      map.fitBounds(routeLine.getBounds().pad(0.2));
+
+      segments = [];
+      for (let i = 0; i < route.length - 1; i++) {
+        const a = L.latLng(route[i]);
+        const b = L.latLng(route[i + 1]);
+        const len = a.distanceTo(b);
+        segments.push({ a, b, len });
+      }
+      let cornerZones = [];  // store as turf polygons
+const cornerRadius = 0.05; // km (≈50 m radius) – adjust as needed
+
+data.features.forEach(f => {
+  const desc = f.properties.description;
+  // We only want the true turns (skip Fp & SP)
+  if (/^T\d+$/i.test(desc)) {
+    const [lng, lat] = f.geometry.coordinates;
+    const circle = turf.circle([lng, lat], cornerRadius, { steps: 32, units: 'kilometers' });
+    cornerZones.push(circle);
+
+    // Optional: show zones on map for debugging
+    L.geoJSON(circle, { color: 'red', weight: 2, fillOpacity: 0.1 }).addTo(map);
+  }
+});
+
+      loadRacers();
+    });
+
+    const pilotColors = ['#ef4444', '#3b82f6', '#22c55e', '#f59e0b', '#a855f7', '#14b8a6'];
+    const pilotNames = ['Alpha', 'Eric', 'Etienne', 'Delta', 'Echo', 'Winner'];
+
+    let pilots = [];
+    let timer = null;
+    let lastTs = null;
+
+    function loadRacers() {
+      let promises = [];
+      for (let i = 1; i <= 6; i++) {
+        promises.push(fetch(`Race${i}.geojson`).then(r => r.json()));
+      }
+
+      Promise.all(promises).then(datas => {
+        pilots = datas.map((data, i) => {
+          const coords = data.features.flatMap(f =>
+            f.geometry.coordinates.map(c => ({
               lat: c[1],
               lng: c[0],
               alt: c[2]
-            })));
-            const marker = L.circleMarker([coords[0].lat, coords[0].lng], {
-              color: pilotColors[i],
-              radius: 7,
-              weight: 3,
-              fillOpacity: 0.9
-            }).addTo(map);
-            const trail = L.polyline([
-              [coords[0].lat, coords[0].lng]
-            ], {
-              color: pilotColors[i],
-              weight: 3,
-              opacity: 0.9
-            }).addTo(map);
-            return {
-              name: pilotNames[i],
-              color: pilotColors[i],
-              coords,
-              index: 0,
-              marker,
-              trail,
-              totalMeters: 0,
-              avgDevSum: 0,
-              avgDevCount: 0,
-              altitude: (coords[0].alt !== 99999 ? coords[0].alt : null),
-              finished: false,
-              enabled: true
-            };
-          });
-          buildLeaderboard(); // build once start(); }); } // Calculates distance from point P to segment AB function pointToSegmentDistance(p, a, b) { const P = L.latLng(p); const A = L.latLng(a); const B = L.latLng(b); const ABx = B.lng - A.lng; const ABy = B.lat - A.lat; const APx = P.lng - A.lng; const APy = P.lat - A.lat; const ab2 = ABx*ABx + ABy*ABy; const ap_ab = APx*ABx + APy*ABy; let t = ap_ab / ab2; t = Math.max(0, Math.min(1, t)); // clamp to segment const closest = L.latLng(A.lat + ABy*t, A.lng + ABx*t); return P.distanceTo(closest); } function advanceAlongCoords(p) { if (p.finished || !p.enabled) return; if (p.index >= p.coords.length - 1) { p.finished = true; return; } const current = p.coords[p.index]; const next = p.coords[p.index + 1]; const validAltitudes = [current.alt, next.alt].filter(a => a !== undefined && a !== 99999); if (validAltitudes.length > 0) { p.altitude = validAltitudes.reduce((a,b)=>a+b,0) / validAltitudes.length; } const lat = (current.lat + next.lat) / 2; const lng = (current.lng + next.lng) / 2; const pos = L.latLng(lat, lng); // Update marker and trail p.marker.setLatLng(pos); p.trail.addLatLng(pos); p.index++; p.totalMeters += L.latLng(current).distanceTo(L.latLng(next)); // Calculate deviation from nearest route segment let minDev = Infinity; segments.forEach(seg => { const d = pointToSegmentDistance(pos, seg.a, seg.b); if (!isNaN(d) && d < minDev) minDev = d; }); const deviation = minDev !== Infinity ? minDev : 0; p.avgDevSum += deviation; p.avgDevCount++; if (p.index >= p.coords.length - 1) p.finished = true; } function tick(ts){ if (!lastTs) lastTs = ts; lastTs = ts; pilots.forEach(p => { if (!p.enabled || p.finished) return; advanceAlongCoords(p); }); updateLeaderboard(); timer = requestAnimationFrame(tick); } function start(){ if (!timer) timer=requestAnimationFrame(tick); } function pause(){ if (timer) { cancelAnimationFrame(timer); timer=null; } } function reset(){ pause(); pilots.forEach(p => { map.removeLayer(p.marker); map.removeLayer(p.trail); }); loadRacers(); } document.getElementById('startBtn').onclick = start; document.getElementById('pauseBtn').onclick = pause; document.getElementById('resetBtn').onclick = reset; // Leaderboard build once function buildLeaderboard(){ const lb = document.getElementById('lb'); lb.innerHTML = ''; pilots.forEach((p,i)=>{ const li = document.createElement('li'); const statsEl = document.createElement('span'); statsEl.className = 'stats'; statsEl.style.whiteSpace = 'nowrap'; statsEl.style.textAlign = 'right'; statsEl.style.color = '#ccc'; statsEl.id = stats-${i}; li.innerHTML = 
-          < label > < input type = "checkbox"
-          checked data - idx = "${i}" > < span style = "color:${p.color}; font-weight:bold" > $ {
-            p.name
-          } < /span> < /label> ; li.appendChild(statsEl); lb.appendChild(li); / / store reference in pilot object p.statsEl = statsEl;
-        });
-        lb.querySelectorAll('input[type="checkbox"]').forEach(cb => {
-          cb.onchange = e => {
-            const idx = parseInt(e.target.dataset.idx);
-            const pilot = pilots[idx];
-            pilot.enabled = e.target.checked;
-            if (pilot.marker && pilot.trail) {
-              if (pilot.enabled) {
-                map.addLayer(pilot.marker);
-                map.addLayer(pilot.trail);
-              } else {
-                map.removeLayer(pilot.marker);
-                map.removeLayer(pilot.trail);
-              }
-            }
+            }))
+          );
+
+          const marker = L.circleMarker([coords[0].lat, coords[0].lng], {
+            color: pilotColors[i],
+            radius: 7,
+            weight: 3,
+            fillOpacity: 0.9
+          }).addTo(map);
+
+          const trail = L.polyline([[coords[0].lat, coords[0].lng]], {
+            color: pilotColors[i],
+            weight: 3,
+            opacity: 0.9
+          }).addTo(map);
+
+          return {
+            name: pilotNames[i],
+            color: pilotColors[i],
+            coords,
+            index: 0,
+            marker,
+            trail,
+            totalMeters: 0,
+            avgDevSum: 0,
+            avgDevCount: 0,
+            altitude: (coords[0].alt !== 99999 ? coords[0].alt : null),
+            finished: false,
+            enabled: true
           };
         });
+
+        buildLeaderboard();
+        start();
+      });
+    }
+
+    function pointToSegmentDistance(p, a, b) {
+      const P = L.latLng(p);
+      const A = L.latLng(a);
+      const B = L.latLng(b);
+      const ABx = B.lng - A.lng;
+      const ABy = B.lat - A.lat;
+      const APx = P.lng - A.lng;
+      const APy = P.lat - A.lat;
+      const ab2 = ABx * ABx + ABy * ABy;
+      const ap_ab = APx * ABx + APy * ABy;
+      let t = ap_ab / ab2;
+      t = Math.max(0, Math.min(1, t));
+      const closest = L.latLng(A.lat + ABy * t, A.lng + ABx * t);
+      return P.distanceTo(closest);
+    }
+
+    function advanceAlongCoords(p) {
+      if (p.finished || !p.enabled) return;
+      if (p.index >= p.coords.length - 1) {
+        p.finished = true;
+        return;
       }
 
-      function updateLeaderboard() {
-        pilots.forEach(p => {
-          if (!p.statsEl) return;
-          const altDisplay = (p.altitude !== null) ? p.altitude.toFixed(1) + ' m' : '—';
-          p.statsEl.innerHTML = Dev: $ {
-            p.avgDevCount ? (p.avgDevSum / p.avgDevCount).toFixed(1) + ' m' : '—'
-          }·
-          Dist: $ {
-            (p.totalMeters / 1000).toFixed(2)
-          }
-          km· Alt: $ {
-            altDisplay
-          }
-          $ {
-            p.finished ? '✅' : ''
-          };
-        });
+      const current = p.coords[p.index];
+      const next = p.coords[p.index + 1];
+      const validAltitudes = [current.alt, next.alt].filter(a => a !== undefined && a !== 99999);
+      if (validAltitudes.length > 0) {
+        p.altitude = validAltitudes.reduce((a, b) => a + b, 0) / validAltitudes.length;
       }
-    </script>
-  </body>
+
+      const lat = (current.lat + next.lat) / 2;
+      const lng = (current.lng + next.lng) / 2;
+      const pos = L.latLng(lat, lng);
+
+      p.marker.setLatLng(pos);
+      p.trail.addLatLng(pos);
+      p.index++;
+      p.totalMeters += L.latLng(current).distanceTo(L.latLng(next));
+
+      if (cornerZones.length) {
+  const pt = turf.point([pos.lng, pos.lat]);
+  cornerZones.forEach(zone => {
+    if (turf.booleanPointInPolygon(pt, zone)) {
+      p.cutViolation = true;
+      p.marker.setStyle({ color: 'orange' }); // visually mark offender
+    }
+  });
+}
+      
+      let minDev = Infinity;
+      segments.forEach(seg => {
+        const d = pointToSegmentDistance(pos, seg.a, seg.b);
+        if (!isNaN(d) && d < minDev) minDev = d;
+      });
+
+      const deviation = minDev !== Infinity ? minDev : 0;
+      p.avgDevSum += deviation;
+      p.avgDevCount++;
+
+      if (p.index >= p.coords.length - 1) p.finished = true;
+    }
+
+    function tick(ts) {
+      if (!lastTs) lastTs = ts;
+      lastTs = ts;
+
+      pilots.forEach(p => {
+        if (!p.enabled || p.finished) return;
+        advanceAlongCoords(p);
+      });
+
+      updateLeaderboard();
+      timer = requestAnimationFrame(tick);
+    }
+
+    function start() {
+      if (!timer) timer = requestAnimationFrame(tick);
+    }
+
+    function pause() {
+      if (timer) {
+        cancelAnimationFrame(timer);
+        timer = null;
+      }
+    }
+
+    function reset() {
+      pause();
+      pilots.forEach(p => {
+        map.removeLayer(p.marker);
+        map.removeLayer(p.trail);
+      });
+      loadRacers();
+    }
+
+    document.getElementById('startBtn').onclick = start;
+    document.getElementById('pauseBtn').onclick = pause;
+    document.getElementById('resetBtn').onclick = reset;
+
+    function buildLeaderboard() {
+      const lb = document.getElementById('lb');
+      lb.innerHTML = '';
+
+      pilots.forEach((p, i) => {
+        const li = document.createElement('li');
+        const statsEl = document.createElement('span');
+        statsEl.className = 'stats';
+        statsEl.style.whiteSpace = 'nowrap';
+        statsEl.style.textAlign = 'right';
+        statsEl.style.color = '#ccc';
+        statsEl.id = `stats-${i}`;
+
+        li.innerHTML = `<label>
+          <input type="checkbox" checked data-idx="${i}">
+          <span style="color:${p.color}; font-weight:bold">${p.name}</span>
+        </label>`;
+
+        li.appendChild(statsEl);
+        lb.appendChild(li);
+
+        p.statsEl = statsEl;
+      });
+
+      lb.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+        cb.onchange = e => {
+          const idx = parseInt(e.target.dataset.idx);
+          const pilot = pilots[idx];
+          pilot.enabled = e.target.checked;
+
+          if (pilot.marker && pilot.trail) {
+            if (pilot.enabled) {
+              map.addLayer(pilot.marker);
+              map.addLayer(pilot.trail);
+            } else {
+              map.removeLayer(pilot.marker);
+              map.removeLayer(pilot.trail);
+            }
+          }
+        };
+      });
+    }
+
+function updateLeaderboard(){
+  pilots.forEach(p=>{
+    if (!p.statsEl) return;
+    const altDisplay = (p.altitude !== null) ? p.altitude.toFixed(1)+' m' : '—';
+    p.statsEl.innerHTML = `
+      Dev: ${p.avgDevCount ? (p.avgDevSum / p.avgDevCount).toFixed(1) + ' m' : '—'} · 
+      Dist: ${(p.totalMeters / 1000).toFixed(2)} km · 
+      Alt: ${altDisplay}
+      ${p.cutViolation ? '<span style="color:red">⚠️ CUT</span>' : ''}
+      ${p.finished ? '✅' : ''}`;
+  });
+}
+  </script>
+</body>
 </html>
