@@ -266,17 +266,25 @@ data.features.forEach(f => {
 cornerDefs.forEach((corner, idx) => {
   const c = p.cornerProgress[idx];
 
-  if (!c.entered && p.index >= corner.entryIdx) c.entered = true;
-
-  if (c.entered && !c.exited) {
-    // accumulate distance flown between entry and exit
-    c.distance += L.latLng(current).distanceTo(L.latLng(next));
+  // Only start accumulating AFTER passing entry point
+  if (!c.entered && p.index >= corner.entryIdx) {
+    c.entered = true;
+    c.distance = 0; // reset distance on entry
   }
 
+  // Accumulate distance while inside corner
+  if (c.entered && !c.exited) {
+    // Make sure we are actually between entry and exit
+    if (p.index >= corner.entryIdx && p.index <= corner.exitIdx) {
+      c.distance += L.latLng(current).distanceTo(L.latLng(next));
+    }
+  }
+
+  // Check exit condition
   if (!c.exited && p.index >= corner.exitIdx) {
     c.exited = true;
-    // compare flown distance vs ideal
-    if (c.distance < corner.idealLength * 0.90 && !c.flagged) { // 10% tolerance
+    // Compare flown distance vs ideal
+    if (c.distance < corner.idealLength * 0.90 && !c.flagged) {
       c.flagged = true;
       p.cutViolation = true;
       p.marker.setStyle({ color: 'orange' });
