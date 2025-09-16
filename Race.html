@@ -101,6 +101,7 @@
     let route = [];
     let segments = [];
     let cornerZones = [];
+    let cornerDefs = [];
 
     fetch('route.geojson').then(r => r.json()).then(data => {
       route = data.features
@@ -129,6 +130,21 @@
         const len = a.distanceTo(b);
         segments.push({ a, b, len });
       }
+      cornerDefs = [];
+for (let i = 1; i < route.length - 1; i++) {
+  const desc = data.features[i].properties.description;
+  if (/^T\d+$/i.test(desc)) {       // only T1,T2,...
+    const prev = L.latLng(route[i - 1]);
+    const curr = L.latLng(route[i]);
+    const next = L.latLng(route[i + 1]);
+    cornerDefs.push({
+      name: desc,
+      entryIdx: i - 1,
+      exitIdx:  i + 1,
+      idealLength: prev.distanceTo(curr) + curr.distanceTo(next)
+    });
+  }
+}
 
 const cornerRadius = 0.05; // km (≈50 m radius) – adjust as needed
 
@@ -196,7 +212,10 @@ data.features.forEach(f => {
             avgDevCount: 0,
             altitude: (coords[0].alt !== 99999 ? coords[0].alt : null),
             finished: false,
-            enabled: true
+            enabled: true,
+            cornerProgress: cornerDefs.map(() => ({
+            entered:false, exited:false, distance:0, flagged:false
+              }))
           };
         });
 
@@ -244,15 +263,26 @@ data.features.forEach(f => {
       p.index++;
       p.totalMeters += L.latLng(current).distanceTo(L.latLng(next));
 
-      if (cornerZones.length) {
-  const pt = turf.point([pos.lng, pos.lat]);
-  cornerZones.forEach(zone => {
-    if (turf.booleanPointInPolygon(pt, zone)) {
+cornerDefs.forEach((corner, idx) => {
+  const c = p.cornerProgress[idx];
+
+  if (!c.entered && p.index >= corner.entryIdx) c.entered = true;
+
+  if (c.entered && !c.exited) {
+    // accumulate distance flown between entry and exit
+    c.distance += L.latLng(current).distanceTo(L.latLng(next));
+  }
+
+  if (!c.exited && p.index >= corner.exitIdx) {
+    c.exited = true;
+    // compare flown distance vs ideal
+    if (c.distance < corner.idealLength * 0.90 && !c.flagged) { // 10% tolerance
+      c.flagged = true;
       p.cutViolation = true;
-      p.marker.setStyle({ color: 'orange' }); // visually mark offender
+      p.marker.setStyle({ color: 'orange' });
     }
-  });
-}
+  }
+});
       
       let minDev = Infinity;
       segments.forEach(seg => {
