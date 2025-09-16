@@ -79,6 +79,18 @@ fetch('route.geojson').then(r => r.json()).then(data => {
       };
     });
 
+  // 🔵 Draw radius circles on the map so you can visually check corner zones
+  corners.forEach(corner => {
+    L.circle(corner.point, {
+      radius: corner.radius,
+      color: 'orange',
+      weight: 2,
+      dashArray: '4,6',
+      fillColor: 'orange',
+      fillOpacity: 0.15
+    }).addTo(map);
+  });
+
   loadRacers();
 });
 
@@ -131,15 +143,9 @@ function advanceAlongCoords(p){
     const cp = p.cornerProgress[idx];
     const inside = pos.distanceTo(corner.point) < corner.radius;
 
-    if (inside && !cp.entered) {      // Enter corner zone
-      cp.entered = true;
-    }
-
-    if (cp.entered && inside) {       // Count distance inside zone
-      cp.distance += L.latLng(current).distanceTo(L.latLng(next));
-    }
-
-    if (cp.entered && !inside && !cp.exited) { // Leaving zone
+    if (inside && !cp.entered) { cp.entered = true; }
+    if (cp.entered && inside) { cp.distance += L.latLng(current).distanceTo(L.latLng(next)); }
+    if (cp.entered && !inside && !cp.exited) {
       cp.exited = true;
       if (cp.distance < corner.idealLength * 0.95 && !cp.flagged) {
         cp.flagged = true;
