@@ -300,10 +300,13 @@ function updateLeaderboard(){
   pilots.forEach(p=>{
     if (!p.statsEl) return;
     const altDisplay = (p.altitude !== null) ? p.altitude.toFixed(1)+' m' : '—';
+
     p.statsEl.innerHTML = `
-      Dev: ${p.avgDevCount?(p.avgDevSum/p.avgDevCount).toFixed(1)+' m':'—'} · 
-      Dist: ${(p.totalMeters/1000).toFixed(2)} km · 
-      Alt: ${altDisplay} ${p.finished?'✅':''}`;
+      Dev: ${p.avgDevCount ? (p.avgDevSum / p.avgDevCount).toFixed(1) + ' m' : '—'} · 
+      Dist: ${(p.totalMeters / 1000).toFixed(2)} km · 
+      Alt: ${altDisplay}
+      ${p.cutViolation ? '<span style="color:red">⚠️ CUT</span>' : ''}
+      ${p.finished ? '✅' : ''}`;
   });
 }
 </script>
