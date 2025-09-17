@@ -149,15 +149,7 @@ function crossedMedian(prev, curr, line) {
   return turf.booleanIntersects(move, seg);
 }
 
-function trailIntersectsMedian(trailLayer, medianLayer) {
-  const trailCoords = trailLayer.getLatLngs().map(ll => [ll.lng, ll.lat]);
-  const medianCoords = medianLayer.getLatLngs().map(ll => [ll.lng, ll.lat]);
-  if (trailCoords.length < 2) return false;
 
-  const trailLine = turf.lineString(trailCoords);
-  const medianLine = turf.lineString(medianCoords);
-  return turf.booleanIntersects(trailLine, medianLine);
-}
   
 function loadRacers(){
   let promises=[];
@@ -239,6 +231,22 @@ function tick(ts){
   updateLeaderboard();
   timer = requestAnimationFrame(tick);
 }
+
+function trailIntersectsMedian(trailLayer, medianLayer) {
+  // Bail out if layers not ready
+  if (!trailLayer || !medianLayer ||
+      !trailLayer.getLatLngs || !medianLayer.getLatLngs) {
+    return false;
+  }
+  const trailCoords = trailLayer.getLatLngs().map(ll => [ll.lng, ll.lat]);
+  const medianCoords = medianLayer.getLatLngs().map(ll => [ll.lng, ll.lat]);
+  if (trailCoords.length < 2) return false;
+
+  const trailLine = turf.lineString(trailCoords);
+  const medianLine = turf.lineString(medianCoords);
+  return turf.booleanIntersects(trailLine, medianLine);
+}
+
 function start(){if(!timer) timer=requestAnimationFrame(tick);}
 function pause(){if(timer){cancelAnimationFrame(timer); timer=null;}}
 function reset(){pause(); pilots.forEach(p=>{map.removeLayer(p.marker); map.removeLayer(p.trail);}); loadRacers();}
