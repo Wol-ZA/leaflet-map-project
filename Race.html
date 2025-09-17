@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>George Accuracy Race – Median Line Detection</title>
+<title>George Accuracy Race – Inside Corner Median</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <style>
   html, body { height: 100%; margin: 0; }
@@ -45,12 +45,38 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution: '© OpenStreetMap contributors'
 }).addTo(map);
 
-let route = [];
-let segments = [];
-let corners = [];
+let route = [], segments = [], corners = [];
+
+/* ---------- helpers for inside corner math ---------- */
+function toXY(lat, lng) {
+  const R = 6378137;
+  const x = R * lng * Math.PI/180 * Math.cos(lat * Math.PI/180);
+  const y = R * lat * Math.PI/180;
+  return [x, y];
+}
+function toLatLng(x, y) {
+  const R = 6378137;
+  const lat = y / R * 180/Math.PI;
+  const lng = x / (R * Math.cos(lat * Math.PI/180)) * 180/Math.PI;
+  return [lat, lng];
+}
+function insideVector(p1, p2, p3) {
+  const v1 = [p2[0]-p1[0], p2[1]-p1[1]];
+  const v2 = [p3[0]-p2[0], p3[1]-p2[1]];
+  const avg = [(v1[0]+v2[0])/2, (v1[1]+v2[1])/2];
+  const perp1 = [-avg[1], avg[0]];
+  const perp2 = [ avg[1],-avg[0]];
+  const cross = v1[0]*v2[1] - v1[1]*v2[0];
+  return cross > 0 ? perp1 : perp2;
+}
+function scaleVector(v, length) {
+  const mag = Math.sqrt(v[0]*v[0] + v[1]*v[1]);
+  return [v[0]/mag*length, v[1]/mag*length];
+}
+/* ---------------------------------------------------- */
 
 fetch('route.geojson').then(r => r.json()).then(data => {
-  // Sort and map route
+  // Sort route points
   route = data.features.sort((a, b) => {
     const order = { 'Fp':0,'T1':1,'T2':2,'T3':3,'T4':4,'T5':5,'T6':6,'T7':7,'T8':8,'T9':9,'SP':10 };
     return order[a.properties.description] - order[b.properties.description];
@@ -59,7 +85,7 @@ fetch('route.geojson').then(r => r.json()).then(data => {
   const routeLine = L.polyline(route, { color: 'black', weight: 3, dashArray: '6,10' }).addTo(map);
   map.fitBounds(routeLine.getBounds().pad(0.2));
 
-  // Build segments for deviation calculation
+  // Segments for deviation
   segments = [];
   for (let i = 0; i < route.length - 1; i++) {
     const a = L.latLng(route[i]);
@@ -67,33 +93,31 @@ fetch('route.geojson').then(r => r.json()).then(data => {
     segments.push({ a, b, len: a.distanceTo(b) });
   }
 
-  // Identify corners and create median lines
+  // === NEW inside-corner medians ===
+  const insideLength = 40; // meters – make longer/shorter here
   corners = data.features.filter(f => /^T\d+$/i.test(f.properties.description))
     .map(f => {
-      const cornerLatLng = L.latLng(f.geometry.coordinates[1], f.geometry.coordinates[0]);
-      const entryIdx = Math.max(0, route.findIndex(r =>
-        r[0]===f.geometry.coordinates[1] && r[1]===f.geometry.coordinates[0]) - 1);
-      const exitIdx  = Math.min(route.length-1, entryIdx + 2);
-      const a = L.latLng(route[entryIdx]);
-      const b = L.latLng(route[exitIdx]);
-      const ideal = a.distanceTo(cornerLatLng) + cornerLatLng.distanceTo(b);
+      const idx = route.findIndex(r => r[0]===f.geometry.coordinates[1] && r[1]===f.geometry.coordinates[0]);
+      const prev = idx > 0 ? route[idx-1] : route[idx];
+      const next = idx < route.length-1 ? route[idx+1] : route[idx];
 
-      // Create a short perpendicular median line
-      const dx = b.lng - a.lng;
-      const dy = b.lat - a.lat;
-      const len = Math.sqrt(dx*dx + dy*dy);
-      const nx = -(dy/len) * 0.0003; // ~30m offset
-      const ny =  (dx/len) * 0.0003;
-      const lineStart = L.latLng(cornerLatLng.lat - ny, cornerLatLng.lng - nx);
-      const lineEnd   = L.latLng(cornerLatLng.lat + ny, cornerLatLng.lng + nx);
+      const p1 = toXY(prev[0], prev[1]);
+      const p2 = toXY(route[idx][0], route[idx][1]);
+      const p3 = toXY(next[0], next[1]);
 
-      // Draw for visual
-      L.polyline([lineStart, lineEnd], { color:'red', weight:3, dashArray:'4,4' }).addTo(map);
+      const inside = insideVector(p1,p2,p3);
+      const offset = scaleVector(inside, insideLength);
+
+      const start = toLatLng(p2[0], p2[1]);
+      const end   = toLatLng(p2[0]+offset[0], p2[1]+offset[1]);
+
+      // draw line
+      L.polyline([start, end], { color:'red', weight:3, dashArray:'4,4' }).addTo(map);
 
       return {
-        point: cornerLatLng,
-        median: [lineStart, lineEnd],
-        idealLength: ideal
+        point: L.latLng(route[idx]),
+        median: [start, end],
+        idealLength: 0 // unused but kept for compatibility
       };
     });
 
@@ -101,10 +125,9 @@ fetch('route.geojson').then(r => r.json()).then(data => {
 });
 
 const pilotColors = ['#ef4444','#3b82f6','#22c55e','#f59e0b','#a855f7','#14b8a6'];
-const pilotNames = ['Alpha','Eric','Etienne','Delta','Echo','Winner'];
+const pilotNames  = ['Alpha','Eric','Etienne','Delta','Echo','Winner'];
 let pilots = [], timer = null, lastTs = null;
 
-// === Utility: segment distance ===
 function pointToSegmentDistance(p,a,b){
   const P=L.latLng(p), A=L.latLng(a), B=L.latLng(b);
   const ABx=B.lng-A.lng, ABy=B.lat-A.lat, APx=P.lng-A.lng, APy=P.lat-A.lat;
@@ -113,29 +136,27 @@ function pointToSegmentDistance(p,a,b){
   const closest=L.latLng(A.lat+ABy*t, A.lng+ABx*t);
   return P.distanceTo(closest);
 }
-
-// === Utility: crossing detection using turf ===
-function crossedMedian(prev, curr, line) {
+function crossedMedian(prev,curr,line){
   const seg = turf.lineString([[line[0].lng,line[0].lat],[line[1].lng,line[1].lat]]);
   const move = turf.lineString([[prev.lng,prev.lat],[curr.lng,curr.lat]]);
   return turf.booleanCrosses(move, seg);
 }
 
-function loadRacers() {
-  let promises = [];
+function loadRacers(){
+  let promises=[];
   for(let i=1;i<=6;i++) promises.push(fetch(`Race${i}.geojson`).then(r=>r.json()));
-
-  Promise.all(promises).then(datas => {
-    pilots = datas.map((data,i)=>{
-      const coords = data.features.flatMap(f => f.geometry.coordinates.map(c=>({lat:c[1],lng:c[0],alt:c[2]})));
-      const marker = L.circleMarker([coords[0].lat, coords[0].lng],
-        { color: pilotColors[i], radius: 7, weight: 3, fillOpacity:0.9 }).addTo(map);
-      const trail = L.polyline([[coords[0].lat, coords[0].lng]], { color: pilotColors[i], weight:3, opacity:0.9 }).addTo(map);
-      const cornerProgress = corners.map(()=>({flagged:false}));
-      return { name: pilotNames[i], color: pilotColors[i], coords, index:0,
-               marker, trail, totalMeters:0, avgDevSum:0, avgDevCount:0,
-               altitude:(coords[0].alt!==99999?coords[0].alt:null),
-               finished:false, enabled:true, cornerProgress, cutViolation:false };
+  Promise.all(promises).then(datas=>{
+    pilots=datas.map((data,i)=>{
+      const coords=data.features.flatMap(f=>f.geometry.coordinates.map(c=>({lat:c[1],lng:c[0],alt:c[2]})));
+      const marker=L.circleMarker([coords[0].lat,coords[0].lng],
+        {color:pilotColors[i],radius:7,weight:3,fillOpacity:0.9}).addTo(map);
+      const trail=L.polyline([[coords[0].lat,coords[0].lng]],
+        {color:pilotColors[i],weight:3,opacity:0.9}).addTo(map);
+      const cornerProgress=corners.map(()=>({flagged:false}));
+      return {name:pilotNames[i],color:pilotColors[i],coords,index:0,
+        marker,trail,totalMeters:0,avgDevSum:0,avgDevCount:0,
+        altitude:(coords[0].alt!==99999?coords[0].alt:null),
+        finished:false,enabled:true,cornerProgress,cutViolation:false};
     });
     buildLeaderboard();
     start();
@@ -145,31 +166,30 @@ function loadRacers() {
 function advanceAlongCoords(p){
   if(p.finished||!p.enabled) return;
   if(p.index>=p.coords.length-1){p.finished=true; return;}
-
   const current=p.coords[p.index];
   const next=p.coords[p.index+1];
-  const validAltitudes=[current.alt,next.alt].filter(a=>a!==undefined&&a!==99999);
-  if(validAltitudes.length>0) p.altitude=validAltitudes.reduce((a,b)=>a+b,0)/validAltitudes.length;
+  const validAlts=[current.alt,next.alt].filter(a=>a!==undefined&&a!==99999);
+  if(validAlts.length>0) p.altitude=validAlts.reduce((a,b)=>a+b,0)/validAlts.length;
 
-  const prevPos = p.marker.getLatLng();
-  const pos = L.latLng((current.lat+next.lat)/2,(current.lng+next.lng)/2);
+  const prevPos=p.marker.getLatLng();
+  const pos=L.latLng((current.lat+next.lat)/2,(current.lng+next.lng)/2);
 
   p.marker.setLatLng(pos);
   p.trail.addLatLng(pos);
   p.index++;
   p.totalMeters+=L.latLng(current).distanceTo(L.latLng(next));
 
-  // === Median crossing detection ===
+  // inside corner crossing detection
   corners.forEach((corner,idx)=>{
-    const cp = p.cornerProgress[idx];
-    if (!cp.flagged && crossedMedian(prevPos, pos, corner.median)) {
-      cp.flagged = true;
-      p.cutViolation = true;
-      p.marker.setStyle({ color:'orange' });
+    const cp=p.cornerProgress[idx];
+    if(!cp.flagged && crossedMedian(prevPos,pos,corner.median)){
+      cp.flagged=true;
+      p.cutViolation=true;
+      p.marker.setStyle({color:'orange'});
     }
   });
 
-  // === Deviation from route ===
+  // deviation
   let minDev=Infinity;
   segments.forEach(seg=>{
     const d=pointToSegmentDistance(pos,seg.a,seg.b);
@@ -187,7 +207,6 @@ function tick(ts){
   updateLeaderboard();
   timer=requestAnimationFrame(tick);
 }
-
 function start(){if(!timer) timer=requestAnimationFrame(tick);}
 function pause(){if(timer){cancelAnimationFrame(timer); timer=null;}}
 function reset(){pause(); pilots.forEach(p=>{map.removeLayer(p.marker); map.removeLayer(p.trail);}); loadRacers();}
@@ -216,7 +235,6 @@ function buildLeaderboard(){
     };
   });
 }
-
 function updateLeaderboard(){
   pilots.forEach(p=>{
     if(!p.statsEl)return;
