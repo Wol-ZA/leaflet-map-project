@@ -149,7 +149,16 @@ function crossedMedian(prev, curr, line) {
   return turf.booleanIntersects(move, seg);
 }
 
+function trailIntersectsMedian(trailLayer, medianLayer) {
+  const trailCoords = trailLayer.getLatLngs().map(ll => [ll.lng, ll.lat]);
+  const medianCoords = medianLayer.getLatLngs().map(ll => [ll.lng, ll.lat]);
+  if (trailCoords.length < 2) return false;
 
+  const trailLine = turf.lineString(trailCoords);
+  const medianLine = turf.lineString(medianCoords);
+  return turf.booleanIntersects(trailLine, medianLine);
+}
+  
 function loadRacers(){
   let promises=[];
   for(let i=1;i<=6;i++) promises.push(fetch(`Race${i}.geojson`).then(r=>r.json()));
@@ -211,9 +220,24 @@ if (!cp.flagged && crossedMedian(prevPos, pos, corner.median)) {
 
 function tick(ts){
   if(!lastTs) lastTs=ts; lastTs=ts;
-  pilots.forEach(p=>{if(!p.enabled||p.finished)return; advanceAlongCoords(p);});
+
+  pilots.forEach(p=>{
+    if(!p.enabled || p.finished) return;
+    advanceAlongCoords(p);
+
+    // ✅ NEW intersection check using full trail
+    corners.forEach((corner, idx) => {
+      const cp = p.cornerProgress[idx];
+      if (!cp.flagged && trailIntersectsMedian(p.trail, corner.medianLayer)) {
+        cp.flagged = true;
+        p.cutViolation = true;
+        p.marker.setStyle({ color: 'orange' });
+      }
+    });
+  });
+
   updateLeaderboard();
-  timer=requestAnimationFrame(tick);
+  timer = requestAnimationFrame(tick);
 }
 function start(){if(!timer) timer=requestAnimationFrame(tick);}
 function pause(){if(timer){cancelAnimationFrame(timer); timer=null;}}
