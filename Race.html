@@ -94,7 +94,7 @@ fetch('route.geojson').then(r => r.json()).then(data => {
   }
 
   // === NEW inside-corner medians ===
-  const insideLength = 40; // meters – make longer/shorter here
+  const insideLength = 5000; // meters – make longer/shorter here
   corners = data.features.filter(f => /^T\d+$/i.test(f.properties.description))
     .map(f => {
       const idx = route.findIndex(r => r[0]===f.geometry.coordinates[1] && r[1]===f.geometry.coordinates[0]);
