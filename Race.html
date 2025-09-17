@@ -112,13 +112,13 @@ fetch('route.geojson').then(r => r.json()).then(data => {
       const end   = toLatLng(p2[0]+offset[0], p2[1]+offset[1]);
 
       // draw line
-      L.polyline([start, end], { color:'red', weight:3, dashArray:'4,4' }).addTo(map);
+      const medianLine = L.polyline([start, end], { color:'red', weight:3, dashArray:'4,4' }).addTo(map);
 
-      return {
-        point: L.latLng(route[idx]),
-        median: [start, end],
-        idealLength: 0 // unused but kept for compatibility
-      };
+return {
+    point: L.latLng(route[idx]),
+    medianLayer: medianLine,  // ✅ store the Leaflet layer
+    idealLength: 0
+};
     });
 
   loadRacers();
