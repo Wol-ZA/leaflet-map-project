@@ -189,19 +189,14 @@ function advanceAlongCoords(p){
   p.totalMeters+=L.latLng(current).distanceTo(L.latLng(next));
 
   // inside corner crossing detection
-  corners.forEach((corner,idx)=>{
-    const cp=p.cornerProgress[idx];
-     console.log(
-    `Checking ${p.name} vs corner ${idx}`,
-    'trail points:', p.trail.getLatLngs().length,
-    'median points:', corner.medianLayer?.getLatLngs()
-  );
-if (!cp.flagged && crossedMedian(prevPos, pos, corner.median)) {
-  cp.flagged = true;
-  p.cutViolation = true;
-  p.marker.setStyle({ color:'orange' });
-}
-  });
+corners.forEach((corner, idx) => {
+  const cp = p.cornerProgress[idx];
+  if (!cp.flagged && trailIntersectsMedian(p.trail, corner.medianLayer)) {
+    cp.flagged = true;
+    p.cutViolation = true;
+    p.marker.setStyle({ color:'orange' });
+  }
+});
 
   // deviation
   let minDev=Infinity;
