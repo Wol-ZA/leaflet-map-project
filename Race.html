@@ -191,6 +191,11 @@ function advanceAlongCoords(p){
   // inside corner crossing detection
   corners.forEach((corner,idx)=>{
     const cp=p.cornerProgress[idx];
+     console.log(
+    `Checking ${p.name} vs corner ${idx}`,
+    'trail points:', p.trail.getLatLngs().length,
+    'median points:', corner.medianLayer?.getLatLngs()
+  );
 if (!cp.flagged && crossedMedian(prevPos, pos, corner.median)) {
   cp.flagged = true;
   p.cutViolation = true;
@@ -236,14 +241,19 @@ function trailIntersectsMedian(trailLayer, medianLayer) {
   // Bail out if layers not ready
   if (!trailLayer || !medianLayer ||
       !trailLayer.getLatLngs || !medianLayer.getLatLngs) {
+    console.warn('⚠️ Missing layer', trailLayer, medianLayer);
     return false;
   }
   const trailCoords = trailLayer.getLatLngs().map(ll => [ll.lng, ll.lat]);
   const medianCoords = medianLayer.getLatLngs().map(ll => [ll.lng, ll.lat]);
+   console.log('Trail sample', trailCoords.slice(-2));
+  console.log('Median', medianCoords);
   if (trailCoords.length < 2) return false;
 
   const trailLine = turf.lineString(trailCoords);
   const medianLine = turf.lineString(medianCoords);
+  const intersects = turf.booleanIntersects(trailLine, medianLine);
+  console.log('Intersection result:', intersects);
   return turf.booleanIntersects(trailLine, medianLine);
 }
 
