@@ -136,11 +136,19 @@ function pointToSegmentDistance(p,a,b){
   const closest=L.latLng(A.lat+ABy*t, A.lng+ABx*t);
   return P.distanceTo(closest);
 }
-function crossedMedian(prev,curr,line){
-  const seg = turf.lineString([[line[0].lng,line[0].lat],[line[1].lng,line[1].lat]]);
-  const move = turf.lineString([[prev.lng,prev.lat],[curr.lng,curr.lat]]);
-  return turf.booleanCrosses(move, seg);
+function crossedMedian(prev, curr, line) {
+  const seg  = turf.lineString([
+    [line[0].lng, line[0].lat],
+    [line[1].lng, line[1].lat]
+  ]);
+  const move = turf.lineString([
+    [prev.lng, prev.lat],
+    [curr.lng, curr.lat]
+  ]);
+  // Intersects is safer than crosses
+  return turf.booleanIntersects(move, seg);
 }
+
 
 function loadRacers(){
   let promises=[];
@@ -182,11 +190,11 @@ function advanceAlongCoords(p){
   // inside corner crossing detection
   corners.forEach((corner,idx)=>{
     const cp=p.cornerProgress[idx];
-    if(!cp.flagged && crossedMedian(prevPos,pos,corner.median)){
-      cp.flagged=true;
-      p.cutViolation=true;
-      p.marker.setStyle({color:'orange'});
-    }
+if (!cp.flagged && crossedMedian(prevPos, pos, corner.median)) {
+  cp.flagged = true;
+  p.cutViolation = true;
+  p.marker.setStyle({ color:'orange' });
+}
   });
 
   // deviation
