@@ -74,7 +74,20 @@ function scaleVector(v, length) {
   return [v[0]/mag*length, v[1]/mag*length];
 }
 /* ---------------------------------------------------- */
+//Funtion to calculate the altitude band
+function metersToFeet(m) { return m * 3.28084; }
 
+function altitudeWithinBand(altMeters, minFt = 3000, maxFt = 4000) {
+  if (altMeters == null || isNaN(altMeters)) return false;
+  const altFt = metersToFeet(altMeters);
+  return altFt >= minFt && altFt <= maxFt;
+}
+  function outsideBand(altMeters, minFt = 3000, maxFt = 4000) {
+  if (altMeters == null || isNaN(altMeters)) return false;
+  const altFt = metersToFeet(altMeters);
+  return altFt < minFt || altFt > maxFt;
+}
+  
 fetch('route.geojson').then(r => r.json()).then(data => {
   // Sort route points
   route = data.features.sort((a, b) => {
@@ -162,10 +175,25 @@ function loadRacers(){
       const trail=L.polyline([[coords[0].lat,coords[0].lng]],
         {color:pilotColors[i],weight:3,opacity:0.9}).addTo(map);
       const cornerProgress=corners.map(()=>({flagged:false}));
-      return {name:pilotNames[i],color:pilotColors[i],coords,index:0,
-        marker,trail,totalMeters:0,avgDevSum:0,avgDevCount:0,
-        altitude:(coords[0].alt!==99999?coords[0].alt:null),
-        finished:false,enabled:true,cornerProgress,cutViolation:false};
+      const cornerAltitudeProgress = corners.map(() => ({ flagged: false }));
+      return {
+  name: pilotNames[i],
+  color: pilotColors[i],
+  coords,
+  index: 0,
+  marker,
+  trail,
+  totalMeters: 0,
+  avgDevSum: 0,
+  avgDevCount: 0,
+  altitude: (coords[0].alt !== 99999 ? coords[0].alt : null),
+  finished: false,
+  enabled: true,
+  cornerProgress,
+  cornerAltitudeProgress,   // ✅ new array
+  cutViolation: false,
+  altViolation: false       // ✅ overall altitude violation flag
+};
     });
     buildLeaderboard();
     start();
@@ -195,6 +223,20 @@ corners.forEach((corner, idx) => {
     cp.flagged = true;
     p.cutViolation = true;
     p.marker.setStyle({ color:'orange' });
+  }
+});
+
+// --- NEW altitude band check (independent of cut) ---
+corners.forEach((corner, idx) => {
+  const ap = p.cornerAltitudeProgress[idx];
+  if (!ap.flagged &&
+      trailIntersectsMedian(p.trail, corner.medianLayer) &&
+      outsideBand(p.altitude, 3000, 4000)) {
+
+    ap.flagged = true;
+    p.altViolation = true;
+    // Optional: different marker color if you want to show altitude violation
+    // p.marker.setStyle({ color: 'purple' });
   }
 });
 
@@ -283,10 +325,18 @@ function buildLeaderboard(){
 function updateLeaderboard(){
   pilots.forEach(p=>{
     if(!p.statsEl)return;
-    const altDisplay=(p.altitude!==null)?p.altitude.toFixed(1)+' m':'—';
-    p.statsEl.innerHTML=`Dev: ${p.avgDevCount?(p.avgDevSum/p.avgDevCount).toFixed(1)+' m':'—'}
-      · Dist: ${(p.totalMeters/1000).toFixed(2)} km · Alt: ${altDisplay}
-      ${p.cutViolation?'<span style="color:red">⚠️ CUT</span>':''} ${p.finished?'✅':''}`;
+    const altDisplay = (p.altitude !== null)
+  ? metersToFeet(p.altitude).toFixed(0) + ' ft'
+  : '—';
+
+p.statsEl.innerHTML = `
+  Dev: ${p.avgDevCount ? (p.avgDevSum / p.avgDevCount).toFixed(1) + ' m' : '—'}
+  · Dist: ${(p.totalMeters/1000).toFixed(2)} km
+  · Alt: ${altDisplay}
+  ${p.cutViolation ? '<span style="color:red">⚠️ CUT</span>' : ''}
+  ${p.altViolation ? '<span style="color:purple">⚠️ ALT</span>' : ''}
+  ${p.finished ? '✅' : ''}
+`;
   });
 }
 </script>
