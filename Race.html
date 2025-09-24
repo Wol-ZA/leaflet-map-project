@@ -107,13 +107,14 @@ fetch('route.geojson').then(r => r.json()).then(data => {
   }
 
   // === NEW inside-corner medians ===
-  const insideLength = 5000; // meters – make longer/shorter here
+  const insideLength = 5000;
+  const cornerRadius = 5000;// meters – make longer/shorter here
   corners = data.features.filter(f => /^T\d+$/i.test(f.properties.description))
     .map(f => {
       const idx = route.findIndex(r => r[0]===f.geometry.coordinates[1] && r[1]===f.geometry.coordinates[0]);
       const prev = idx > 0 ? route[idx-1] : route[idx];
       const next = idx < route.length-1 ? route[idx+1] : route[idx];
-
+      const latlng = L.latLng(route[idx]);
       const p1 = toXY(prev[0], prev[1]);
       const p2 = toXY(route[idx][0], route[idx][1]);
       const p3 = toXY(next[0], next[1]);
@@ -129,7 +130,8 @@ fetch('route.geojson').then(r => r.json()).then(data => {
 
 return {
     point: L.latLng(route[idx]),
-    medianLayer: medianLine,  // ✅ store the Leaflet layer
+    medianLayer: medianLine,
+    radius: cornerRadius,// ✅ store the Leaflet layer
     idealLength: 0
 };
     });
@@ -165,6 +167,7 @@ function crossedMedian(prev, curr, line) {
 
   
 function loadRacers(){
+  const cornerAltRadiusProgress = corners.map(() => ({ flagged: false }));
   let promises=[];
   for(let i=1;i<=6;i++) promises.push(fetch(`Race${i}.geojson`).then(r=>r.json()));
   Promise.all(promises).then(datas=>{
@@ -192,6 +195,7 @@ function loadRacers(){
   cornerProgress,
   cornerAltitudeProgress,   // ✅ new array
   cutViolation: false,
+  cornerAltRadiusProgress,
   altViolation: false       // ✅ overall altitude violation flag
 };
     });
@@ -231,7 +235,7 @@ corners.forEach((corner, idx) => {
   const ap = p.cornerAltitudeProgress[idx];
   if (!ap.flagged &&
       trailIntersectsMedian(p.trail, corner.medianLayer) &&
-      outsideBand(p.altitude, 3000, 4000)) {
+      outsideBand(p.altitude, 1000, 2000)) {
 
     ap.flagged = true;
     p.altViolation = true;
