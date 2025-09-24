@@ -117,6 +117,7 @@ fetch('route.geojson').then(r => r.json()).then(data => {
 
       const inside = insideVector(p1,p2,p3);
       const offset = scaleVector(inside, insideLength);
+      L.circle(corner.point, { radius: corner.radius, color: 'purple', fillOpacity: 0.05 }).addTo(map);
 
       const start = toLatLng(p2[0], p2[1]);
       const end   = toLatLng(p2[0]+offset[0], p2[1]+offset[1]);
